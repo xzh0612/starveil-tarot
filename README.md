@@ -1,0 +1,75 @@
+# 星幕 STARVEIL · Tarot
+
+一个全屏单页的私人塔罗体验：在月光书房里提出问题，由 DeepSeek 根据固定的韦特牌义进行解读，并把每次牌局保存成可回看的记录。
+
+## 功能
+
+- 问题驱动的牌阵推荐：先输入问题，获得 2–3 个适合的牌阵与推荐理由，再由用户确认。
+- 单牌、三牌、时间之流、两条道路、关系之镜、事业之径、马蹄、凯尔特十字、十二月轮和自定义牌阵。
+- 78 张固定牌面。选牌时以桌面弧形牌带呈现，可拖动、滚轮、键盘或滑杆浏览；悬停抬牌，点击抽取，随后翻牌。
+- 78 张牌的中文正位、逆位、关系、事业和反思解读，以及牌义图鉴。
+- DeepSeek 多轮对话式解读：沿用本次牌局，不重新抽牌。
+- 动态插画书房：紫色绒面牌桌、烛光、星尘、衣料流光和抬眼／低头视线状态。
+- 本地档案、后记、个人知识库、JSON 导出和原创循环 BGM。
+
+## 本地运行
+
+```bash
+cd frontend
+npm install
+npm run dev -- --host 0.0.0.0 --port 4173 --strictPort
+```
+
+打开 <http://localhost:4173>。
+
+生产构建：
+
+```bash
+npm run build
+```
+
+## DeepSeek 配置
+
+复制 `frontend/.env.example` 为 `frontend/.env.local`，填入后端变量：
+
+```dotenv
+DEEPSEEK_API_KEY=你的密钥
+DEEPSEEK_MODEL=deepseek-flash
+VITE_READING_ENDPOINT=/api/readings/interpret
+```
+
+Vite 本地服务器会挂载两个接口：
+
+- `POST /api/readings/interpret`：发送已确定的牌局和对话，返回解读。
+- `POST /api/spreads/recommend`：根据问题推荐牌阵。
+
+密钥只能放在 `DEEPSEEK_API_KEY`，不要使用 `VITE_` 前缀。接口只允许本机调用，并会校验牌面、正逆位、请求大小、来源、并发和超时。档案与个人知识库不会自动发送给模型。
+
+## 测试
+
+```bash
+node --test tests/*.test.mjs
+```
+
+包含牌义完整性、固定牌序、随机洗牌、牌阵推荐、DeepSeek 后端校验、网站静态资源和 Sites 构建检查。
+
+## 目录
+
+```text
+frontend/src/       React 页面、牌局状态、动态海报和弧形牌带
+frontend/server/    本地 DeepSeek 与牌阵推荐接口
+frontend/public/    78 张牌、背景、BGM 和可选 GLB 资源
+frontend/tests/     Node 测试
+frontend/qa/        浏览器验收记录与截图
+docs/               设计与建模文档
+```
+
+## 设计边界
+
+当前女巫使用统一场景插画的动态海报方案，不宣称骨骼 3D、连续口型或真实手指抓牌。旧版 Blender/GLB 模型保留在 `frontend/public/models/`，并通过 `LegacyScene.jsx` 作为后续替换接口。
+
+塔罗解读用于自我反思，不读取他人内心，也不保证未来事件。涉及健康、法律或投资决定时，应以现实信息和专业意见为依据。
+
+## 来源与许可
+
+牌图来源、原典资料、中文编辑方法和生成素材说明见 `frontend/research/tarot/README.md` 与 `frontend/public/assets/generated-assets.md`。牌图许可文件保留在 `frontend/public/assets/cards/LICENSE.txt`。
