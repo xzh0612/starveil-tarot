@@ -1,0 +1,24 @@
+{
+  "version": "nyx-rigged-v2",
+  "bones": 31,
+  "actions": {
+    "Idle": 6,
+    "Greeting": 2.8,
+    "Listening": 4,
+    "Thinking": 4.8,
+    "Shuffle": 1.5,
+    "Offer": 2.4,
+    "Drawing": 0.62,
+    "Reveal": 0.7,
+    "Speaking": 4.2
+  },
+  "meshObjects": 9,
+  "vertices": 39178,
+  "characterImagePlanes": 0,
+  "limitations": [
+    "procedural art, not a production sculpt",
+    "no cloth simulation",
+    "no phoneme lip sync",
+    "guiding gestures, not contact IK"
+  ]
+}

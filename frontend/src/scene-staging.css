@@ -1,0 +1,87 @@
+/* Unified live poster: character, room and tabletop share the source painting. */
+.chamber{inset:0;background-image:url('/assets/witch-room-v5.png');animation:none}
+.view-entry .chamber{background-image:url('/assets/chamber.png')}
+.scene-shade{box-shadow:inset 0 0 110px #120b192b}
+.topbar{background:linear-gradient(#110c19a6,#110c1940);backdrop-filter:blur(5px);border-bottom-color:#ead2bb24}
+.view-sanctum .welcome{top:25%;left:5%;width:28%;text-shadow:0 2px 18px #130d20}
+.view-sanctum .welcome h1{font-size:clamp(25px,2.65vw,43px)}
+.view-sanctum .welcome p{color:#ded0dc}
+.witch-presence,.view-sanctum .witch-presence,.view-reading .witch-presence{top:48%;left:auto;right:7%;background:#20172570;font-size:11px}
+.bottom-dock{background:linear-gradient(transparent,#1c1324b8);backdrop-filter:blur(6px);border-top-color:#d3bdda22;min-height:86px;padding-block:12px}
+.view-draw .draw-stage{inset:0;animation:none;pointer-events:none}
+.view-draw .draw-stage>header{position:absolute;top:22%;left:5%;right:5%;height:auto;align-items:start;padding:0}
+.view-draw .draw-stage>header>div:first-child{max-width:28%;text-shadow:0 2px 15px #000}
+.view-draw .draw-stage h2{font-size:clamp(19px,1.9vw,29px);line-height:1.8}
+.view-draw .draw-stage header p{white-space:normal;max-width:100%;font-size:12px;color:#decedd;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.view-draw .draw-progress{font-size:36px}
+.view-draw .deck-layout{display:block;position:absolute;inset:0;padding:0;pointer-events:none}
+.fan-deck{position:absolute;top:66%;bottom:6%;left:3%;right:3%;pointer-events:auto;display:flex;flex-direction:column;align-items:center}
+.fan-surface{position:relative;width:100%;flex:1;min-height:90px;overflow:hidden;touch-action:none;user-select:none;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.fan-surface.dragging{cursor:grabbing}
+.fan-card{position:absolute;left:50%;top:28px;width:clamp(62px,7vw,102px);height:clamp(99px,16vh,160px);padding:0;transform:translate(calc(-50% + var(--x)),var(--y)) rotate(var(--angle));transform-origin:50% 100%;transition:none;opacity:1!important;touch-action:none;cursor:inherit}
+.fan-card>span{position:relative;display:block;width:100%;height:100%;border-radius:5px;transform-origin:center bottom;transition:transform .24s ease,filter .24s;box-shadow:-3px 2px 5px #160c2380,0 5px 7px #21122480;border:1px solid #d2b999b0;overflow:hidden;background:#352144}
+.fan-card img{width:100%;height:100%;display:block;object-fit:fill;pointer-events:none}
+.fan-card small{position:absolute;left:4px;top:5px;font:8px Georgia;color:#dfc8a7;pointer-events:none}
+.fan-card:hover:not(:disabled),.fan-card:focus-visible{z-index:100!important}
+.fan-card:hover:not(:disabled)>span,.fan-card:focus-visible>span{transform:translateY(-21px);filter:brightness(1.17);box-shadow:0 12px 20px #20112799,0 0 0 1px #e2c8a1}
+.fan-surface.dragging .fan-card>span{transform:none;filter:none}
+.fan-card.taken>span{opacity:0;transform:translateY(-65px) scale(.8)}
+.fan-navigation{height:27px;display:flex;align-items:center;justify-content:center;gap:24px;flex-shrink:0;color:#f1e0e8;text-shadow:0 2px 5px #211228;font-size:10px;letter-spacing:.14em}
+.fan-navigation button{font-size:21px;width:40px;height:27px;padding:0}
+.fan-range{display:flex;align-items:center;gap:10px;width:190px;font:9px Georgia;color:#cfb8ce;height:18px;flex-shrink:0}
+.fan-range input{appearance:none;border:0;padding:0;height:2px;min-width:0;flex:1;background:#e5cde444;accent-color:#d7b6dc;cursor:ew-resize}
+.fan-range input::-webkit-slider-thumb{appearance:none;width:22px;height:5px;border-radius:4px;background:#e4cde1}
+.view-draw .selected-tray{position:absolute;top:57%;height:8%;left:30%;right:30%;width:auto;padding:0;border:0;display:flex;justify-content:center;gap:14px;overflow:visible}
+.view-draw .selected-tray>.eyebrow{display:none}
+.view-draw .tray-slot{flex:1;max-width:68px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.view-draw .tray-slot>span{height:36px;width:25px;display:grid;place-items:center;border:1px solid #e2cbe057;background:#3a254034;border-radius:3px;font:12px Georgia;color:#e2ccd9}
+.view-draw .tray-slot img{height:45px;width:30px;object-fit:fill;filter:drop-shadow(2px 4px 3px #28142a99);transform:rotate(-3deg);animation:card-land .6s both}
+.view-draw .tray-slot small{font-size:9px;line-height:1.3;color:#e8d3df;white-space:nowrap}
+.view-draw .draw-stage>footer{pointer-events:auto;position:absolute;bottom:12px;left:5%;right:5%;min-height:27px;padding:0;border:0;font-size:10px;display:flex;justify-content:space-between;align-items:center;color:#dbbfd5}
+.view-draw .draw-stage>footer .primary{min-height:35px;font-size:12px;padding:8px 17px}
+.flying-card{z-index:120;pointer-events:none;animation:poster-card-fly .62s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes poster-card-fly{0%{transform:translate(0,0) scale(1);opacity:1}45%{transform:translate(calc(var(--tx)*.45),calc(var(--ty) - 60px)) scale(.85);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(.3);opacity:0}}
+@keyframes card-land{0%,65%{opacity:0;transform:translateY(-15px) rotate(-10deg)}100%{opacity:1;transform:translateY(0) rotate(-3deg)}}
+.view-shuffle .shuffle-stage{inset:65% 0 8%;background:none;backdrop-filter:none}
+.view-shuffle .shuffle-stack{width:70px;height:103px}
+.view-shuffle .shuffle-stage h2{margin:12px 0 3px;font-size:19px}
+.view-shuffle .shuffle-stage p{font-size:10px;margin:0}
+.view-reading .reading-table{top:64%;bottom:100px}
+.view-reading .reading-table header{position:absolute;bottom:calc(100% + 20px);left:0;right:0}
+.view-reading .reveal-cards{transform:none}
+@media(max-width:680px){
+ .view-sanctum .welcome{top:auto;bottom:106px;left:7%;width:85%;padding:10px 0;text-shadow:0 2px 12px #140e1e}
+ .view-sanctum .welcome h1{font-size:24px;line-height:1.45;margin-bottom:8px}.view-sanctum .welcome p{display:none}.view-sanctum .welcome .eyebrow{display:none}.view-sanctum .welcome .resume{margin-top:5px}
+ .view-sanctum .scene-shade{box-shadow:inset 0 -200px 130px -80px #231629ab}
+ .witch-presence,.view-sanctum .witch-presence,.view-reading .witch-presence{top:45%;right:4%;font-size:9px;padding:7px 10px}
+ .view-draw .witch-presence{display:none}
+ .view-draw .draw-stage>header{top:12%;left:6%;right:6%}
+ .view-draw .draw-stage>header>div:first-child{max-width:44%}.view-draw .draw-stage h2{font-size:16px;line-height:1.65}.view-draw .draw-stage .eyebrow{font-size:7px}.view-draw .draw-stage header p{font-size:10px;max-width:100%}
+ .view-draw .draw-progress{font-size:27px}.view-draw .draw-progress small{font-size:13px}
+ .fan-deck{top:67%;bottom:8%;left:0;right:0}.fan-card{width:67px;height:106px;top:25px}.fan-navigation{font-size:8px;gap:12px}.fan-range{width:160px}
+ .view-draw .selected-tray{left:12%;right:12%;top:58%;height:8%;gap:7px}.view-draw .tray-slot small{font-size:8px}.view-draw .tray-slot>span{height:29px;width:21px}.view-draw .tray-slot img{height:36px;width:24px}
+ .view-draw .draw-stage>footer{bottom:13px;left:5%;right:5%;font-size:8px;gap:10px}.view-draw .draw-stage>footer .primary{font-size:10px;padding:8px 10px;gap:5px}.view-draw .draw-stage>footer>span:last-child{max-width:125px}
+ .view-reading .reading-table{top:63%;bottom:150px!important}.view-reading .reading-table header{bottom:calc(100% + 10px)}
+ .view-reading .reveal-cards{gap:8px}.view-reading .reveal-slot>span{font-size:9px}
+}
+@media(max-height:680px){.fan-deck{top:60%;bottom:9%}.fan-card{height:90px;width:58px;top:24px}.view-draw .selected-tray{top:49%;height:9%}.view-draw .draw-stage>header{top:18%}.view-draw .draw-stage h2{font-size:18px}.view-draw .draw-stage header p{font-size:10px}.view-draw .tray-slot img{height:32px;width:21px}.view-draw .tray-slot>span{height:26px}.view-reading .reading-table{top:60%}.view-sanctum .welcome h1{font-size:26px}}
+/* Keep extracted cards on velvet, below the painted fingertips. */
+@media(min-height:681px){.view-draw .selected-tray{top:66.5%}.fan-deck{top:70%}.fan-card{height:clamp(99px,14vh,140px)}}
+@media(max-width:680px) and (min-height:681px){.view-draw .selected-tray{top:66.5%}.fan-deck{top:73%}.fan-card{height:90px;top:22px}.fan-navigation{height:24px}}
+.studio-canvas .webgl{z-index:0}
+@media(max-width:680px){.header-tools .icon-button:first-child{display:inline-flex}.header-tools{gap:0}}
+/* Six cards use one full-height row; only larger spreads reserve a second row. */
+@media(min-width:681px){
+ .view-reading .reading-table{top:60%}
+ .view-reading .reveal-cards{gap:clamp(12px,2vw,30px)}
+ .view-reading .reveal-cards.many{grid-template-rows:repeat(var(--rows),minmax(0,1fr))}
+ .view-reading .reveal-slot{max-width:190px}
+ .view-reading .reveal-slot .tarot-card{flex:1;min-height:0;width:auto;max-height:300px}
+}
+@media(max-width:680px){
+ .view-reading .reading-table:has(.reveal-slot:nth-child(4)){top:49%}
+ .view-reading .reveal-cards:has(.reveal-slot:nth-child(4)){display:grid;grid-template-columns:repeat(var(--mobile-cols),minmax(0,1fr));grid-template-rows:repeat(var(--mobile-rows),minmax(0,1fr));gap:10px}
+ .view-reading .reveal-cards:has(.reveal-slot:nth-child(4)) .reveal-slot{gap:3px;max-width:none}
+ .view-reading .reveal-cards:has(.reveal-slot:nth-child(4)) .tarot-card{flex:1;min-height:0;width:auto}
+ .view-reading .reveal-cards:has(.reveal-slot:nth-child(4)) .reveal-slot>small{display:none}
+}

@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
+import {cards,newDeck,selectCard,chosenCards,randomInt} from '../src/domain.js';
+test('78 permanent unique identities and local artwork paths',()=>{assert.equal(cards.length,78);assert.equal(new Set(cards.map(c=>c.id)).size,78);});
+test('shuffle keeps all identities and disabled reversals',()=>{const deck=newDeck(false,n=>n-1);assert.equal(new Set(deck.map(c=>c.id)).size,78);assert.ok(deck.every(c=>!c.reversed));});
+test('selection preserves the clicked identity and leaves holes, no duplicates',()=>{let s={deck:newDeck(false,n=>n-1),selected:[],spread:{positions:['a','b']}};s=selectCard(s,77);assert.equal(chosenCards(s)[0].id,s.deck[77].id);assert.equal(selectCard(s,77),s);s=selectCard(s,2);assert.equal(selectCard(s,3),s);assert.deepEqual(s.selected,[77,2]);});
+test('random rejection avoids biased tail',()=>{let calls=0;const values=[4294967295,7];assert.equal(randomInt(3,a=>{a[0]=values[calls++]}),1);assert.equal(calls,2);});
+test('each permanent card has a real local image',()=>{for(const c of cards)assert.ok(existsSync(new URL(`../public${c.image}`,import.meta.url)),c.id);});
+test('serialized session preserves chosen identities and orientation',()=>{const original={deck:newDeck(true,n=>n-1),selected:[2,70,44],spread:{positions:['现状','阻碍','建议']}};assert.deepEqual(chosenCards(JSON.parse(JSON.stringify(original))),chosenCards(original));});

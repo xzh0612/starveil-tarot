@@ -1,0 +1,8 @@
+import {useEffect,useState} from 'react';
+import {Scene} from './Scene';
+import './witch-studio.css';
+export function PortraitStudio({onClose}){
+ const [motion,setMotion]=useState(true),[particles,setParticles]=useState(true),[action,setAction]=useState('idle'),[status,setStatus]=useState('loading');
+ useEffect(()=>{const key=e=>{if(e.key==='Escape')onClose();};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[onClose]);
+ return <section className="witch-studio portrait-studio" role="dialog" aria-modal="true" aria-label="女巫动态海报"><header><div><span className="eyebrow">NYX · THE MOONLIT STUDY</span><h2>月下女巫</h2><small>{status==='ready'?'完整场景 · 局部衣料动态 · 视线切换':'正在加载场景…'}</small></div><button className="text-button" onClick={onClose}>返回占卜室 ×</button></header><div className="studio-canvas" style={{position:'relative',isolation:'isolate',background:"url('/assets/witch-room-v5.png') center/cover"}}><Scene view="sanctum" action={action} motion={motion} particles={particles} onStatus={setStatus}/></div><aside><h3>隔着牌桌，与你相遇</h3><p>房间、人物与桌面来自同一幅画面。发丝和袖口局部轻动，衣料缓慢流光。</p><div className="studio-actions">{[['idle','抬眼交流'],['listening','轻声倾听'],['thinking','低头看牌'],['drawing','抽牌时刻']].map(([id,label])=><button key={id} aria-pressed={action===id} onClick={()=>setAction(id)}>{label}</button>)}</div><button onClick={()=>setMotion(v=>!v)}>{motion?'暂停动态':'继续动态'}</button><label><input type="checkbox" checked={particles} onChange={e=>setParticles(e.target.checked)}/> 游动星尘</label><p className="studio-note">当前为实时动态海报，没有连续转头、口型或手指抓牌。后续可通过姿态资源接口扩展。</p></aside></section>;
+}

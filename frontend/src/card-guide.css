@@ -1,0 +1,45 @@
+.card-detail.enriched-guide{grid-template-columns:minmax(180px,.8fr) minmax(0,1.5fr);gap:42px;align-items:start;padding:6px 0 26px}
+.guide-portrait{position:sticky;top:4px;text-align:center;min-width:0;padding:12px 0}
+.guide-portrait .text-button{display:flex;margin:14px auto 10px;justify-content:center}
+.guide-edition{display:block;font:8px/1.8 Arial,sans-serif;letter-spacing:.16em;color:#b3a0c2;margin:16px 0 8px}
+.guide-portrait small{font-size:10px;line-height:1.9;color:var(--muted)}
+.enriched-guide article{min-width:0;padding-top:0}
+.enriched-guide article>.text-button{margin-bottom:20px}
+.enriched-guide article>.eyebrow{margin-bottom:10px}
+.enriched-guide article>h2{font-size:26px;margin-bottom:28px}
+.guide-section{padding:23px 0;border-top:1px solid var(--line)}
+.guide-section h3{display:flex;gap:12px;align-items:center;margin:0 0 15px;font-size:15px;letter-spacing:.06em}
+.guide-section h3>span{font:10px Georgia,serif;color:#ad93c0}
+.enriched-guide p{font-size:13px;line-height:2.1;color:#d3c6dd;margin:0}
+.enriched-guide small{display:block;color:#a99ab8;font-size:10px;line-height:1.9}
+.guide-orientations{display:flex;gap:6px;padding:4px;margin:0 0 17px;border:1px solid var(--line);border-radius:6px}
+.guide-orientations button{flex:1;padding:10px 7px;border-radius:3px;font-size:12px;color:#a995ba}
+.guide-orientations button[aria-pressed=true]{background:#b392d126;color:#eddff8;box-shadow:inset 0 0 0 1px #d7baed26}
+.guide-meaning{min-height:108px;animation:guide-reveal .3s ease}
+.guide-section>small{margin-top:12px}
+.guide-contexts{display:grid;gap:20px;grid-template-columns:1fr 1fr}
+.enriched-guide h4{font-size:12px;font-weight:400;color:#c4a9d8;margin:0 0 8px}
+.guide-contexts p{font-size:12px}
+.guide-reflection{border-left:2px solid #bc9bd5;background:#c5a0e308;padding:20px 23px;margin:4px 0 25px}
+.guide-reflection .eyebrow{font-size:8px;margin-bottom:12px}
+.guide-reflection h3{font-size:16px;line-height:1.9;margin:0;color:#e8d8f3}
+.enriched-guide details{border-bottom:1px solid var(--line);padding:14px 0}
+.enriched-guide summary{font-size:12px;color:#ceb9de;cursor:pointer;line-height:1.9;outline-offset:5px}
+.enriched-guide details[open]>summary{margin-bottom:16px}
+.enriched-guide details p+p{margin-top:12px}
+.guide-sources{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
+.guide-sources>h3{font-size:14px;margin-bottom:13px}
+.guide-sources>p,.guide-method p{font-size:11px;color:#b8a8c4}
+.guide-source-links{display:flex;align-items:flex-start;flex-direction:column;gap:11px;margin:18px 0 8px}
+.guide-sources a{display:inline-flex;align-items:center;gap:6px;color:#cfb5e4;font-size:11px;text-decoration:none;border-bottom:1px solid #c1a1d744;padding-bottom:3px;line-height:1.8}
+.guide-sources a:hover{color:#f2e4ff;border-bottom-color:currentColor}
+.guide-sources a:focus-visible,.enriched-guide summary:focus-visible{outline:2px solid #d6b9f5;outline-offset:4px}
+.guide-sources .guide-source-note{font-size:10px;color:#b29fc0;line-height:1.9;margin-bottom:15px}
+.guide-sources blockquote{margin:0;padding:14px 16px;border-left:1px solid #b99aca66;background:#0d081b30;font:12px/1.9 Georgia,serif;color:#c6b8d0;overflow-wrap:anywhere;white-space:pre-line}
+.guide-sources ul{padding-left:20px;font:12px/1.9 Georgia,serif;color:#c6b8d0;margin:0 0 18px}
+.guide-sources li+li{margin-top:7px}
+.guide-sources>small{margin-top:20px;font-size:9px}
+@keyframes guide-reveal{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:950px){.card-detail.enriched-guide{gap:24px;grid-template-columns:minmax(150px,.8fr) minmax(0,1.4fr)}.guide-contexts{grid-template-columns:1fr;gap:18px}.enriched-guide article>h2{font-size:23px}.guide-orientations button{font-size:11px;padding:9px 3px}}
+@media(max-width:680px){.card-detail.enriched-guide{grid-template-columns:minmax(0,1fr);gap:20px}.guide-portrait{position:relative;top:auto;padding:0}.enriched-guide .tarot-card{height:240px}.guide-edition{margin-top:8px}.enriched-guide article>.text-button{margin-bottom:18px}.enriched-guide article>h2{font-size:24px}.guide-meaning{min-height:0}.guide-section{padding:21px 0}.guide-reflection{padding:17px 19px}.guide-sources blockquote{padding:12px}.enriched-guide p{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.guide-meaning{animation:none}}

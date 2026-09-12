@@ -1,0 +1,1701 @@
+{
+  "w14": {
+    "waite": "The physical and emotional nature to which this card is attributed is dark, ardent, lithe, animated, impassioned, noble. The King uplifts a flowering wand, and wears, like his three correspondences in the remaining suits, what is called a cap of maintenance beneath his crown. He connects with the symbol of the lion, which is emblazoned on the back of his throne. Divinatory Meanings: Dark man, friendly, countryman, generally married, honest and conscientious. The card always signifies honesty, and may mean news concerning an unexpected heritage to fall in before very long. Reversed: Good, but severe; austere, yet tolerant.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "king of wands",
+    "light": [
+      "Putting old things together in new and exciting ways",
+      "Coming up with unexpected solutions",
+      "Using your experience to solve puzzles and problems",
+      "Doing what you set out to do",
+      "Directing the efforts of others"
+    ],
+    "shadow": [
+      "Using your creativity to get out of honest work",
+      "Investing great energy in avoiding responsibility",
+      "Boasting about achievements without putting your expertise to practical use",
+      "Lording it over others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w13": {
+    "waite": "The Wands throughout this suit are always in leaf, as it is a suit of life and animation. Emotionally and otherwise, the Queen's personality corresponds to that of the King, but is more magnetic. Divinatory Meanings: A dark woman, countrywoman, friendly, chaste, loving, honourable. If the card beside her signifies a man, she is well disposed towards him; if a woman, she is interested in the Querent. Also, love of money, or a certain success in business. Reversed: Good, economical, obliging, serviceable. Signifies also—but in certain positions and in the neighbourhood of other cards tending in such directions—opposition, jealousy, even deceit and infidelity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "queen of wands",
+    "light": [
+      "Paying close attention",
+      "Helping others focus on the issue at hand",
+      "Getting everyone to work together",
+      "Identifying common ground",
+      "Bringing people together, despite their differences",
+      "Using reverse psychology"
+    ],
+    "shadow": [
+      "Being distracted, or using your charms or skills to distract others from the goal",
+      "Calling attention to yourself with negative or unhealthy behaviors",
+      "Disrupting group activities as a means of feeding your own ego"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w12": {
+    "waite": "He is shewn as if upon a journey, armed with a short wand, and although mailed is not on a warlike errand. He is passing mounds or pyramids. The motion of the horse is a key to the character of its rider, and suggests the precipitate mood, or things connected therewith. Divinatory Meanings: Departure, absence, flight, emigration. A dark young man, friendly. Change of residence. Reversed: Rupture, division, interruption, discord.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "knight of wands",
+    "light": [
+      "Charging ahead",
+      "Making rapid progress",
+      "Refusing limits",
+      "Dazzling those around you with your wit and charm",
+      "Convincing others of your right to leadership",
+      "Convincing others to follow you",
+      "Being a catalyst for change"
+    ],
+    "shadow": [
+      "Blundering forward with inadequate skill or information",
+      "Running roughshod over the feelings of others",
+      "Using sex appeal to manipulate others",
+      "Forcing your leadership or ideology on others",
+      "Beginning many projects without finishing any"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w11": {
+    "waite": "In a scene similar to the former, a young man stands in the act of proclamation. He is unknown but faithful, and his tidings are strange. Divinatory Meanings: Dark young man, faithful, a lover, an envoy, a postman. Beside a man, he will bear favourable testimony concerning him. A dangerous rival, if followed by the Page of Cups. Has the chief qualities of his suit. He may signify family intelligence. Reversed: Anecdotes, announcements, evil news. Also indecision and the instability which accompanies it.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "page of wands",
+    "light": [
+      "Leaping at a new opportunity",
+      "Being a cheerleader or ardent advocate for your cause",
+      "Being a True Believer",
+      "Taking first steps toward independence",
+      "Trusting in your own abilities",
+      "Asking for feedback"
+    ],
+    "shadow": [
+      "Basing your entire self-image on what others think",
+      "Seizing every new idea that comes your way without question",
+      "Habitually discounting input or feedback from others",
+      "Being so eager to \"do it yourself\" that you hinder your own progress"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w10": {
+    "waite": "A man oppressed by the weight of the ten staves which he is carrying. Divinatory Meanings: A card of many significances, and some of the readings cannot be harmonized. I set aside that which connects it with honour and good faith. The chief meaning is oppression simply, but it is also fortune, gain, any kind of success, and then it is the oppression of these things. It is also a card of false-seeming, disguise, perfidy. The place which the figure is approaching may suffer from the rods that he carries. Success is stultified if the Nine of Swords follows, and if it is a question of a lawsuit, there will be certain loss. Reversed: Contrarieties, difficulties, intrigues, and their analogies.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ten of wands",
+    "light": [
+      "Holding your own in extreme circumstances",
+      "Helping others carry their burdens",
+      "Coming to the aid of the oppressed",
+      "Knowing and being honest about your own limits",
+      "Recognizing when you are not well-suited for a particular task"
+    ],
+    "shadow": [
+      "Taking on more work than you know you can handle",
+      "Refusing to say \"No\" when you're already overloaded",
+      "Making a habit of working overtime",
+      "Shielding others from facing the consequences of their own poor judgment",
+      "Over-extending yourself on a regular basis"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w09": {
+    "waite": "The figure leans upon his staff and has an expectant look, as if awaiting an enemy. Behind are eight other staves—erect, in orderly disposition, like a palisade. Divinatory Meanings: The card signifies strength in opposition. If attacked, the person will meet an onslaught boldly; and his build shews that he may prove a formidable antagonist. With this main significance there are all its possible adjuncts—delay, suspension, adjournment. Reversed: Obstacles, adversity, calamity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "nine of wands",
+    "light": [
+      "Sticking with it for the duration",
+      "Fulfilling your promises and obligations",
+      "Bearing up under incredible duress",
+      "Dragging yourself across the finish line",
+      "Picking yourself up by your own bootstraps",
+      "Refusing to quit",
+      "Going as far as you can go and being satisfied with your performance"
+    ],
+    "shadow": [
+      "Making yourself a martyr",
+      "Abandoning your post",
+      "Giving up at the first sign of opposition",
+      "Being prevented from fulfilling an obligation",
+      "Failing to be dependable",
+      "Refusing to let something go that needs to be released",
+      "Beating a dead horse"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w08": {
+    "waite": "The card represents motion through the immovable—a flight of wands through an open country; but they draw to the term of their course. That which they signify is at hand; it may be even on the threshold. Divinatory Meanings: Activity in undertakings, the path of such activity, swiftness, as that of an express messenger; great haste, great hope, speed towards an end which promises assured felicity; generally, that which is on the move; also the arrows of love. Reversed: Arrows of jealousy, internal dispute, stingings of conscience, quarrels; and domestic disputes for persons who are married.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "eight of wands",
+    "light": [
+      "Taking swift action",
+      "Moving forward with a plan as quickly as possible",
+      "Energizing yourself",
+      "Adapting to sudden changes",
+      "Taking setbacks in stride",
+      "Embracing the idea that nothing stays the same forever",
+      "Reacting quickly and appropriately to unforeseen problems"
+    ],
+    "shadow": [
+      "Giving in to panic",
+      "Running in circles and screaming",
+      "Insisting things must always stay the same",
+      "Stirring the pot just to see what will happen",
+      "Rushing others",
+      "Refusing to re-evaluate a schedule or program, even when it's clearly no longer appropriate"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w07": {
+    "waite": "A young man on a craggy eminence brandishing a staff; six other staves are raised towards him from below. Divinatory Meanings: It is a card of valour, for, on the surface, six are attacking one, who has, however, the vantage position. On the intellectual plane, it signifies discussion, wordy strife; in business—negotiations, war of trade, barter, competition. It is further a card of success, for the combatant is on the top and his enemies may be unable to reach him. Reversed: Perplexity, embarrassments, anxiety. It is also a caution against indecision.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "seven of wands",
+    "light": [
+      "Refusing to be silenced through fear or intimidation",
+      "Continuing a fight against all odds",
+      "Being fierce",
+      "Defending yourself against physical and emotional attacks",
+      "Refusing to put up with abuse",
+      "Clinging to your values despite all pressure to abandon them"
+    ],
+    "shadow": [
+      "Having a chip on your shoulder",
+      "Taking unnecessary risks as a means of proving your fearlessness",
+      "Looking for an opportunity to take offense",
+      "Responding to constructive criticism with defensiveness",
+      "Refusing to stand up for yourself and your beliefs"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w06": {
+    "waite": "A laurelled horseman bears one staff adorned with a laurel crown; footmen with staves are at his side. Divinatory Meanings: The card has been so designed that it can cover several significations; on the surface, it is a victor triumphing, but it is also great news, such as might be carried in state by the King's courier; it is expectation crowned with its own desire, the crown of hope, and so forth. Reversed: Apprehension, fear, as of a victorious enemy at the gate; treachery, disloyalty, as of gates being opened to the enemy; also indefinite delay.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "six of wands",
+    "light": [
+      "Outperforming your peers",
+      "Winning a competition",
+      "Being recognized as a capable person",
+      "Having your \"moment in the spotlight\"",
+      "Being cheered on by the crowd",
+      "Getting an award",
+      "Earning the admiration of others",
+      "Telling someone, \"Good job!\""
+    ],
+    "shadow": [
+      "Being a bad winner",
+      "Allowing your achievements to inflate your ego",
+      "Looking down on people who seem less capable",
+      "Craving to be the center of attention",
+      "Giving or receiving insincere praise",
+      "Envying the achievements of others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w05": {
+    "waite": "A posse of youths, who are brandishing staves, as if in sport or strife. It is mimic warfare, and hereto correspond the Divinatory Meanings: Imitation, as, for example, sham fight, but also the strenuous competition and struggle of the search after riches and fortune. In this sense it connects with the battle of life. Hence some attributions say that it is a card of gold, gain, opulence. Reversed: Litigation, disputes, trickery, contradiction.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "five of wands",
+    "light": [
+      "Calmly expressing a dissenting opinion",
+      "Allowing someone to use his or her own methods to get a job done",
+      "Opening the floor for discussion or debate",
+      "Comparing progress made so far to standards set earlier"
+    ],
+    "shadow": [
+      "Berating others for their ridiculous opinions",
+      "Picking fights",
+      "Offering destructive criticism",
+      "Baiting people with barbed remarks",
+      "Disrupting progress with an endless stream of pointless objections"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w04": {
+    "waite": "From the four great staves planted in the foreground there is a great garland suspended; two female figures uplift nose-gays; at their side is a bridge over a moat, leading to an old manorial house. Divinatory Meanings: They are for once almost on the surface—country life, haven of refuge, a species of domestic harvest-home, repose, concord, harmony, prosperity, peace, and the perfected work of these. Reversed: The meaning remains unaltered; it is prosperity, increase, felicity, beauty, embellishment.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "four of wands",
+    "light": [
+      "Sharing in a great celebration",
+      "Sharing in a communal sense of achievement and success",
+      "Preparing for a party",
+      "Working together toward a common goal",
+      "Giving or winning awards"
+    ],
+    "shadow": [
+      "Keeping your nose to the grindstone",
+      "Recognizing good work by demanding more work",
+      "Failing to share in a group celebration",
+      "Allowing sour grapes to poison your moment in the sun",
+      "Refusing to do your part"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w03": {
+    "waite": "A calm, stately personage, with his back turned, looking from a cliff's edge at ships passing over the sea. Three staves are planted in the ground, and he leans slightly on one of them. Divinatory Meanings: He symbolizes established strength, enterprise, effort, trade, commerce, discovery; those are his ships, bearing his merchandise, which are sailing over the sea. The card also signifies able co-operation in business, as if the successful merchant prince were looking from his side towards yours with a view to help you. Reversed: The end of troubles, suspension or cessation of adversity, toil and disappointment.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "three of wands",
+    "light": [
+      "Putting a plan into motion",
+      "Taking that critical first step",
+      "Making good things happen",
+      "Going beyond your limits",
+      "Blazing new trails",
+      "Hitting the ground running",
+      "Seeing your plans come to fruition"
+    ],
+    "shadow": [
+      "Procrastinating",
+      "Knowing what to do, but refusing to do it",
+      "Launching a project without a clear definition of who should do what",
+      "Rejecting an opportunity to try something new",
+      "Failing to finish what you start"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w02": {
+    "waite": "A tall man looks from a battlemented roof over sea and shore; he holds a globe in his right hand, while a staff in his left rests on the battlement; another is fixed in a ring. The Rose and Cross and Lily should be noticed on the left side. Divinatory Meanings: Between the alternative readings there is no marriage possible; on the one hand, riches, fortune, magnificence; on the other, physical suffering, disease, chagrin, sadness, mortification. The design gives one suggestion; here is a lord overlooking his dominion and alternately contemplating a globe; it looks like the malady, the mortification, the sadness of Alexander amidst the grandeur of this world's wealth. Reversed: Surprise, wonder, enchantment, emotion, trouble, fear.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "two of wands",
+    "light": [
+      "Having a choice",
+      "Offering or being offered an option",
+      "Seeing the value of another person's approach",
+      "Understanding there's more than one way to \"skin a cat\"",
+      "Successfully doing more than one thing at a time",
+      "Being empowered to make a choice"
+    ],
+    "shadow": [
+      "Misrepresenting your intentions",
+      "Doing one thing while desiring another",
+      "Changing course mid-stream for no good reason",
+      "Refusing to change your goal even when pursuing it no longer makes sense",
+      "Disregarding the input of others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "w01": {
+    "waite": "A hand issuing from a cloud grasps a stout wand or club. Divinatory Meanings: Creation, invention, enterprise, the powers which result in these; principle, beginning, source; birth, family, origin, and in a sense the virility which is behind them; the starting point of enterprises; according to another account, money, fortune, inheritance. Reversed: Fall, decadence, ruin, perdition, to perish; also a certain clouded joy.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ace of wands",
+    "light": [
+      "Being inspired",
+      "Identifying an important goal",
+      "Being given the opportunity to do whatever you want to do",
+      "Giving or receiving direction",
+      "Seeing a solution",
+      "Creating something new",
+      "Being aroused, sexually or creatively"
+    ],
+    "shadow": [
+      "Failing to take advantage of a great opportunity",
+      "Being ineffectual or lazy",
+      "Making an inadequate effort",
+      "Working toward a goal, but lacking the resources or initiative to achieve success",
+      "Setting inappropriate goals",
+      "Failing to take a stand"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c14": {
+    "waite": "He holds a short sceptre in his left hand and a great cup in his right; his throne is set upon the sea; on one side a ship is riding and on the other a dolphin is leaping. The implicit is that the Sign of the Cup naturally refers to water, which appears in all the court cards. Divinatory Meanings: Fair man, man of business, law, or divinity; responsible, disposed to oblige the Querent; also equity, art and science, including those who profess science, law and art; creative intelligence. Reversed: Dishonest, double-dealing man; roguery, exaction, injustice, vice, scandal, pillage, considerable loss.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "king of cups",
+    "light": [
+      "Keeping a stiff upper lip",
+      "Being brave and clear in the face of adverse circumstances",
+      "Sharing experience as a way of comforting others",
+      "Making fair and empathetic decisions",
+      "Honoring the spirit, not just the letter, of the law"
+    ],
+    "shadow": [
+      "Allowing yourself to become rigid and unemotional",
+      "Making unfair decisions based on a hidden agenda",
+      "Making decisions without regard for their emotional impact on others",
+      "Abusing spiritual authority",
+      "Using emotional or spiritual leverage to exercise unhealthy control over others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c13": {
+    "waite": "Beautiful, fair, dreamy—as one who sees visions in a cup. This is, however, only one of her aspects; she sees, but she also acts, and her activity feeds her dream. Divinatory Meanings: Good, fair woman; honest, devoted woman, who will do service to the Querent; loving intelligence, and hence the gift of vision; success, happiness, pleasure; also wisdom, virtue; a perfect spouse and a good mother. Reversed: The accounts vary; good woman; otherwise, distinguished woman but one not to be trusted; perverse woman; vice, dishonour, depravity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "queen of cups",
+    "light": [
+      "Allowing yourself to be moved by the plight of others",
+      "Feeling strong emotions",
+      "Possessing unusual sympathy or empathy",
+      "Trusting your feelings to guide you",
+      "Calling on psychic abilities",
+      "Achieving unity with Spirit"
+    ],
+    "shadow": [
+      "Becoming so caught up in matters of Spirit, you become detached from the world",
+      "Allowing empathy to disable you (instead of inspire action)",
+      "Using psychic abilities to wield covert influence",
+      "Wallowing in emotionalism, sentiment, or self-pity"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c12": {
+    "waite": "Graceful, but not warlike; riding quietly, wearing a winged helmet, referring to those higher graces of the imagination which sometimes characterize this card. He too is a dreamer, but the images of the side of sense haunt him in his vision. Divinatory Meanings: Arrival, approach—sometimes that of a messenger; advances, proposition, demeanour, invitation, incitement. Reversed: Trickery, artifice, subtlety, swindling, duplicity, fraud.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "knight of cups",
+    "light": [
+      "Being deeply committed to a cause",
+      "Giving in to strong emotions, from excitement to depression",
+      "Acting on intuition alone",
+      "Solving problems intuitively",
+      "Believing in and basing decisions on ideals instead of realities",
+      "Bringing intuition or passion to the table"
+    ],
+    "shadow": [
+      "Becoming a fanatic",
+      "Rejecting information that suggests your intuitions are misguided",
+      "Allowing your emotions to control you",
+      "Giving in to jealousy, confrontation, and peer pressure",
+      "Hiding or ignoring intuitive insights"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c11": {
+    "waite": "A fair, pleasing, somewhat effeminate page, of studious and intent aspect, contemplates a fish rising from a cup to look at him. It is the pictures of the mind taking form. Divinatory Meanings: Fair young man, one impelled to render service and with whom the Querent will be connected; a studious youth; news, message; application, reflection, meditation; also these things directed to business. Reversed: Taste, inclination, attachment, seduction, deception, artifice.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "page of cups",
+    "light": [
+      "Showing your emotions freely",
+      "Throwing yourself into romance",
+      "Nursing a secret crush",
+      "Indulging in romantic fantasy",
+      "Starting a new relationship",
+      "Recalling your first love",
+      "Experiencing love for the first time",
+      "Converting to a new religion"
+    ],
+    "shadow": [
+      "Mistaking a crush for true love",
+      "Reading romantic intention into innocent action",
+      "Frantically trying to impress others",
+      "Indulging in overly-sweet sentimentality",
+      "Pretending to more romantic or spiritual experience than you possess"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c10": {
+    "waite": "Appearance of Cups in a rainbow; it is contemplated in wonder and ecstacy by a man and woman below, evidently husband and wife. His right arm is about her; his left is raised upward; she raises her right arm. The two children dancing near them have not observed the prodigy but are happy after their own manner. There is a home-scene beyond. Divinatory Meanings: Contentment, repose of the entire heart; the perfection of that state; also perfection of human love and friendship; if with several picture-cards, a person who is taking charge of the Querent's interests; also the town, village or country inhabited by the Querent. Reversed: Repose of the false heart, indignation, violence.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ten of cups",
+    "light": [
+      "Having more than you ever dreamed",
+      "Being deeply thankful for all you've been given",
+      "Recognizing the Hand of God in the gifts the Universe brings your way",
+      "Experiencing transcendent joy",
+      "Achieving domestic bliss"
+    ],
+    "shadow": [
+      "Comparing your achievements or relationships to unrealistic fantasy standards",
+      "Experiencing emotions so intense they blunt your ability to cope with reality",
+      "Feeling overwhelmed",
+      "Envying the achievements and happiness of others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c09": {
+    "waite": "A goodly personage has feasted to his heart's content, and abundant refreshment of wine is on the arched counter behind him, seeming to indicate that the future is also assured. The picture offers the material side only, but there are other aspects. Divinatory Meanings: Concord, contentment, physical bien-être; also victory, success, advantage; satisfaction for the Querent or person for whom the consultation is made. Reversed: Truth, loyalty, liberty; but the readings vary and include mistakes, imperfections, etc.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "nine of cups",
+    "light": [
+      "Being delighted with your own achievements",
+      "Recognizing your own talents and abilities",
+      "Reveling in the good things life has to offer",
+      "Indulging yourself",
+      "Relaxing and unwinding",
+      "Having everything you need in order to feel complete"
+    ],
+    "shadow": [
+      "Being smug",
+      "Satisfying yourself at the expense of others",
+      "Being selfish",
+      "Over-indulging",
+      "Avoiding work that needs to be done",
+      "Claiming achievements or skills you do not possess",
+      "Never being satisfied, no matter how much you have"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c08": {
+    "waite": "A man of dejected aspect is deserting the cups of his felicity, enterprise, under-taking or previous concern. Divinatory Meanings: The card speaks for itself on the surface, but other readings are entirely antithetical—giving joy, mildness, timidity, honour, modesty. In practice, it is usually found that the card shews the decline of a matter, or that a matter which has been thought to be important is really of slight consequence—either for good or evil. Reversed: Great joy, happiness, feasting.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "eight of cups",
+    "light": [
+      "Wanting something better",
+      "Blazing your own trail",
+      "Realizing there must be more to life",
+      "Leaving an unhealthy situation behind",
+      "Starting your own business",
+      "Going on a retreat",
+      "Seeking the \"still, small voice\""
+    ],
+    "shadow": [
+      "Being implacable",
+      "Finding fault",
+      "Nitpicking",
+      "Refusing to settle down",
+      "Running away from problems or confrontations",
+      "Saying, \"It's my way or the highway!\"",
+      "Harping on past mistakes and disappointments",
+      "Threatening to quit as a strategy to get your way"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c07": {
+    "waite": "Strange chalices of vision, but the images are more especially those of the fantastic spirit. Divinatory Meanings: Fairy favours, images of reflection, sentiment, imagination, things seen in the glass of contemplation; some attainment in these degrees, but nothing permanent or substantial is suggested. Reversed: Desire, will, determination, project.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "seven of cups",
+    "light": [
+      "Motivating yourself with images of future success",
+      "Using visualization to encourage progress",
+      "Taking an imaginative or creative approach to problem solving",
+      "Making dreams come true",
+      "Gleaning insight from personal visions"
+    ],
+    "shadow": [
+      "Obsessing on imaginary fears or uncertain consequences",
+      "Giving in to emotional or political terrorism",
+      "Spending more time dreaming than working",
+      "Failing to envision the possible repercussions of your choices",
+      "Being controlled by fear"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c06": {
+    "waite": "Children in an old garden, their cups filled with flowers. Divinatory Meanings: A card of the past and of memories, looking back, as—for example—on childhood; happiness, enjoyment, but coming rather from the past; things that have vanished. Another reading reverses this, giving new relations, new knowledge, new environment, and then the children are disporting in an unfamiliar precinct. Reversed: The future, renewal, that which will come to pass presently.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "six of cups",
+    "light": [
+      "Donating your time and talents to others",
+      "Taking satisfaction in knowing how your efforts will aid others",
+      "Creating a \"win-win\" scenario",
+      "Giving even when you know repayment is not possible",
+      "Being motivated to do a good deed"
+    ],
+    "shadow": [
+      "Linking your sense of self-worth to the appraisals of others",
+      "Striving to appear more needy than you really are",
+      "Taking undeserved or unmerited charity",
+      "Bragging about your charitable efforts",
+      "Profiteering in times of distress",
+      "Refusing to share a burden"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c05": {
+    "waite": "A dark, cloaked figure, looking sideways at three prone cups; two others stand upright behind him; a bridge is in the background, leading to a small keep or holding. Divinatory Meanings: It is a card of loss, but something remains over; three have been taken, but two are left; it is a card of inheritance, patrimony, transmission, but not corresponding to expectations; with some interpreters it is a card of marriage, but not without bitterness or frustration. Reversed: News, alliances, affinity, consanguinity, ancestry, return, false projects.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "five of cups",
+    "light": [
+      "Acknowledging loss and moving on",
+      "Focusing on how the glass remains \"half-full\"",
+      "Finding the silver lining in a dark cloud",
+      "Recognizing that loss is a natural part of life",
+      "Embracing healthy grief",
+      "Learning lessons from harsh consequences"
+    ],
+    "shadow": [
+      "Wallowing in unhealthy grief or self-pity",
+      "Refusing to move on and let go",
+      "Clinging to the past",
+      "Obsessing on past lives and past loves",
+      "Failing to live in the present",
+      "Beating yourself up over past mistakes",
+      "Allowing fear of failure to limit your efforts"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c04": {
+    "waite": "A young man is seated under a tree and contemplates three cups set on the grass before him; an arm issuing from a cloud offers him another cup. His expression notwithstanding is one of discontent with his environment. Divinatory Meanings: Weariness, disgust, aversion, imaginary vexations, as if the wine of this world had caused satiety only; another wine, as if a fairy gift, is now offered the wastrel, but he sees no consolation therein. This is also a card of blended pleasure. Reversed: Novelty, presage, new instruction, new relations.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "four of cups",
+    "light": [
+      "Maintaining your emotional stability",
+      "Refusing to give in to overwhelming emotions",
+      "Appreciating what you have and refusing to take it for granted",
+      "Seeing the value of long-term commitments"
+    ],
+    "shadow": [
+      "Being bored",
+      "Daydreaming at the expense of your work",
+      "Refusing to be engaged by opportunity",
+      "Taking people and relationships for granted",
+      "Ignoring romantic or spiritual opportunities",
+      "Spurning inspiration",
+      "Feeling everything should stay \"just like it is\""
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c03": {
+    "waite": "Maidens in a garden-ground with cups uplifted, as if pledging one another. Divinatory Meanings: The conclusion of any matter in plenty, perfection and merriment; happy issue, victory, fulfilment, solace, healing. Reversed: Expedition, dispatch, achievement, end. It signifies also the side of excess in physical enjoyment, and the pleasures of the senses.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "three of cups",
+    "light": [
+      "Celebrating your feelings or connections with others",
+      "Expressing joy through song, dance, or physical affection",
+      "Working together with others who share your feelings",
+      "Performing acts of service as a way of saying, \"I love you\"",
+      "Embracing unconventional romantic arrangements"
+    ],
+    "shadow": [
+      "Mistaking giddiness for true affection",
+      "Being dominated by manic emotions",
+      "Expecting everyone to always feel the same way you do",
+      "Demanding unreasonable support from friends or family",
+      "Partying to a dangerous or unhealthy extent"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c02": {
+    "waite": "A youth and maiden are pledging one another, and above their cups rises the Caduceus of Hermes, between the great wings of which there appears a lion's head. It is a variant of a sign which is found in a few old examples of this card. Some curious emblematical meanings are attached to it, but they do not concern us in this place. Divinatory Meanings: Love, passion, friendship, affinity, union, concord, sympathy, the interrelation of the sexes, and—as a suggestion apart from all offices of divination—that desire which is not in Nature, but by which Nature is sanctified.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "two of cups",
+    "light": [
+      "Being drawn to someone",
+      "Longing for someone or something",
+      "Acting on your desires",
+      "Discovering a feeling is mutual",
+      "Doing what makes you feel good",
+      "Merging",
+      "Healing broken ties",
+      "Admitting two people feel differently about each other and moving on"
+    ],
+    "shadow": [
+      "Burning bridges",
+      "Becoming caught up in unhealthy codependency",
+      "Shutting out anyone but your chosen few",
+      "Obsessing on someone who does not return your affections",
+      "Despairing over finding \"The One\"",
+      "Deceiving yourself about your true orientation"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "c01": {
+    "waite": "The waters are beneath, and thereon are water-lilies; the hand issues from the cloud, holding in its palm the cup, from which four streams are pouring; a dove, bearing in its bill a cross-marked Host, descends to place the Wafer in the Cup; the dew of water is falling on all sides. It is an intimation of that which may lie behind the Lesser Arcana Divinatory Meanings: House of the true heart, joy, content, abode, nourishment, abun­dance, fertility; Holy Table, felicity hereof. Reversed: House of the false heart, mutation, instability, revolution.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ace of cups",
+    "light": [
+      "Trusting your feelings",
+      "Opening yourself to spirit",
+      "Accepting and returning affection",
+      "Getting in touch with what motivates you",
+      "Taking advantage of an opportunity to express love to others",
+      "Listening to the still, small voice"
+    ],
+    "shadow": [
+      "Hiding your feelings",
+      "Spurning an opportunity to love or be loved",
+      "Numbing yourself to spiritual yearnings",
+      "Rejecting the counsel of your heart",
+      "Becoming a puppet of your own emotions",
+      "Indulging in hysteria or obsession"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s14": {
+    "waite": "He sits in judgment, holding the un­sheathed sign of his suit. He recalls, of course, the conventional Symbol of Justice in the Trumps Major, and he may represent this virtue, but he is rather the power of life and death, in virtue of his office. Divinatory Meanings: Whatsoever arises out of the idea of judgment and all its connexions—power, command, authority, militant intelligence, law, offices of the crown, and so forth. Reversed: Cruelty, perversity, barbarity, perfidy, evil intention.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "king of swords",
+    "light": [
+      "Expressing yourself with firmness and authority",
+      "Rendering a final decision",
+      "Consulting an expert",
+      "Calling in advisors and consultants",
+      "Coming to a final conclusion",
+      "Reaching a beneficial agreement based on sound information"
+    ],
+    "shadow": [
+      "Insisting on having the last word",
+      "Flaunting your intellectual capability",
+      "Talking \"over the heads\" of others",
+      "Waffling on an important decision",
+      "Constantly changing your mind",
+      "Refusing to make choices that are in your own best interest",
+      "Wishing in vain you could take back what's been said"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s13": {
+    "waite": "Her right hand raises the weapon vertically and the hilt rests on an arm of her royal chair; the left hand is extended, the arm raised; her countenance is severe but chastened; it suggests familiarity with sorrow. It does not represent mercy, and, her sword notwithstanding, she is scarcely a symbol of power. Divinatory Meanings: Widowhood, female sadness and embarrassment, absence, sterility, mourning, privation, separation. Reversed: Malice, bigotry, artifice, prudery, bale, deceit.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "queen of swords",
+    "light": [
+      "Exercising tact or using diplomacy",
+      "Defusing a tense situation",
+      "Knowing what to say and how to say it",
+      "Making others feel comfortable and confident",
+      "Bringing out the best in everyone",
+      "Having a way with words",
+      "Telling jokes",
+      "Possessing a knack for music, math, art, or science"
+    ],
+    "shadow": [
+      "Knowing exactly what to say to destroy another person",
+      "Withholding critical information",
+      "Using a barbed tongue to upset others",
+      "Employing sarcasm",
+      "Mimicking others unkindly",
+      "Making light of the less fortunate",
+      "Being disrespectful",
+      "Failing to use the talent you've been given"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s12": {
+    "waite": "He is riding in full course, as if scattering his enemies. In the design he is really a prototypical hero of romantic chivalry. He might almost be Galahad, whose sword is swift and sure because he is clean of heart. Divinatory Meanings: Skill, bravery, capacity, defence, address, enmity, wrath, war, destruction, opposition, resistance, ruin. There is therefore a sense in which the card signifies death, but it carries this meaning only in its proximity to other cards of fatality. Reversed: Imprudence, incapacity, extravagance.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "knight of swords",
+    "light": [
+      "Speaking your mind",
+      "Making your opinions known",
+      "Offering constructive criticism",
+      "Sharing your knowledge",
+      "Making insightful observations",
+      "Pinpointing the problem",
+      "Clarifying what others have said",
+      "Giving clear direction to others",
+      "Uncovering the truth"
+    ],
+    "shadow": [
+      "Stating your opinions as fact",
+      "Picking fights",
+      "Starting arguments",
+      "Using clever insults to undermine the confidence of others",
+      "Tossing reason out the window",
+      "Speaking without taking the feelings of others into account",
+      "Going on a witch hunt",
+      "Distorting evidence"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s11": {
+    "waite": "A lithe, active figure holds a sword upright in both hands, while in the act of swift walking. He is passing over rugged land, and about his way the clouds are collocated wildly. He is alert and lithe, looking this way and that, as if an expected enemy might appear at any moment. Divinatory Meanings: Authority, overseeing, secret service, vigilance, spying, examination, and the qualities thereto belonging. Reversed: More evil side of these qualities; what is unforeseen, unprepared state; sickness is also intimated.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "page of swords",
+    "light": [
+      "Pursuing a course of study",
+      "Asking good questions",
+      "Investing time in study and practice",
+      "Doing research",
+      "Making a habit of learning new things",
+      "Starting an investigation",
+      "Outlining what you need to know",
+      "Finding a mentor or teacher"
+    ],
+    "shadow": [
+      "Pretending to knowledge or sophistication you do not possess",
+      "Cheating on an exam",
+      "Feigning interest as a way of gaining favor",
+      "Considering only the evidence that supports conclusions you've already drawn",
+      "Rejecting the wise counsel of experienced teachers"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s10": {
+    "waite": "A prostrate figure, pierced by all the swords belonging to the card. Divinatory Meanings: Whatsoever is intimated by the design; also pain, affliction, tears, sadness, desolation. It is not especially a card of violent death. Reversed: Advantage, profit, success, favour, but none of these are permanent; also power and authority.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ten of swords",
+    "light": [
+      "Seeing the signs that you've reached your limits",
+      "Paying attention to what your body is trying to tell you",
+      "Giving in to the need for rest and renewal",
+      "Acknowledging that you've hit bottom",
+      "Committing to a turnaround",
+      "Knowing the worst is over"
+    ],
+    "shadow": [
+      "Accepting defeat prematurely",
+      "Driving yourself to total exhaustion, especially mentally",
+      "Experiencing a mental breakdown",
+      "Obsessing on a problem to the breaking point",
+      "Giving up",
+      "Refusing to move from thought to action",
+      "Deeply unhealthy thoughts"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s09": {
+    "waite": "One seated on her couch in lamentation, with the swords over her. She is as one who knows no sorrow which is like unto hers. It is a card of utter desolation. Divinatory Meanings: Death, failure, miscarriage, delay, deception, disappointment, despair. Reversed: Imprisonment, suspicion, doubt, reasonable fear, shame.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "nine of swords",
+    "light": [
+      "Refusing to worry about what you cannot control",
+      "Rejecting anxiety",
+      "Judging your own performance with kindness and gentleness",
+      "Using meditation to quiet a troubled mind",
+      "Confronting nightmares and fears",
+      "Drawing a conclusion and putting an issue out of your mind"
+    ],
+    "shadow": [
+      "Torturing yourself with regrets",
+      "Second-guessing your every move",
+      "Beating yourself up for your mistakes",
+      "Depression",
+      "Obsessing on errors and overlooked details",
+      "Refusing to handle stress in healthy ways",
+      "Ruining your ability to appreciate the present by dwelling on the past",
+      "Debating irreversible decisions"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s08": {
+    "waite": "A woman, bound and hoodwinked, with the swords of the card about her. Yet it is rather a card of temporary durance than of irretrievable bondage. Divinatory Meanings: Bad news, violent chagrin, crisis, censure, power in trammels, conflict, calumny; also sickness. Reversed: Disquiet, difficulty, opposition, accident, treachery; what is unforeseen; fatality.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "eight of swords",
+    "light": [
+      "Honoring limits",
+      "Respecting the rules",
+      "Deciding to go on a diet for your health's sake",
+      "Recognizing you cannot always be in control",
+      "Identifying obstacles to further progress",
+      "Refusing to think about unhealthy or unethical options",
+      "Asking for assistance"
+    ],
+    "shadow": [
+      "Feeling trapped",
+      "Being lost in a maze of rules and regulations",
+      "Giving in to despair",
+      "Playing the victim",
+      "Allowing others to dictate what you can and cannot do",
+      "Being rendered helpless",
+      "Having very few options",
+      "Failing to look for a way out"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s07": {
+    "waite": "A man in the act of carrying away five swords rapidly; the two others of the card remain stuck in the ground. A camp is close at hand. Divinatory Meanings: Design, attempt, wish, hope, confidence; also quarrelling, a plan that may fail, annoyance. The design is uncertain in its import, because the significations are widely at variance with each other. Reversed: Good advice, counsel, instruction, slander, babbling.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "seven of swords",
+    "light": [
+      "Refusing to do something dishonest, even when there's no chance of ever being caught",
+      "Handling a difficult situation with finesse",
+      "Pointing out assumptions",
+      "Acting ethically in public and in private",
+      "Living a life that is beyond reproach"
+    ],
+    "shadow": [
+      "Stealing or lying",
+      "Doing whatever you can get away with, simply because you can",
+      "Looking for a way around consequences",
+      "Justifying wicked behavior by focusing on the wickedness of others",
+      "Failing to examine your own motives and prejudices"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s06": {
+    "waite": "A ferryman carrying passengers in his punt to the further shore. The course is smooth, and seeing that the freight is light, it may be noted that the work is not beyond his strength. Divinatory Meanings: Journey by water, route, way, envoy, commissionary, expedient. Reversed: Declaration, confession, publicity; one account says that it is a proposal of love.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "six of swords",
+    "light": [
+      "Making the best of a bad situation",
+      "Recovering from defeat",
+      "Resetting expectations",
+      "Making allowances for unexpected circumstances",
+      "Helping others who find themselves in dire circumstances",
+      "Changing the way you see the world",
+      "Broadening your perspective through study or travel"
+    ],
+    "shadow": [
+      "Refusing to accept that things have changed",
+      "Playing the victim",
+      "Rejecting the idea that your actions have consequences",
+      "Applying scientific criteria to matters of faith, or confusing faith with science",
+      "Believing the whole world should be like your small corner of it"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s05": {
+    "waite": "A disdainful man looks after two retreating and dejected figures. Their swords lie upon the ground. He carries two others on his left shoulder, and a third sword is in his right hand, point to earth. He is the master in possession of the field. Divinatory Meanings: Degradation, destruction, revocation, infamy, dishonour, loss, with the variants and analogues of these. Reversed: The same; burial and obsequies.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "five of swords",
+    "light": [
+      "Acting in your own best interest",
+      "Choosing to stand up for yourself",
+      "Not backing down from disagreement and discord",
+      "Taking a stand",
+      "Refusing to go along with an unethical plan",
+      "Knowing when to bend the rules"
+    ],
+    "shadow": [
+      "Taking advantage of others",
+      "Intimidating others",
+      "Acting in an unethical manner",
+      "Picking fights",
+      "Using words to goad others into violence and irrationality",
+      "Ignoring rules you've agreed to abide by",
+      "Looking out for yourself while allowing harm to come to others",
+      "Gloating over victory"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s04": {
+    "waite": "The effigy of a knight in the attitude of prayer, at full length upon his tomb. Divinatory Meanings: Vigilance, retreat, solitude, hermit's repose, exile, tomb and coffin. It is these last that have suggested the design. Reversed: Wise administration, circumspection, economy, avarice, precaution, testament.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "four of swords",
+    "light": [
+      "Thinking over your plans before putting them into action",
+      "Pausing to meditate or clear your mind",
+      "Taking time to understand someone or something before criticizing it",
+      "Resting",
+      "Occupying your thoughts with a healthy distraction"
+    ],
+    "shadow": [
+      "Failing to think things through",
+      "Mistaking procrastination for thoughtfulness",
+      "Adopting a point of view and refusing to reconsider your conclusions, even when presented with refuting evidence",
+      "Allowing chaos and whimsy to dominate your thoughts"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s03": {
+    "waite": "Three swords piercing a heart; cloud and rain behind. Divinatory Meanings: Removal, absence, delay, division, rupture, dispersion, and all that the design signifies naturally, being too simple and obvious to call for specific enumeration. Reversed: Mental alienation, error, loss, distraction, disorder, confusion.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "three of swords",
+    "light": [
+      "Being brave enough to see things as they really are",
+      "Exercising your critical eye",
+      "Being your own best critic",
+      "Acknowledging that things don't always turn out as planned",
+      "Moving past heartbreak to embrace a painful truth"
+    ],
+    "shadow": [
+      "Wallowing in despair",
+      "Allowing yourself to be completely crushed by the thoughts, words, or deeds of another",
+      "Judging yourself too harshly",
+      "Holding yourself to an unrealistic standard of excellence",
+      "Wearing your heart on your sleeve while carrying a chip on your shoulder"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s02": {
+    "waite": "A hoodwinked female figure balances two swords upon her shoulders. Divinatory Meanings: Conformity and the equipoise which it suggests, courage, friendship, concord in a state of arms; another reading gives tenderness, affection, intimacy. The suggestion of harmony and other favourable readings must be considered in a qualified manner, as Swords generally are not symbolical of beneficent forces in human affairs. Reversed: Imposture, falsehood, duplicity, disloyalty.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "two of swords",
+    "light": [
+      "Refusing to make a decision without getting the facts",
+      "Exploring both sides of an argument",
+      "Arguing passionately for what you believe in",
+      "Weighing the issues",
+      "Encouraging the open exchange of ideas",
+      "Discussing political or religious issues without getting \"hot under the collar\""
+    ],
+    "shadow": [
+      "Rejecting evidence that conflicts with dearly-held beliefs",
+      "Arguing with others just for the sake of doing so",
+      "Nit-picking",
+      "Putting off a decision because you're afraid to face the consequences",
+      "Preventing others from getting the information they need to make good decisions"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "s01": {
+    "waite": "A hand issues from a cloud, grasping a sword, the point of which is encircled by a crown. Divinatory Meanings: Triumph, the excessive degree in everything, conquest, triumph of force. It is a card of great force, in love as well as in hatred. The crown may carry a much higher significance than comes usually within the sphere of fortune-telling. Reversed: The same, but the results are disastrous; another account says—conception, childbirth, augmentation, multiplicity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ace of swords",
+    "light": [
+      "Making objective decisions",
+      "Applying logic",
+      "Reasoning your way out of a difficult situation",
+      "Solving puzzles",
+      "Thinking things through",
+      "Emphasizing the facts",
+      "Clearing your mind",
+      "Seeking clarity"
+    ],
+    "shadow": [
+      "Applying ruthless or twisted logic",
+      "Gloating over your own superior intellect",
+      "Using quick thinking to deceive or confuse others",
+      "Confusing snap judgments with quick thinking",
+      "Making decisions without thinking through consequences"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p14": {
+    "waite": "The figure calls for no special description; the face is rather dark, suggesting also courage, but somewhat lethargic in tendency. The bull's head should be noted as a recurrent symbol on the throne. The sign of this suit is represented throughout as engraved or blazoned with the pentagram, typifying the correspondence of the four elements in human nature and that by which they may be governed. In many old Tarot packs this suit stood for current coin, money, deniers. I have not invented the substitution of pentacles and I have no special cause to sustain in respect of the alternative. But the consensus of divinatory meanings is on the side of some change, because the cards do not happen to deal especially with questions of money. Divinatory Meanings: Valour, realizing intelligence, business and normal intellectual aptitude, sometimes mathematical gifts and attainments of this kind; success in these paths. Reversed: Vice, weakness, ugliness, perversity, corruption, peril.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "king of coins",
+    "light": [
+      "Becoming debt-free",
+      "Having more than enough to get by",
+      "Making contributions to a savings plan",
+      "Taking a new job with an eye toward advancing your career",
+      "Buying life or health insurance",
+      "Being confident in the bedroom",
+      "Taking on the role of enforcer when called upon to do so"
+    ],
+    "shadow": [
+      "Becoming so conservative you resist all change on principle alone",
+      "Ignoring innovations in the name of preserving tradition",
+      "Being smug or cocky",
+      "Becoming ruthlessly dedicated to profit or pleasure",
+      "Being sexually selfish",
+      "Bossing others around, especially when you're not empowered to do so"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p13": {
+    "waite": "The face suggests that of a dark woman, whose qualities might be summed up in the idea of greatness of soul; she has also the serious cast of intelligence; she contemplates her symbol and may see worlds therein. Divinatory Meanings: Opulence, generosity, magnificence, security, liberty. Reversed: Evil, suspicion, suspense, fear, mistrust.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "queen of coins",
+    "light": [
+      "Appreciating fine food, fine wine, beautiful art, beautiful bodies, or any of the better things in life",
+      "Reveling in healthy sexuality",
+      "Treating yourself",
+      "Splurging on the occasional \"nice to have\" item",
+      "Rewarding someone with compensation above and beyond expectations",
+      "Having it all"
+    ],
+    "shadow": [
+      "Indulging in gluttony or greediness",
+      "Becoming insatiable",
+      "Blunting the impact of treats by indulging in them too often",
+      "Providing physical comfort without providing for emotional needs",
+      "Allowing a feeling of entitlement to distort your gratitude for what you're given"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p12": {
+    "waite": "He rides a slow, enduring, heavy horse, to which his own aspect corresponds. He exhibits his symbol, but does not look therein. Divinatory Meanings: Utility, serviceableness, interest, responsibility, rectitude—all on the normal and external plane. Reversed: inertia, idleness, repose of that kind, stagnation; also placidity, discouragement, carelessness.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "knight of coins",
+    "light": [
+      "Spending money wisely",
+      "Saving for a rainy day",
+      "Paying close attention to physical or financial details",
+      "Knowing where every dollar goes",
+      "Having safe sex",
+      "Preferring facts to \"good feelings\"",
+      "Finding creative ways to \"make do\" with resources on hand",
+      "Completing a new invention"
+    ],
+    "shadow": [
+      "Throwing caution to the four winds",
+      "Spending without regard for consequence",
+      "Spending on luxury when necessities are lacking",
+      "Escaping stress by spending money",
+      "Obsessing on tiny physical or financial details",
+      "Perpetually chasing after some new bauble",
+      "Copying another's work and claiming it as your own"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p11": {
+    "waite": "A youthful figure, looking intently at the pentacle which hovers over his raised hands. He moves slowly, insensible of that which is about him. Divinatory Meanings: Application, study, scholarship, reflection; another reading says news, messages and the bringer thereof; also rule, management. Reversed: Prodigality, dissipation, liberality. luxury; unfavourable news.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "page of coins",
+    "light": [
+      "Learning the value of a dollar",
+      "Starting a savings plan",
+      "Taking the first steps toward getting out of debt",
+      "Learning new physical tasks",
+      "Discovering your sexuality",
+      "Launching a diet, a weight-lifting program, or a health-related effort",
+      "Learning by doing"
+    ],
+    "shadow": [
+      "Trying to appear healthier or wealthier than you really are",
+      "Spending money carelessly",
+      "Living strictly for today, with no thought of tomorrow",
+      "Possessing immature attitudes toward sex and sexuality",
+      "Using wealth or beauty as an excuse for not having to learn and grow"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p10": {
+    "waite": "A man and woman beneath an archway which gives entrance to a house and domain. They are accompanied by a child, who looks curiously at two dogs accosting an ancient personage seated in the foreground. The child's hand is on one of them. Divinatory Meanings: Gain, riches; family matters, archives, extraction, the abode of a family. Reversed: Chance, fatality, loss, robbery, games of hazard; sometimes gift, dowry, pension.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ten of coins",
+    "light": [
+      "Celebrating your physical and financial blessings",
+      "Realizing how lucky or how blessed you are",
+      "Being satisfied with your physical and financial achievements",
+      "Taking best advantage of \"times of plenty\"",
+      "Enjoying a feast",
+      "Showering friends or family with gifts"
+    ],
+    "shadow": [
+      "Spending all of your money on extravagant gifts and possessions",
+      "Trying too hard to impress others with your wealth or physique",
+      "Giving an inappropriately expensive gift as a means of currying favor",
+      "Obsessing on matters of weight, health, or finance",
+      "Always asking, \"What's in it for me?\""
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p09": {
+    "waite": "A woman, with a bird upon her wrist, stands amidst a great abundance of grapevines in the garden of a manorial house. It is a wide domain, suggesting plenty in all things. Possibly it is her own possession and testifies to material well-being. Divinatory Meanings: Prudence, safety, success, accomplishment, certitude, discernment. Reversed: Roguery, deception, voided project, bad faith.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "nine of coins",
+    "light": [
+      "Investing time in learning or teaching a difficult task",
+      "Restraining yourself from physical or financial extremes",
+      "Making sacrifices as a way of achieving larger goals",
+      "Breaking a complex task down into simple steps",
+      "Wanting what you have",
+      "Knowing the difference between needs and wants"
+    ],
+    "shadow": [
+      "Being assigned to a task without being trained to perform it",
+      "Pursuing a position for which you are not qualified",
+      "Disregarding requirements",
+      "Refusing to dedicate adequate time or attention when learning about something or someone new",
+      "Always craving more"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p08": {
+    "waite": "An artist in stone at his work, which he exhibits in the form of trophies. Divinatory Meanings: Work, employment, commission, craftsmanship, skill in craft and business, perhaps in the preparatory stage. Reversed: Voided ambition, vanity, cupidity, exaction, usury. It may also signify the possession of skill, in the sense of the ingenious mind turned to cunning and intrigue.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "eight of coins",
+    "light": [
+      "Doing your best",
+      "Bringing enthusiasm and zeal to your work",
+      "Making an effort to be the best you can be",
+      "Finding the work that is right for you",
+      "Taking care of the small details",
+      "Becoming a finely skilled craftsperson",
+      "Building something with your hands",
+      "Making a handmade gift"
+    ],
+    "shadow": [
+      "Working yourself to death",
+      "Doing a half-hearted or sloppy job",
+      "Continuing in a job you hate",
+      "Buying thoughtless gifts",
+      "Producing work with shoddy craftsmanship",
+      "Rushing through your work",
+      "Rejecting opportunities to learn more about your craft"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p07": {
+    "waite": "A young man, leaning on his staff, looks intently at seven pentacles attached to a clump of greenery on his right; one would say that these were his treasures and that his heart was there. Divinatory Meanings: These are exceedingly contradictory; in the main, it is a card of money, business, barter; but one reading gives altercation, quarrel—and another innocence, ingenuity, purgation. Reversed: Cause for anxiety regarding money which it may be proposed to lend.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "seven of coins",
+    "light": [
+      "Measuring progress toward your goal",
+      "Looking at results with an eye toward improving performance",
+      "Asking, \"How happy am I?\"",
+      "Coming up with ideas for improving your health or prosperity",
+      "Deciding it's time for a change",
+      "Expressing an honest opinion"
+    ],
+    "shadow": [
+      "Becoming distracted by melancholy thoughts",
+      "Longing for \"the good old days\"",
+      "Beating yourself up over lost opportunities",
+      "Judging your own work harshly",
+      "Holding others to inappropriate standards",
+      "Refusing to take part in a project, then whining about the quality of the outcome"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p06": {
+    "waite": "A person in the guise of a merchant weighs money in a pair of scales and distributes it to the needy and distressed. It is a testimony to his own success in life, as well as to his goodness of heart. Divinatory Meanings: Presents, gifts, gratification; another account says attention, vigilance; now is the accepted time, present prosperity, etc. Reversed: Desire, cupidity, envy, jealousy, illusion.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "six of coins",
+    "light": [
+      "Giving time, money, or effort to a charity",
+      "Taking part in a group effort",
+      "Lending your resources to others without expecting anything in return",
+      "Making sure everyone is treated equally",
+      "Working together toward a common goal",
+      "Redistributing wealth, time, or attention",
+      "Tithing",
+      "Sharing credit for your success"
+    ],
+    "shadow": [
+      "Making a loan as a means of gaining control over someone",
+      "Using charitable acts to draw attention to yourself",
+      "Dividing work or resources unfairly",
+      "Failing to do your part in a group effort",
+      "Ignoring obligations and commitments"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p05": {
+    "waite": "Two mendicants in a snow-storm pass a lighted casement. Divinatory Meanings: The card foretells material trouble above all, whether in the form illustrated—that is, destitution—or otherwise. For some cartomancists, it is a card of love and lovers—wife, husband, friend, mistress; also concordance, affinities. These alternatives cannot be harmonized. Reversed: Disorder, chaos, ruin, discord, profligacy.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "five of coins",
+    "light": [
+      "Recognizing your needs and taking action to fulfill them",
+      "Doing as much as you can do with what little you have",
+      "Admitting you need help",
+      "Embracing the aid that comes your way",
+      "Focusing on what you have versus what you don't",
+      "Looking for the light at the end of the tunnel"
+    ],
+    "shadow": [
+      "Exaggerating your financial or physical needs",
+      "Adopting a poverty mentality",
+      "Refusing to support yourself",
+      "Refusing offers of support",
+      "Playing the martyr",
+      "Turning down opportunities to improve your health or finances",
+      "Wallowing in misery"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p04": {
+    "waite": "A crowned figure, having a pentacle over his crown, clasps another with hands and arms; two pentacles are under his feet. He holds to that which he has. Divinatory Meanings: The surety of possessions, cleaving to that which one has, gift, legacy, inheritance. Reversed; Suspense, delay, opposition.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "four of coins",
+    "light": [
+      "Saving for a rainy day",
+      "Fasting as part of a spiritual practice",
+      "Dieting in an effort to improve your body",
+      "Abstaining from sex as a way of honoring a spiritual tradition or personal promise",
+      "Being financially conservative",
+      "Establishing a trust fund",
+      "Opening a savings account"
+    ],
+    "shadow": [
+      "Being stingy",
+      "Refusing to spend money that needs to be spent",
+      "Withholding sex from your partner",
+      "Taking care of your own needs exclusively, without regard for the needs of others",
+      "Spending a dollar to save a penny",
+      "Failing to be a good manager of the blessings you've been given"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p03": {
+    "waite": "A sculptor at his work in a monastery. Compare the design which illustrates the Eight of Pentacles. The apprentice or amateur therein has received his reward and is now at work in earnest. Divinatory Meanings: Métier, trade, skilled labour; usually, how-ever, regarded as a card of nobility, aristocracy, renown, glory. Reversed: Mediocrity, in work and otherwise, puerility, pettiness, weakness.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "three of coins",
+    "light": [
+      "Finishing a project",
+      "Setting and meeting standards",
+      "Performing according to specifications",
+      "Making something others value",
+      "Creating something new",
+      "Doing your part in a group project",
+      "Delivering exactly what others have asked for"
+    ],
+    "shadow": [
+      "Pandering to the tastes of others",
+      "Failing to deliver what you've promised",
+      "Not delivering your best work unless closely supervised",
+      "Ignoring or breaking agreements with those who have invested in you",
+      "Refusing to do your part",
+      "Failing to abide by a clearly-outlined agreement with yourself or others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p02": {
+    "waite": "A young man, in the act of dancing, has a pentacle in either hand, and they are joined by that endless cord which is like the number 8 reversed. Divinatory Meanings: On the one hand it is represented as a card of gaiety, recreation and its connexions, which is the subject of the design; but it is read also as news and messages in writing, as obstacles, agitation, trouble, embroilment. Reversed: Enforced gaiety, simulated enjoyment, literal sense, handwriting, composition, letters of exchange.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "two of coins",
+    "light": [
+      "Weighing options",
+      "Comparing prices",
+      "Determining the value of one option over another",
+      "Juggling resources to make ends meet",
+      "Making difficult choices based on what's best for your body or your bankbook",
+      "Looking at the bottom line",
+      "Asking for a second opinion on health issues"
+    ],
+    "shadow": [
+      "Engaging in endless price comparison",
+      "Putting off a buying decision for fear of finding a slightly better value later on",
+      "Buying something without regard for value",
+      "Breaking your budget with unnecessary expenses",
+      "Engaging in behavior with no regard for how your body or bankbook will be impacted"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "p01": {
+    "waite": "A hand—issuing, as usual, from a cloud—holds up a pentacle. Divinatory Meanings: Perfect contentment, felicity, ecstasy; also speedy intelligence; gold. Reversed: The evil side of wealth, bad intelligence; also great riches. In any case it shews prosperity, comfortable material conditions, but whether these are of advantage to the possessor will depend on whether the card is reversed or not. Such are the intimations of the Lesser Arcana in respect of divinatory art, the veridic nature of which seems to depend on an alternative that it may be serviceable to express briefly. The records of the art are ex hypothesi the records of findings in the past based upon experience; as such, they are a guide to memory, and those who can master the elements may—still ex hypothesi—give interpretations on their basis. It is an official and automatic working. On the other hand, those who have gifts of intuition, of second sight, of clairvoyance—call it as we choose and may—will supplement the experience of the past by the findings of their own faculty, and will speak of that which they have seen in the pretexts of the oracles. It remains to give, also briefly, the divinatory significance allocated by the same art to the Trumps Major.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "ace of coins",
+    "light": [
+      "Outlining a plan for achieving prosperity",
+      "Becoming aware of opportunities to improve income or health",
+      "Realizing you have everything you need",
+      "Appreciating everything the Universe has given you",
+      "Receiving the perfect gift at the perfect time"
+    ],
+    "shadow": [
+      "Indulging in relentless consumerism",
+      "Wanting more, no matter how much you have",
+      "Obsessing on your account balance",
+      "Suffering from hypochondria",
+      "Consuming blessings without expressing gratitude",
+      "Taking what you want without concern for the needs of others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m01": {
+    "waite": "The Magician. Skill, diplomacy, address, subtlety; sickness, pain, loss, disaster, snares of enemies; self-confidence, will; the Querent, if male. Reversed: Physician, Magus, mental disease, disgrace, disquiet.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Magician",
+    "light": [
+      "Taking appropriate action",
+      "Receiving guidance from a higher power",
+      "Becoming a channel of divine will",
+      "Expressing masculine energy in appropriate and constructive ways",
+      "Being yourself in every way"
+    ],
+    "shadow": [
+      "Inflating your own ego",
+      "Abusing talents",
+      "Manipulating or deceiving others",
+      "Being too aggressive",
+      "Using cheap illusions to dazzle others",
+      "Refusing to invest the time and effort needed to master your craft",
+      "Taking shortcuts"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m02": {
+    "waite": "The High Priestess. Secrets, mystery, the future as yet unrevealed; the woman who interests the Querent, if male; the Querent herself, if female; silence, tenacity; mystery, wisdom, science. Reversed: Passion, moral or physical ardour, conceit, surface knowledge.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Papess/High Priestess",
+    "light": [
+      "Listening to your feelings and intuitions",
+      "Exploring unconventional spirituality",
+      "Keeping secrets",
+      "Being receptive",
+      "Reflecting instead of acting",
+      "Observing others",
+      "Preserving purity"
+    ],
+    "shadow": [
+      "Being aloof",
+      "Obsessing on secrets and conspiracies",
+      "Rejecting guidance from spirit or intuition",
+      "Revealing all",
+      "Ignoring gut feelings",
+      "Refusing to become involved, even when involvement is appropriate"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m03": {
+    "waite": "The Empress. Fruitfulness, action, initiative, length of days; the unknown, clandestine; also difficulty, doubt, ignorance. Reversed: Light, truth, the unravelling of involved matters, public rejoicings; according to another reading, vacillation.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Empress",
+    "light": [
+      "Nurturing yourself and others",
+      "Bearing fruit",
+      "Celebrating your body",
+      "Bearing (literal or figurative) children",
+      "Reveling in luxury",
+      "Mothering those around you in positive ways",
+      "Enjoying your sexuality",
+      "Getting things done"
+    ],
+    "shadow": [
+      "Overindulging",
+      "Being greedy",
+      "Smothering someone with attention",
+      "Debilitating someone by being overprotective",
+      "Inhibiting productivity by obsessing on productivity",
+      "Being overcome by addictive behavior"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m04": {
+    "waite": "The Emperor. Stability, power, protection, realization; a great person; aid, reason, conviction; also authority and will. Reversed: Benevolence, compassion, credit; also confusion to enemies, obstruction, immaturity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Emperor",
+    "light": [
+      "Exercising authority",
+      "Defining limits",
+      "Directing the flow of work",
+      "Communicating clear guidelines",
+      "Being in control of yourself and others",
+      "Tempering aggressive masculinity with wisdom and experience"
+    ],
+    "shadow": [
+      "Micromanaging",
+      "Crushing the creativity of others with a rigid, iron-fisted approach",
+      "Insisting on getting your own way",
+      "Assuming a dictatorial mindset",
+      "Using overt force to achieve your goals and maintain order"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m05": {
+    "waite": "The Hierophant. Marriage, alliance, captivity, servitude; by another account, mercy and goodness; inspiration; the man to whom the Querent has recourse. Reversed: Society, good understanding, concord, over-kindness, weakness.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Pope/Hierophant",
+    "light": [
+      "Teaching or guiding others",
+      "Searching for the truth",
+      "Asking for guidance from a higher power",
+      "Acknowledging the wisdom and experience of others",
+      "Taking vows",
+      "Engaging in heartfelt rituals",
+      "Volunteering"
+    ],
+    "shadow": [
+      "Using experience as a means of manipulating or misguiding others",
+      "Being dogmatic",
+      "Favoring tradition over what is expedient or necessary",
+      "Going through the motions of empty rituals",
+      "Concealing wisdom",
+      "Restricting access to spiritual truths or the gods"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m06": {
+    "waite": "The Lovers. Attraction, love, beauty, trials overcome. Reversed: Failure, foolish designs. Another account speaks of marriage frustrated and contrarieties of all kinds.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Lovers",
+    "light": [
+      "Being in love",
+      "Showing your love to others",
+      "Expressing passion or romantic feelings",
+      "Aligning yourself with groups or like-minded others",
+      "Bringing people together",
+      "Making well-informed decisions"
+    ],
+    "shadow": [
+      "Debilitating passion",
+      "Allowing an unhealthy desire for love to motivate destructive behavior",
+      "Disrupting unity",
+      "Working against the best interests of those who care about you",
+      "Ill-informed decisions"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m07": {
+    "waite": "The Chariot. Succour, providence; also war, triumph, presumption, vengeance, trouble. Reversed: Riot, quarrel, dispute, litigation, defeat.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Chariot",
+    "light": [
+      "Breaking through barriers",
+      "Moving forward with confidence and authority",
+      "Reaching the pinnacle of success",
+      "Basking in the glory of achievement",
+      "Guiding an effort to total victory",
+      "Establishing yourself as a worthy leader"
+    ],
+    "shadow": [
+      "Resting on laurels",
+      "Riding roughshod over the feelings or expectations of others",
+      "Focusing more on past successes than future opportunities",
+      "Failing to rein in impulsive behavior"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m08": {
+    "waite": "Fortitude. Power, energy, action, courage, magnanimity; also complete success and honours. Reversed: Despotism, abuse of power, weakness, discord, sometimes even disgrace.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "Strength",
+    "light": [
+      "Imposing restrictions on yourself for your own benefit",
+      "Bringing your passions under the control of reason",
+      "Resisting impulses that work against your best interests",
+      "Taking bold action"
+    ],
+    "shadow": [
+      "Indulging weakness, even when you know it will damage your health and happiness",
+      "Languishing in addiction",
+      "Allowing your instincts to tame and conquer you",
+      "Failing to take a stand when necessary"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m09": {
+    "waite": "The Hermit. Prudence, circumspection; also and especially treason, dissimulation, roguery, corruption. Reversed: Concealment, disguise, policy, fear, unreasoned caution.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Hermit",
+    "light": [
+      "Becoming or seeking out a guru",
+      "Going on a retreat",
+      "Recharging spiritual or creative batteries",
+      "Lighting the way for those with less experience",
+      "Stepping back to gain perspective"
+    ],
+    "shadow": [
+      "Being a loner",
+      "Fearing contact with others",
+      "Becoming a know-it-all",
+      "Inflating claims of expertise",
+      "Hiding your skills and talents out of fear of unworthiness"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m10": {
+    "waite": "Wheel of Fortune. Destiny, fortune, success, elevation, luck, felicity. Reversed: Increase, abundance, superfluity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Wheel",
+    "light": [
+      "Allowing events to unfold",
+      "Seeing the larger pattern in everyday events",
+      "Trusting your luck",
+      "Watching for cycles",
+      "Believing that \"what goes around, comes around\""
+    ],
+    "shadow": [
+      "Losing money gambling",
+      "Refusing to do your part to bring a plan to fruition",
+      "Taking a fatalistic approach to life",
+      "Fighting the natural course of events"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m11": {
+    "waite": "Justice. Equity, rightness, probity, executive; triumph of the deserving side in law. Reversed: Law in all its departments, legal complications, bigotry, bias, excessive severity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "Justice",
+    "light": [
+      "Making an objective decision",
+      "Weighing an issue carefully before taking action",
+      "Appropriately scaling your reaction to a situation",
+      "Getting all the facts",
+      "Considering evidence",
+      "Deliberating"
+    ],
+    "shadow": [
+      "Delivering harsh criticism",
+      "Obsessing on rules and regulations",
+      "Playing by the book even when it is destructive or counterproductive to do so",
+      "Confusing snap decisions with timely action",
+      "Playing favorites"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m12": {
+    "waite": "The Hanged Man. Wisdom, circumspection, discernment, trials, sacrifice, intuition, divination, prophecy. Reversed: Selfishness, the crowd, body politic.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Hanged Man",
+    "light": [
+      "Seeing growth opportunities in unpleasant events",
+      "Experiencing a dramatic change in personal perspective",
+      "Making the best of an unforeseen change in your life or work",
+      "Suspending disbelief",
+      "Making sacrifices"
+    ],
+    "shadow": [
+      "Being untrue to yourself and your values",
+      "Refusing to make sacrifices when appropriate",
+      "Refusing to adapt to new situations",
+      "Blaming others",
+      "Profiting at the expense of others"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m13": {
+    "waite": "Death. End, mortality, destruction, corruption; also, for a man, the loss of a benefactor; for a woman, many contrarieties; for a maid, failure of marriage projects. Reversed: Inertia, sleep, lethargy, petrifaction, somnambulism; hope destroyed.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "Death",
+    "light": [
+      "Bringing an unpleasant phase of life to an end",
+      "Recognizing and celebrating the conclusion of something",
+      "Putting bad habits to rest",
+      "Becoming a new person",
+      "Leaving one person, place, or thing for another",
+      "Letting go"
+    ],
+    "shadow": [
+      "Obsessing on death and dying",
+      "Refusing to give up old habits or unhealthy relationships",
+      "Insisting that everything and everyone should stay the same forever",
+      "Failing to take good care of yourself"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m14": {
+    "waite": "Temperance. Economy, moderation, frugality, management, accommodation. Reversed: Things connected with churches, religions, sects, the priesthood, sometimes even the priest who will marry the Querent; also disunion, unfortunate combinations, competing interests.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "Temperance",
+    "light": [
+      "Bringing opposites together",
+      "Moderating your actions or emotions",
+      "Finding middle ground",
+      "Reaching compromises",
+      "Synthesizing solutions that please everyone involved",
+      "Using the old to make something new"
+    ],
+    "shadow": [
+      "Going to extremes",
+      "Disrupting group efforts",
+      "Ignoring healthy approaches to life",
+      "Becoming an addict",
+      "Practicing gluttony",
+      "Tearing something or someone apart",
+      "Breaking alliances"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m15": {
+    "waite": "The Devil. Ravage, violence, vehemence, extraordinary efforts, force, fatality; that which is predestined but is not for this reason evil. Reversed: Evil fatality, weakness, pettiness, blindness.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Devil",
+    "light": [
+      "Appreciating the luxuries that life has to offer",
+      "Being comfortable in your own skin",
+      "Enjoying your sexuality",
+      "Splurging on an expensive personal item",
+      "Embracing the fact that everyone has a darker side",
+      "Dealing with unhealthy impulses in healthy ways"
+    ],
+    "shadow": [
+      "Putting excessive emphasis on appearances",
+      "Always wanting more",
+      "Valuing possessions more than people or relationships",
+      "Allowing base instincts to govern your life",
+      "Being selfish",
+      "Attributing your own dark impulses to outside forces or other people"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m16": {
+    "waite": "The Tower. Misery, distress, indigence, adversity, calamity, disgrace, deception, ruin. It is a card in particular of unforeseen catastrophe. Reversed: According to one account, the same in a lesser degree; also oppression, imprisonment, tyranny.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Tower",
+    "light": [
+      "Breaking out of old, confining habits and mindsets",
+      "Clearing the way for new growth",
+      "Dispelling the influence of an inflated ego",
+      "Getting back to basics",
+      "Stripping away harmful illusions",
+      "Receiving sudden insight"
+    ],
+    "shadow": [
+      "Clinging to traditions that repress growth",
+      "Engaging in willful blindness",
+      "Rejecting evidence that change is needed",
+      "Ignoring guidance from a higher power",
+      "Maliciously engaging in destructive behavior"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m17": {
+    "waite": "The Star. Loss, theft, privation, abandonment; another reading says—hope and bright prospects, Reversed: Arrogance, haughtiness, impotence.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Star",
+    "light": [
+      "Hoping for the best",
+      "Believing good things happen to good people",
+      "Seeing events in the best possible light",
+      "Adopting a generous spirit",
+      "Seeking guidance from above",
+      "Embracing possibility over probability"
+    ],
+    "shadow": [
+      "Denying unpleasant truths",
+      "Denying personal accountability and saying, \"Things just happen!\"",
+      "Ignoring signs and omens",
+      "Preferring illusion to reality",
+      "Spreading pessimism and stinginess of spirit"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m18": {
+    "waite": "The Moon. Hidden enemies, danger, calumny, darkness, terror, deception, occult forces, error. Reversed: Instability, inconstancy, silence, lesser degrees of deception and error.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Moon",
+    "light": [
+      "Enjoying healthy fantasies and daydreams",
+      "Using your imagination",
+      "Practicing magic or celebrating the magic of everyday life",
+      "Attuning yourself to the cycles of nature",
+      "Embracing the unknown"
+    ],
+    "shadow": [
+      "Becoming unable to separate fantasy from reality",
+      "Suffering from delusions",
+      "Losing your appreciation for the fantastic or magical",
+      "Adopting a ruthlessly logical mindset",
+      "Failing to appreciate life's mysteries"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m19": {
+    "waite": "The Sun. Material happiness, fortunate marriage, contentment. Reversed: The same in a lesser sense.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Sun",
+    "light": [
+      "Seeing things clearly",
+      "Experiencing intense joy",
+      "Celebrating your own successes",
+      "Knowing you're good at what you do",
+      "Gaining recognition for your personal genius"
+    ],
+    "shadow": [
+      "Being dazzled by your own accomplishments",
+      "Becoming absorbed in your own self-image",
+      "Feeling rushed and distracted",
+      "Exerting yourself to the point of exhaustion",
+      "Overstating your abilities or misrepresenting your achievements"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m20": {
+    "waite": "The Last Judgment. Change of position, renewal, outcome. Another account specifies total loss though lawsuit. Reversed: Weakness, pusillanimity, simplicity; also deliberation, decision, sentence.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "Judgement",
+    "light": [
+      "Receiving a wake-up call",
+      "Discovering a new purpose in life",
+      "Becoming totally and completely yourself",
+      "Receiving a well-deserved reward",
+      "Passing an evaluation or examination",
+      "Welcoming the start of a new phase of life"
+    ],
+    "shadow": [
+      "Being weighed in the balances and found wanting",
+      "Failing to measure up to a well-defined standard",
+      "Being caught goofing off or misbehaving",
+      "Failing to prepare for an examination you know is coming",
+      "Rejecting an opportunity to reinvent yourself"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m00": {
+    "waite": "The Fool. Folly, mania, extravagance, intoxication, delirium, frenzy,  bewrayment. Reversed: Negligence, absence, distribution, carelessness, apathy, nullity, vanity.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The Fool",
+    "light": [
+      "Freeing yourself from limitation",
+      "Expressing joy and youthful vigor",
+      "Being open-minded",
+      "Taking a leap of faith",
+      "Attuning yourself to your instincts",
+      "Being eager or curious",
+      "Exploring your potential",
+      "Embracing innovation and change"
+    ],
+    "shadow": [
+      "Being gullible and naive",
+      "Taking unnecessary risks",
+      "Failing to be serious when required",
+      "Being silly or distracted",
+      "Lacking experience",
+      "Failing to honor well-established traditions and limits",
+      "Behaving inappropriately"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  },
+  "m21": {
+    "waite": "The World. Assured success, recompense, voyage, route, emigration, flight, change of place. Reversed: Inertia, fixity, stagnation, permanence.",
+    "waiteUrl": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "name": "The World",
+    "light": [
+      "Having it all",
+      "Knowing and loving yourself as completely as possible",
+      "Seeing the interconnection of all things and people",
+      "Enhancing your perspective",
+      "Living life to its fullest",
+      "Understanding the meaning of life"
+    ],
+    "shadow": [
+      "Allowing greed and envy to prevent you from enjoying what you do possess",
+      "Failing to see the larger design in ordinary events",
+      "Believing that everything that exists can be touched, counted, or measured",
+      "Failing to see the divine reflected in those around you"
+    ],
+    "modernUrl": "https://github.com/dariusk/corpora/blob/master/data/divination/tarot_interpretations.json"
+  }
+}
