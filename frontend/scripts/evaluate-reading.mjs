@@ -25,7 +25,7 @@ const output=JSON.stringify({
  actions:[{text:'记录一次具体沟通中的事实与感受，并在一周后复盘。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}],
  references:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
-  return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:'牌位线索'};
+  return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};
  }),
  followUp:'你希望先讨论哪一次沟通？',
  uncertainty:'牌面不能确认对方的真实想法。',

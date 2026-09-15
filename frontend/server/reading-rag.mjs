@@ -289,11 +289,19 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireSynthesis=false,requireUncertainty=false,allowClarification=true}={}){
+const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
+function claimSupportedByEvidence(claim,evidence){
+ const claimTerms=[...chineseNgrams(claim)].filter(term=>term.length>=2&&!CLAIM_STOPWORDS.has(term));
+ if(!claimTerms.length)return false;
+ const evidenceTerms=chineseNgrams(evidence?.text??'');
+ return claimTerms.some(term=>evidenceTerms.has(term));
+}
+
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireSynthesis=false,requireUncertainty=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
-  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireSynthesis||requireUncertainty)throw Error('首轮解读必须返回结构化 JSON，请重试。');
+  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireReferenceSupport||requireSynthesis||requireUncertainty)throw Error('首轮解读必须返回结构化 JSON，请重试。');
   return {text,synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
@@ -307,6 +315,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  const refs=(data.references??[]).slice(0,24).map(item=>validReference(item,evidenceById,cardsById));
  if(requireReferences&&!needsClarification&&(refs.length<cards.length||cards.some(card=>!refs.some(reference=>reference.cardId===card.id))))throw Error('首轮解读引用没有覆盖全部牌面，请重试。');
  if(requireReferenceClaims&&!needsClarification&&refs.some(reference=>!reference.claim))throw Error('引用说明不能为空，请重试。');
+ if(requireReferenceSupport&&!needsClarification&&refs.some(reference=>!claimSupportedByEvidence(reference.claim,evidenceById.get(reference.evidenceId))))throw Error('引用说明与证据不匹配，请重试。');
  let synthesis={text:'',evidenceIds:[]};
  if(data.synthesis!==undefined){
   if(!data.synthesis||typeof data.synthesis!=='object'||typeof data.synthesis.text!=='string'||!data.synthesis.text.trim()||data.synthesis.text.length>4_000||!Array.isArray(data.synthesis.evidenceIds)||data.synthesis.evidenceIds.length<1||data.synthesis.evidenceIds.length>12||data.synthesis.evidenceIds.some(id=>typeof id!=='string'))throw Error('综合解读格式不正确，请重试。');

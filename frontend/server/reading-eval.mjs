@@ -46,6 +46,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
  if(!/goal|目标/i.test(system))issues.push('missing_goal_routing');
  if(!/retrievalMethod|retrievalScore/i.test(system))issues.push('missing_ranker_metadata');
+ if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
  if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
@@ -60,6 +61,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_synthesis_contract'),
   !issues.includes('missing_goal_routing'),
   !issues.includes('missing_ranker_metadata'),
+  !issues.includes('missing_claim_support'),
   !issues.includes('missing_anchor_metadata'),
   !issues.includes('missing_grounded_context'),
   !issues.includes('missing_context_fence'),
@@ -80,7 +82,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const issues=[...retrieval.issues];
  let parsed=null,relaxed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireSynthesis:true});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
