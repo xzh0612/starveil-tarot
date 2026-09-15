@@ -14,6 +14,7 @@ const output=JSON.stringify({
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
   return {cardId:card.id,position:card.position,reading:'结合牌位观察一个可验证的角度，并给出下一步。',evidenceIds:[item.evidenceId]};
  }),
+ actions:[{text:'记录一次具体沟通中的事实与感受，并在一周后复盘。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}],
  references:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
   return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:'牌位线索'};

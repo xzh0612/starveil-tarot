@@ -1,4 +1,7 @@
 .message-evidence{margin-top:17px;border-top:1px solid var(--line);padding-top:11px;color:#cdb6dc;font-size:11px}
+.message-actions{margin-top:16px;padding:11px 12px;background:#c5a9db0c;border:1px solid #c4a8d51c;border-radius:4px;color:#d9c4e4}
+.message-actions>span{display:block;margin-bottom:8px;color:#b99acc;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.message-actions ol{margin:0;padding-left:21px;display:grid;gap:8px}.message-actions li{padding-left:2px}.message-actions b{display:block;font-size:11px;font-weight:400;line-height:1.65}.message-actions small{display:block;margin-top:2px;color:#a994b5;font-size:9px;line-height:1.6}
 .message-evidence summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;color:#cdb6dc}
 .message-evidence summary::-webkit-details-marker{display:none}
 .message-evidence summary:before{content:'＋';font-size:14px;color:#b99acc}.message-evidence[open] summary:before{content:'−'}

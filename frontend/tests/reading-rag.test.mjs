@@ -50,7 +50,15 @@ test('first-reading output must cover every selected card with grounded evidence
  assert.throws(()=>parseReadingOutput(missing,{cards,evidence,requireCoverage:true}),/没有覆盖全部牌面/);
 });
 
+test('structured actions must cite evidence from the current reading',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const valid=JSON.stringify({text:'先观察再沟通。',actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence[0].evidenceId]}]});
+ const parsed=parseReadingOutput(valid,{cards:[cards[0]],evidence});
+ assert.equal(parsed.actions[0].evidenceIds[0],evidence[0].evidenceId);
+ assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',actions:[{text:'做点什么。',evidenceIds:['fake']}]}),{cards:[cards[0]],evidence}),/行动建议引用无效/);
+});
+
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
- assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],followUp:'',uncertainty:''});
+ assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],cardReadings:[],actions:[],followUp:'',uncertainty:''});
 });

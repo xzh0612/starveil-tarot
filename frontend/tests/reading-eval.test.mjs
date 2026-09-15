@@ -20,6 +20,7 @@ test('reading evaluation accepts grounded first output with an actionable next s
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const output=JSON.stringify({
   text:'先把感受和事实分开记录，再约一次明确的沟通，观察对方是否愿意回应。',
+  actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把担忧变成可观察材料。',evidenceIds:[evidence.find(e=>e.kind==='orientation').evidenceId]}],
   cardReadings:cards.map(card=>{
    const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');
    return {cardId:card.id,position:card.position,reading:'结合牌位观察一个可验证的角度，并给出下一步。',evidenceIds:[item.evidenceId]};

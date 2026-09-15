@@ -113,7 +113,7 @@ function validReference(item,evidenceById,cardsById){
 export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
- if(!text.startsWith('{'))return {text,references:[],followUp:'',uncertainty:''};
+ if(!text.startsWith('{'))return {text,references:[],cardReadings:[],actions:[],followUp:'',uncertainty:''};
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
  if(!data||typeof data.text!=='string'||!data.text.trim()||data.text.length>20_000)throw Error('解读格式不正确，请重试。');
  const evidenceById=new Map(evidence.map(item=>[item.evidenceId,item])),cardsById=new Map(cards.map(item=>[item.id,item]));
@@ -131,6 +131,16 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   });
   if(requireCoverage&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
  }
+ let actions=[];
+ if(data.actions!==undefined){
+  if(!Array.isArray(data.actions)||data.actions.length>6)throw Error('行动建议格式不正确，请重试。');
+  actions=data.actions.map(item=>{
+   if(!item||typeof item.text!=='string'||!item.text.trim()||item.text.length>600||typeof item.evidenceIds===undefined||!Array.isArray(item.evidenceIds)||item.evidenceIds.length<1||item.evidenceIds.length>8||item.evidenceIds.some(id=>typeof id!=='string'))throw Error('行动建议格式不正确，请重试。');
+   const evidenceIds=item.evidenceIds.map(id=>{if(!evidenceById.has(id))throw Error('行动建议引用无效，请重试。');return id;});
+   if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
+   return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds};
+  });
+ }
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
- return {text:data.text.trim(),references:refs,cardReadings,followUp:excerpt(data.followUp??'',500),uncertainty:excerpt(data.uncertainty??'',500)};
+ return {text:data.text.trim(),references:refs,cardReadings,actions,followUp:excerpt(data.followUp??'',500),uncertainty:excerpt(data.uncertainty??'',500)};
 }
