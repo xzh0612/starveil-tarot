@@ -58,6 +58,13 @@ test('structured actions must cite evidence from the current reading',()=>{
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',actions:[{text:'做点什么。',evidenceIds:['fake']}]}),{cards:[cards[0]],evidence}),/行动建议引用无效/);
 });
 
+test('first reading requires at least one structured action',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'先观察再沟通。',cardReadings:[{cardId:'m08',position:'建议',reading:'观察一个可验证的角度。',evidenceIds:[orientation.evidenceId]}],references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true}),/首轮解读需要行动建议/);
+});
+
 test('high-stakes questions require an explicit reality-based boundary',()=>{
  const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards:[cards[0]]});
  assert.equal(requiresProfessionalBoundary('这项投资要不要买？'),true);

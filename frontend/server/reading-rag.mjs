@@ -117,7 +117,7 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):''};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireUncertainty=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireUncertainty=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -151,6 +151,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds};
   });
  }
+ if(requireActions&&actions.length<1)throw Error('首轮解读需要行动建议，请重试。');
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
  const uncertainty=excerpt(data.uncertainty??'',500);
  if(requireUncertainty&&!uncertainty)throw Error('高风险问题需要现实依据说明，请重试。');
