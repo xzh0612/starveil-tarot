@@ -511,7 +511,8 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
    if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsReasonSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
-   return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds};
+   const evidenceDetails=evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,evidenceExcerpt:excerpt(chunk.text,220)};});
+   return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds,evidence:evidenceDetails};
   });
  }
  if(requireActions&&!needsClarification&&actions.length<1)throw Error('首轮解读需要行动建议，请重试。');
