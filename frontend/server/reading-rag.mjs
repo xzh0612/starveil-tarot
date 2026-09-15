@@ -421,7 +421,8 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  }
  let actions=[];
  if(data.actions!==undefined){
-  if(!Array.isArray(data.actions)||data.actions.length>6)throw Error('行动建议格式不正确，请重试。');
+  const actionLimit=requireActions&&!needsClarification?3:6;
+  if(!Array.isArray(data.actions)||data.actions.length>actionLimit)throw Error('行动建议格式不正确，请重试。');
   actions=data.actions.map(item=>{
    if(!item||typeof item.text!=='string'||!item.text.trim()||item.text.length>600||typeof item.evidenceIds===undefined||!Array.isArray(item.evidenceIds)||item.evidenceIds.length<1||item.evidenceIds.length>8||item.evidenceIds.some(id=>typeof id!=='string'))throw Error('行动建议格式不正确，请重试。');
    const evidenceIds=item.evidenceIds.map(id=>{if(!evidenceById.has(id))throw Error('行动建议引用无效，请重试。');return id;});

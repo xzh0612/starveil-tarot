@@ -329,6 +329,17 @@ test('first reading requires at least one structured action',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true}),/首轮解读需要行动建议/);
 });
 
+test('first reading limits structured actions to three',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({
+  text:'先观察再沟通。',
+  cardReadings:[{cardId:'m08',position:'建议',reading:'观察一个可验证的角度。',evidenceIds:[orientation.evidenceId]}],
+  actions:Array.from({length:4},(_,index)=>({text:`记录第${index+1}次沟通。`,evidenceIds:[orientation.evidenceId]})),
+ });
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true}),/行动建议格式不正确/);
+});
+
 test('high-stakes questions require an explicit reality-based boundary',()=>{
  const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards:[cards[0]]});
  assert.equal(requiresProfessionalBoundary('这项投资要不要买？'),true);
