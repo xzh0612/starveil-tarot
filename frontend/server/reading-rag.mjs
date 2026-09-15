@@ -188,10 +188,10 @@ function applicationKindsForThemes(themes){
  return [...new Set(kinds)];
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const terms=chineseNgrams(question),routing=analyzeReadingQuestion(question),themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
- return cards.flatMap(card=>{
+ const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
   const rawChunks=candidateChunks(card,question);
@@ -222,12 +222,18 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
    retrievalGoals:chunk.matchedGoals,
    retrievalMethod:'bm25+rules-v1',
    retrievalScore:Number(chunk.score.toFixed(3)),
+   retrievalRequired:['symbolism','orientation'].includes(chunk.kind),
    text:chunk.text,
    source:chunk.source,
    sourceLabel:chunk.sourceLabel,
    url:chunk.url??null,
-  }));
+ }));
  });
+ const anchorEvidence=perCard.filter(item=>item.retrievalRequired);
+ const optional=perCard.filter(item=>!item.retrievalRequired).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
+ const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
+ const budget=Math.max(anchorEvidence.length,Math.min(96,Math.max(1,requested)));
+ return [...anchorEvidence,...optional].slice(0,budget);
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){

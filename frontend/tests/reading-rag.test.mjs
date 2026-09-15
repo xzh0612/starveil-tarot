@@ -111,6 +111,16 @@ test('mixed questions retain one application chunk for each explicit domain',()=
  assert.ok(evidence.some(item=>item.kind==='work'));
 });
 
+test('global evidence budget keeps anchors for every card before optional chunks',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards,maxPerCard:5,maxTotalEvidence:5});
+ assert.equal(evidence.length,5);
+ assert.equal(evidence.filter(item=>item.retrievalRequired).length,4);
+ for(const card of cards){
+  assert.ok(evidence.some(item=>item.cardId===card.id&&item.kind==='symbolism'));
+  assert.ok(evidence.some(item=>item.cardId===card.id&&item.kind==='orientation'));
+ }
+});
+
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
  const evidence=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[
   {id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true},
