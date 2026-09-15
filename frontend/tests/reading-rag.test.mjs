@@ -204,11 +204,21 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
  assert.equal(evidence[0].tier,'personal');
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
+ assert.ok(evidence[0].retrievalTerms.length>0);
+ assert.equal(evidence[0].retrievalMethod,'memory-keyword-v2');
 });
 
 test('memory retrieval returns no unrelated personal records',()=>{
  const evidence=retrieveMemoryEvidence({question:'我该如何准备考试？',memories:[{id:'m1',text:'我喜欢在周末散步。',enabled:true},{id:'m2',text:'家里的猫叫月光。',enabled:true}]});
  assert.deepEqual(evidence,[]);
+});
+
+test('memory retrieval rejects a single generic short overlap',()=>{
+ const evidence=retrieveMemoryEvidence({question:'我该怎么安排？',memories:[
+  {id:'generic',text:'我会先安排周末散步。',enabled:true},
+  {id:'specific',text:'我在重要决定前会先独处整理思绪。',enabled:true},
+ ]});
+ assert.deepEqual(evidence.map(item=>item.evidenceId),[]);
 });
 
 test('structured output accepts only references from the retrieved evidence set',()=>{

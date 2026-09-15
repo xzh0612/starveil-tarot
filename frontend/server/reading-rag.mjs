@@ -312,16 +312,21 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
 export function retrieveMemoryEvidence({question,memories,max=6}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(memories))return [];
  const terms=chineseNgrams(question),limit=Math.max(1,Math.min(10,max));
+ const genericTerms=new Set(['如何','怎么','可以','需要','安排','自己','事情','问题','现在','最近','之后','今天','明天','什么','哪个','是否','还是','一个','进行']);
  return memories.filter(memory=>memory&&memory.enabled===true&&typeof memory.id==='string'&&memory.id.length<=120&&typeof memory.text==='string'&&memory.text.trim())
   .map((memory,index)=>{
   const text=memory.text.trim().slice(0,2_000),lower=text.toLowerCase();
-  let score=0;for(const term of terms)if(lower.includes(term))score+=term.length>2?1.4:.35;
-  return {memory,index,text,score};
- })
-  .filter(item=>item.score>0)
+  const matchedTerms=[...terms].filter(term=>lower.includes(term));
+  let score=0;for(const term of matchedTerms)score+=term.length>2?1.4:.35;
+  const strongTerms=matchedTerms.filter(term=>term.length>2),shortTerms=matchedTerms.filter(term=>term.length===2);
+  return {memory,index,text,score,matchedTerms,strongTerms,shortTerms};
+  })
+  // A single generic two-character overlap is too weak to expose a private
+  // record. Require one longer phrase or several independent short matches.
+  .filter(item=>item.strongTerms.length>0||item.shortTerms.length>=2||item.shortTerms.some(term=>!genericTerms.has(term)))
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
-  .map(({memory,text})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
+  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[]}={}){
