@@ -232,6 +232,13 @@ test('first-reading output must cover every selected card with grounded evidence
  assert.throws(()=>parseReadingOutput(missing,{cards,evidence,requireCoverage:true}),/没有覆盖全部牌面/);
 });
 
+test('first-reading card explanations must cite a core anchor',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const application=evidence.find(item=>item.kind==='relationships');
+ const output=JSON.stringify({text:'逐牌说明。',cardReadings:[{cardId:'m08',position:'建议',reading:'只引用应用语义。',evidenceIds:[application.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true}),/核心锚点/);
+});
+
 test('first structured reading requires a top-level reference for every card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});

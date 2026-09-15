@@ -400,6 +400,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    if(!item||typeof item.cardId!=='string'||seen.has(item.cardId)||!cardsById.has(item.cardId)||typeof item.position!=='string'||typeof item.reading!=='string'||!item.reading.trim()||item.reading.length>4_000||!Array.isArray(item.evidenceIds)||item.evidenceIds.length<1||item.evidenceIds.length>8)throw Error('逐牌解读格式不正确，请重试。');
    const card=cardsById.get(item.cardId);if(card.position!==item.position)throw Error('逐牌解读牌位不匹配。');
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.cardId!==item.cardId||chunk.position!==item.position)throw Error('逐牌解读引用无效。');return chunk.evidenceId;});
+   if(requireCoverage&&!needsClarification&&!evidenceIds.some(id=>evidenceById.get(id)?.retrievalRequired===true))throw Error('逐牌解读必须引用该牌的核心锚点，请重试。');
    seen.add(item.cardId);return {cardId:item.cardId,position:item.position,reading:excerpt(item.reading,4_000),evidenceIds};
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
