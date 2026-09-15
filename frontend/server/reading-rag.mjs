@@ -151,7 +151,7 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
   const chunks=candidateChunks(card,question).map((chunk,index)=>{
    const signals=matchingSignals(chunk,{position:card.position,terms,themes});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes}),retrievalReasons:retrievalReasons(chunk,signals),index};
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -171,6 +171,8 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
    kind:chunk.kind,
    tier:evidenceTier(chunk.kind),
    retrievalReasons:chunk.retrievalReasons,
+   retrievalTerms:chunk.matchedTerms,
+   retrievalThemes:chunk.matchedThemes,
    text:chunk.text,
    source:chunk.source,
    sourceLabel:chunk.sourceLabel,
