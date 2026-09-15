@@ -16,7 +16,7 @@ The middleware permits loopback requests only and checks browser origin against 
 
 ## Reading contract
 
-`POST /api/readings/interpret` returns `{text, source, provider, model, references, followUp, uncertainty}`. The optional `spread` object is checked against the fixed catalog (or a bounded custom layout) before it reaches the model. Each reference includes an `evidenceId`, `cardId`, `position`, and optional `claim`. The model receives only the selected cards, the checked spread, and retrieved evidence, never the full 78-card corpus. A plain-text provider response remains readable for compatibility, but the server adds orientation-level fallback references and records empty follow-up/uncertainty fields.
+`POST /api/readings/interpret` returns `{text, source, provider, model, cardReadings, references, followUp, uncertainty}`. On the first reading, `cardReadings` must contain every selected card with matching `evidenceIds`; follow-ups may focus on only the relevant cards. The optional `spread` object is checked against the fixed catalog (or a bounded custom layout) before it reaches the model. Each reference includes an `evidenceId`, `cardId`, `position`, and optional `claim`. The model receives only the selected cards, the checked spread, and retrieved evidence, never the full 78-card corpus. A plain-text provider response remains readable for compatibility, but the server adds orientation-level fallback references and records empty follow-up/uncertainty fields.
 
 Model endpoint and names verified against the official docs:
 https://api-docs.deepseek.com/zh-cn/

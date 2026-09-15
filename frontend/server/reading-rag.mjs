@@ -110,7 +110,7 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):''};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[]}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{'))return {text,references:[],followUp:'',uncertainty:''};
@@ -119,6 +119,18 @@ export function parseReadingOutput(content,{cards=[],evidence=[]}={}){
  const evidenceById=new Map(evidence.map(item=>[item.evidenceId,item])),cardsById=new Map(cards.map(item=>[item.id,item]));
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
  const refs=(data.references??[]).slice(0,24).map(item=>validReference(item,evidenceById,cardsById));
+ let cardReadings=[];
+ if(data.cardReadings!==undefined){
+  if(!Array.isArray(data.cardReadings)||data.cardReadings.length>12)throw Error('逐牌解读格式不正确，请重试。');
+  const seen=new Set();
+  cardReadings=data.cardReadings.map(item=>{
+   if(!item||typeof item.cardId!=='string'||seen.has(item.cardId)||!cardsById.has(item.cardId)||typeof item.position!=='string'||typeof item.reading!=='string'||!item.reading.trim()||item.reading.length>4_000||!Array.isArray(item.evidenceIds)||item.evidenceIds.length<1||item.evidenceIds.length>8)throw Error('逐牌解读格式不正确，请重试。');
+   const card=cardsById.get(item.cardId);if(card.position!==item.position)throw Error('逐牌解读牌位不匹配。');
+   const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.cardId!==item.cardId||chunk.position!==item.position)throw Error('逐牌解读引用无效。');return chunk.evidenceId;});
+   seen.add(item.cardId);return {cardId:item.cardId,position:item.position,reading:excerpt(item.reading,4_000),evidenceIds};
+  });
+  if(requireCoverage&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
+ }
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
- return {text:data.text.trim(),references:refs,followUp:excerpt(data.followUp??'',500),uncertainty:excerpt(data.uncertainty??'',500)};
+ return {text:data.text.trim(),references:refs,cardReadings,followUp:excerpt(data.followUp??'',500),uncertainty:excerpt(data.uncertainty??'',500)};
 }

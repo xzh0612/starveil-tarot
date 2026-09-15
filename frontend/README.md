@@ -65,6 +65,7 @@ type Request = {
 type Response = {
   text: string;
   source: 'ai';
+  cardReadings?: {cardId: string; position: string; reading: string; evidenceIds: string[]}[];
   references?: {evidenceId?: string; cardId: string; position: string; claim?: string}[];
   followUp?: string;
   uncertainty?: string;
