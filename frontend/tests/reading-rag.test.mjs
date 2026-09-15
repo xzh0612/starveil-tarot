@@ -184,7 +184,7 @@ test('async semantic reranker receives full candidates and falls back on failure
 
 test('evidence summary reports tier and per-card coverage for prompt diagnostics',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards});
- const summary=summarizeReadingEvidence(evidence,cards);
+ const summary=summarizeReadingEvidence(evidence,cards,{themes:['relationship'],goals:['advice']});
  assert.equal(summary.total,evidence.length);
  assert.equal(summary.requiredCount,4);
  assert.deepEqual(summary.missingAnchorCardIds,[]);
@@ -192,6 +192,19 @@ test('evidence summary reports tier and per-card coverage for prompt diagnostics
  assert.equal(summary.perCard.m08.hasOrientation,true);
  assert.ok(summary.tiers.anchor>=4);
  assert.equal(summary.semanticCount,0);
+ assert.deepEqual(summary.missingGoalCoverage,[]);
+ assert.equal(summary.goalCoverage.advice.ok,true);
+});
+
+test('evidence summary exposes missing goal support',()=>{
+ const question='我之后会怎样发展？';
+ const cardsForGoal=[{id:'m08',reversed:false,position:'建议'}];
+ const evidence=retrieveReadingEvidence({question,cards:cardsForGoal});
+ const full=summarizeReadingEvidence(evidence,cardsForGoal,{themes:analyzeReadingQuestion(question).themes,goals:['forecast']});
+ assert.deepEqual(full.missingGoalCoverage,[]);
+ const anchors=summarizeReadingEvidence(evidence.filter(item=>item.tier==='anchor'),cardsForGoal,{themes:['future'],goals:['forecast']});
+ assert.deepEqual(anchors.missingGoalCoverage,['forecast']);
+ assert.equal(anchors.goalCoverage.forecast.referenceCount,0);
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{

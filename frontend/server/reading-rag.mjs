@@ -330,9 +330,10 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
 }
 
-export function summarizeReadingEvidence(evidence,cards=[],{themes=[]}={}){
+export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
  const items=Array.isArray(evidence)?evidence:[],expected=[...new Set((Array.isArray(cards)?cards:[]).map(card=>card?.id).filter(Boolean))];
  const expectedApplicationKinds=applicationKindsForThemes(Array.isArray(themes)?themes:[]);
+ const routedGoals=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>['advice','forecast','explanation','comparison'].includes(goal)))];
  const selectedCardIds=[...new Set(items.map(item=>item?.cardId).filter(Boolean))];
  const countsBy=(values)=>Object.fromEntries([...new Set(values)].map(value=>[value,values.filter(item=>item===value).length]));
  const perCard=Object.fromEntries(expected.map(cardId=>{
@@ -341,6 +342,15 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[]}={}){
  }));
  const missingAnchorCardIds=expected.filter(cardId=>!perCard[cardId].hasSymbolism||!perCard[cardId].hasOrientation);
  const missingApplicationCardIds=expectedApplicationKinds.length?expected.filter(cardId=>!expectedApplicationKinds.some(kind=>items.some(item=>item?.cardId===cardId&&item?.kind===kind))):[];
+ const goalCoverage=Object.fromEntries(routedGoals.map(goal=>{
+  const matched=items.filter(item=>Array.isArray(item?.retrievalGoals)&&item.retrievalGoals.includes(goal));
+  const applicationCount=matched.filter(item=>item.tier==='application').length;
+  const referenceCount=matched.filter(item=>item.tier==='reference').length;
+  const anchorCount=matched.filter(item=>item.tier==='anchor').length;
+  const ok=goal==='advice'||goal==='comparison'?applicationCount>0:goal==='forecast'?referenceCount>0:anchorCount>0;
+  return [goal,{matchedCount:matched.length,applicationCount,referenceCount,anchorCount,ok}];
+ }));
+ const missingGoalCoverage=routedGoals.filter(goal=>goalCoverage[goal]&&!goalCoverage[goal].ok);
  return {
   total:items.length,
   requiredCount:items.filter(item=>item?.retrievalRequired===true).length,
@@ -350,6 +360,8 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[]}={}){
   missingAnchorCardIds,
   expectedApplicationKinds,
   missingApplicationCardIds,
+  goalCoverage,
+  missingGoalCoverage,
   coverageStatus:missingAnchorCardIds.length?'incomplete':missingApplicationCardIds.length?'anchor_only':'complete',
   tiers:countsBy(items.map(item=>item?.tier).filter(Boolean)),
   kinds:countsBy(items.map(item=>item?.kind).filter(Boolean)),

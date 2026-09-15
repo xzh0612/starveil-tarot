@@ -48,6 +48,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/i.test(system))issues.push('missing_ranker_metadata');
  if(!/evidenceMeta/i.test(system))issues.push('missing_evidence_diagnostics');
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
+ if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/保证|必然|绝对|断言/i.test(system))issues.push('missing_calibration_rule');
@@ -65,6 +66,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/.test(user))issues.push('missing_ranker_metadata_context');
  if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
  if(!/coverageStatus/.test(user))issues.push('missing_coverage_status_context');
+ if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
  if(!/responsePlan/.test(user)||!/goal/.test(user)||!/emphasis/.test(user))issues.push('missing_response_plan_goal_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
@@ -76,6 +78,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_ranker_metadata'),
   !issues.includes('missing_evidence_diagnostics'),
   !issues.includes('missing_coverage_status'),
+  !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
   !issues.includes('missing_claim_support'),
   !issues.includes('missing_calibration_rule'),
@@ -93,6 +96,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_ranker_metadata_context'),
   !issues.includes('missing_evidence_diagnostics_context'),
   !issues.includes('missing_coverage_status_context'),
+  !issues.includes('missing_goal_coverage_context'),
   !issues.includes('missing_response_plan_goal_context'),
   !issues.includes('missing_anchor_metadata_context'),
  ];
@@ -109,7 +113,8 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const allowClarification=analyzeReadingQuestion(question).confidence!=='focused';
  let parsed=null,relaxed=null;
  try{
-  const coverageStatus=summarizeReadingEvidence(retrieval.evidence,cards,{themes:analyzeReadingQuestion(question).themes}).coverageStatus;
+  const routing=analyzeReadingQuestion(question);
+  const coverageStatus=summarizeReadingEvidence(retrieval.evidence,cards,{themes:routing.themes,goals:routing.goals}).coverageStatus;
   parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireTextSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisAnchors:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:coverageStatus==='anchor_only',requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
