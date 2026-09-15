@@ -393,6 +393,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   if(!synthesis.text||!synthesis.evidenceIds.length||cards.length>1&&cards.some(card=>!coveredCards.has(card.id)))throw Error('首轮综合解读没有覆盖全部牌面，请重试。');
  }
  let cardReadings=[];
+ if(requireCoverage&&!needsClarification&&data.cardReadings===undefined)throw Error('首轮解读必须包含逐牌解读，请重试。');
  if(data.cardReadings!==undefined){
   if(!Array.isArray(data.cardReadings)||data.cardReadings.length>12)throw Error('逐牌解读格式不正确，请重试。');
   const seen=new Set();

@@ -67,6 +67,7 @@ function repairCode(error){
   [/引用证据无效/u,'invalid_reference'],
   [/综合解读没有覆盖全部牌面/u,'missing_synthesis_coverage'],
   [/综合解读格式不正确/u,'invalid_synthesis'],
+  [/首轮解读必须包含逐牌解读/u,'missing_card_readings'],
   [/逐牌解读没有覆盖全部牌面/u,'missing_card_coverage'],
   [/逐牌解读牌位不匹配/u,'card_position_mismatch'],
   [/逐牌解读引用无效/u,'invalid_card_evidence'],
