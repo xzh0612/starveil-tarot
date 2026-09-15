@@ -19,6 +19,13 @@ const THEMES=[
  {name:'reflection',words:['自己','自我','迷茫','成长','情绪','压力','焦虑','不安','疲惫','方向','生活','状态','疗愈','内耗','困惑','意义','自信']},
 ];
 
+const GOALS=[
+ {name:'advice',words:['怎么办','如何','怎么','建议','下一步','行动','安排','调整','改善','应不应该']},
+ {name:'forecast',words:['会不会','是否会','能否','何时','什么时候','几率','结果','趋势','未来']},
+ {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','理解']},
+ {name:'comparison',words:['比较','区别','哪个','利弊','优缺点','取舍']},
+];
+
 const POSITION_HINTS=[
  {words:['关系','感受','需求','互动','挑战'],kind:'relationships',boost:6},
  {words:['事业','资源','优势','工作','行动','建议','下一步'],kind:'work',boost:6},
@@ -36,7 +43,11 @@ export function analyzeReadingQuestion(question){
  const themes=active.map(item=>item.name);
  const matchedTerms=[...new Set(active.flatMap(item=>[...item.strongTerms,...item.weakTerms]))];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
- return {themes,matchedTerms,themeScores,ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
+ const goalScored=GOALS.map(goal=>{const terms=goal.words.filter(word=>text.includes(word));return {name:goal.name,terms,score:terms.length*2};});
+ const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),goals=(activeGoals.length?activeGoals:goalFallback).map(item=>item.name);
+ const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>item.terms))];
+ const goalScores=Object.fromEntries(goalScored.map(item=>[item.name,item.score]));
+ return {themes,matchedTerms,themeScores,goals,matchedGoalTerms,goalScores,goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }
 
 export function readingQueryFor(question,messages=[]){
@@ -85,7 +96,15 @@ function candidateChunks(card,question){
  ].filter(Boolean);
 }
 
-function matchingSignals(chunk,{position,terms,themes}){
+function goalMatchesChunk(goal,kind){
+ if(goal==='advice')return ['relationships','work','reflection','orientation'].includes(kind);
+ if(goal==='forecast')return ['orientation','waite','modern'].includes(kind);
+ if(goal==='explanation')return ['symbolism','orientation','waite','modern'].includes(kind);
+ if(goal==='comparison')return ['relationships','work','reflection','modern'].includes(kind);
+ return false;
+}
+
+function matchingSignals(chunk,{position,terms,themes,goals=[]}){
  const text=chunk.text.toLowerCase();
  const termList=terms instanceof Set?[...terms]:Array.isArray(terms)?terms:[];
  const matchedTerms=termList.filter(term=>text.includes(term)).slice(0,8);
@@ -96,15 +115,17 @@ function matchingSignals(chunk,{position,terms,themes}){
   if(theme==='future')return ['orientation','waite'].includes(chunk.kind);
   return false;
  });
+ const matchedGoals=goals.filter(goal=>goalMatchesChunk(goal,chunk.kind));
  const matchedPosition=POSITION_HINTS.some(hint=>hint.words.some(word=>String(position).includes(word))&&chunk.kind===hint.kind);
- return {matchedTerms,matchedThemes,matchedPosition};
+ return {matchedTerms,matchedThemes,matchedGoals,matchedPosition};
 }
 
-function scoreChunk(chunk,{position,terms,themes}){
+function scoreChunk(chunk,{position,terms,themes,goals=[]}){
  let score=chunk.base;
- const signals=matchingSignals(chunk,{position,terms,themes});
+ const signals=matchingSignals(chunk,{position,terms,themes,goals});
  for(const term of signals.matchedTerms)score+=term.length>2?1.4:.35;
  for(const theme of signals.matchedThemes)score+=theme==='reflection'?4:3;
+ for(const goal of signals.matchedGoals)score+=goal==='advice'?1.6:1.2;
  for(const hint of POSITION_HINTS)if(signals.matchedPosition&&hint.kind===chunk.kind)score+=hint.boost;
  return score;
 }
@@ -119,6 +140,7 @@ function retrievalReasons(chunk,signals){
  const reasons=[];
  if(['symbolism','orientation'].includes(chunk.kind))reasons.push('required_anchor');
  if(signals.matchedThemes.length)reasons.push('theme_match');
+ if(signals.matchedGoals.length&&!['symbolism','orientation'].includes(chunk.kind))reasons.push('goal_match');
  if(signals.matchedPosition)reasons.push('position_match');
  if(signals.matchedTerms.length)reasons.push('keyword_match');
  if(!reasons.length)reasons.push('fallback_context');
@@ -145,13 +167,13 @@ function applicationKindsForThemes(themes){
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
- const terms=chineseNgrams(question),themes=themesFor(question),limit=Math.max(3,Math.min(7,maxPerCard));
+ const terms=chineseNgrams(question),routing=analyzeReadingQuestion(question),themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
  return cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
   const chunks=candidateChunks(card,question).map((chunk,index)=>{
-   const signals=matchingSignals(chunk,{position:card.position,terms,themes});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,index};
+   const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals});
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -173,6 +195,7 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
    retrievalReasons:chunk.retrievalReasons,
    retrievalTerms:chunk.matchedTerms,
    retrievalThemes:chunk.matchedThemes,
+   retrievalGoals:chunk.matchedGoals,
    text:chunk.text,
    source:chunk.source,
    sourceLabel:chunk.sourceLabel,

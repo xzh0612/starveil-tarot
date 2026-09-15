@@ -44,17 +44,21 @@ export function evaluatePromptContract(messages=[]){
  if(!/tier|层级|retrievalReasons/i.test(system))issues.push('missing_evidence_hierarchy');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
+ if(!/goal|目标/i.test(system))issues.push('missing_goal_routing');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
  if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
  if(!/tier|retrievalReasons/.test(user))issues.push('missing_evidence_metadata');
+ if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
   !issues.includes('missing_evidence_hierarchy'),
   !issues.includes('missing_json_contract'),
   !issues.includes('missing_synthesis_contract'),
+  !issues.includes('missing_goal_routing'),
   !issues.includes('missing_grounded_context'),
   !issues.includes('missing_context_fence'),
   !issues.includes('missing_evidence_metadata'),
+  !issues.includes('missing_goal_metadata'),
  ];
  return {ok:issues.length===0,score:scoreChecks(checks),issues};
 }

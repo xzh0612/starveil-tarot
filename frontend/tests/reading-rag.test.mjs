@@ -39,6 +39,16 @@ test('question routing recognizes common synonyms across reading intents',()=>{
  assert.deepEqual(reflection.themes,['reflection']);
 });
 
+test('question routing distinguishes the requested response goal',()=>{
+ const advice=analyzeReadingQuestion('我该怎么和对方沟通？');
+ assert.deepEqual(advice.goals,['advice']);
+ assert.equal(advice.goalConfidence,'focused');
+ const forecast=analyzeReadingQuestion('我们之后会不会复合？');
+ assert.deepEqual(forecast.goals,['forecast']);
+ const comparison=analyzeReadingQuestion('两个机会哪个利弊更合适？');
+ assert.deepEqual(comparison.goals,['comparison']);
+});
+
 test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
@@ -72,6 +82,13 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
  assert.ok(application.retrievalTerms.includes('感受'));
  assert.deepEqual(application.retrievalThemes,['relationship']);
  assert.ok(evidence.some(item=>item.retrievalReasons.includes('keyword_match')));
+});
+
+test('retrieval exposes response-goal signals for application evidence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎么平静说出感受？',cards:[cards[0]]});
+ const application=evidence.find(item=>item.kind==='relationships');
+ assert.ok(application.retrievalGoals.includes('advice'));
+ assert.ok(application.retrievalReasons.includes('goal_match'));
 });
 
 test('retrieval selects relationship context for relationship questions',()=>{
