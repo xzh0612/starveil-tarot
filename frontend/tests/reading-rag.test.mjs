@@ -239,6 +239,15 @@ test('structured output can cite relevant personal memory with null card coordin
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'memory:m1',cardId:'m08',position:'建议',claim:'先独处'}]}),{cards:[cards[0]],evidence:memory}),/引用证据无效/);
 });
 
+test('structured references retain fixed source provenance',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const waite=evidence.find(item=>item.kind==='waite');
+ const output=JSON.stringify({text:'以原典作为对照。',references:[{evidenceId:waite.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude'}]});
+ const parsed=parseReadingOutput(output,{cards:[cards[0]],evidence});
+ assert.equal(parsed.references[0].url,waite.url);
+ assert.equal(parsed.references[0].source,'waite');
+});
+
 test('first-reading output must cover every selected card with grounded evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});

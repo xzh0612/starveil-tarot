@@ -358,7 +358,7 @@ function validReference(item,evidenceById,cardsById){
   const card=cardsById.get(item.cardId);
   if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
  }
- return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,retrievalReasons:evidence.retrievalReasons??[]};
+ return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);

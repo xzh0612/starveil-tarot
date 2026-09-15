@@ -76,7 +76,7 @@ type Response = {
   needsClarification?: boolean;
   clarification?: string;
   cardReadings?: {cardId: string; position: string; reading: string; evidenceIds: string[]}[];
-  references?: {evidenceId?: string; cardId: string; position: string; claim?: string}[];
+  references?: {evidenceId?: string; cardId: string | null; position: string | null; claim?: string; source?: string; sourceLabel?: string; url?: string | null}[];
   followUp?: string;
   uncertainty?: string;
   evidenceMeta?: {coverageStatus: 'complete' | 'anchor_only' | 'incomplete'};
