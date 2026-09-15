@@ -50,6 +50,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
+ if(!/synthesis[^\n]{0,900}(?:多牌阵|每张牌|分别|逐张)[^\n]{0,300}(?:核心|概念|证据)/i.test(system))issues.push('missing_synthesis_per_card_rule');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/保证|必然|绝对|断言/i.test(system))issues.push('missing_calibration_rule');
  if(!/synthesis[^\n]{0,600}(?:核心锚点|retrievalRequired)/i.test(system))issues.push('missing_synthesis_anchor_rule');
@@ -80,6 +81,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_coverage_status'),
   !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
+  !issues.includes('missing_synthesis_per_card_rule'),
   !issues.includes('missing_claim_support'),
   !issues.includes('missing_calibration_rule'),
   !issues.includes('missing_synthesis_anchor_rule'),
@@ -116,7 +118,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   const routing=analyzeReadingQuestion(question);
   const evidenceMeta=summarizeReadingEvidence(retrieval.evidence,cards,{themes:routing.themes,goals:routing.goals});
   const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireTextSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisAnchors:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireTextSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}

@@ -17,7 +17,7 @@ const retrievalCases=[
 const evidence=retrieveReadingEvidence({question,cards});
 const output=JSON.stringify({
  text:'先把感受与事实分开记录，再约一次有边界的沟通，观察对方是否愿意回应，并在一周后复盘结果。',
- synthesis:{text:'两张牌共同把关系焦点落在稳定表达、边界和现实回应上。',evidenceIds:cards.map(card=>evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation').evidenceId)},
+ synthesis:{text:'两张牌共同把关系焦点落在稳定、明确的表达，以及比较记忆和当前事实上。',evidenceIds:cards.map(card=>evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation').evidenceId)},
  cardReadings:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
   const reading=card.id==='m08'?'结合稳定而明确的提示，观察一个可验证的角度，并给出下一步。':'比较记忆和当前事实，再观察一个可验证的角度，并给出下一步。';
