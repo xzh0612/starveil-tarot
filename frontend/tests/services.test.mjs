@@ -10,6 +10,7 @@ test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('overconfident_claim'),/绝对预测/);
  assert.match(readingErrorHint('action_concreteness'),/可执行/);
  assert.match(readingErrorHint('action_reason'),/牌面相关的理由/);
+ assert.match(readingErrorHint('action_reason_support'),/证据不匹配/);
  assert.match(readingErrorHint('missing_reality_boundary'),/现实资料或专业意见/);
  assert.match(readingErrorHint('provider_auth'),/密钥未通过验证/);
  assert.match(readingErrorHint('unknown_code'),/没有通过服务端核验/);
