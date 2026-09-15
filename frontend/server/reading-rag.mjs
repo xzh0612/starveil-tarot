@@ -220,7 +220,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  };
  const weight=Number.isFinite(semanticWeight)?Math.max(0,Math.min(20,semanticWeight)):8;
  const ranked=evidence.map(item=>{
-  const semanticScore=getScore(item),score=Number((Number(item.retrievalScore??0)+semanticScore*weight).toFixed(3));
+  const semanticScore=getScore(item),lexicalScore=Number(item.retrievalScore),baseScore=Number.isFinite(lexicalScore)?lexicalScore:0,score=Number((baseScore+semanticScore*weight).toFixed(3));
   return {...item,retrievalScore:score,retrievalSemanticScore:semanticScore,retrievalMethod:semanticScore>0?`${item.retrievalMethod}+semantic-v1`:item.retrievalMethod};
  });
  const required=ranked.filter(item=>item.retrievalRequired===true);

@@ -143,6 +143,8 @@ test('semantic reranker hook changes optional ordering without displacing anchor
  const direct=rerankReadingEvidence([{evidenceId:'x',retrievalScore:2,retrievalRequired:false,retrievalMethod:'test'}],{semanticScores:new Map([['x',2]]),maxTotalEvidence:1,semanticWeight:4});
  assert.equal(direct[0].retrievalSemanticScore,1);
  assert.equal(direct[0].retrievalScore,6);
+ const malformed=rerankReadingEvidence([{evidenceId:'bad',retrievalScore:'not-a-number',retrievalRequired:false,retrievalMethod:'test'}],{maxTotalEvidence:1});
+ assert.equal(malformed[0].retrievalScore,0);
 });
 
 test('global optional selection rotates across cards before taking a second chunk',()=>{
