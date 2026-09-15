@@ -6,6 +6,7 @@ test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('invalid_synthesis_evidence'),/合读部分的牌义依据未通过核验/);
  assert.match(readingErrorHint('missing_synthesis_anchor'),/核心牌义依据/);
  assert.match(readingErrorHint('synthesis_support'),/合读部分没有得到证据支持/);
+ assert.match(readingErrorHint('text_support'),/正文没有得到本局证据支持/);
  assert.match(readingErrorHint('card_reading_support'),/逐牌解释/);
  assert.match(readingErrorHint('overconfident_claim'),/绝对预测/);
  assert.match(readingErrorHint('action_concreteness'),/可执行/);

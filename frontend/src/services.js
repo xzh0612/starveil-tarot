@@ -10,6 +10,7 @@ const READING_ERROR_HINTS={
  invalid_synthesis_evidence:'合读部分的牌义依据未通过核验，原牌局仍然保留。',
  missing_synthesis_anchor:'合读部分缺少每张牌的核心牌义依据，原牌局仍然保留。',
  synthesis_support:'合读部分没有得到证据支持，原牌局仍然保留。',
+ text_support:'解读正文没有得到本局证据支持，原牌局仍然保留。',
  missing_card_readings:'回答没有逐张解释牌面，原牌局仍然保留。',
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
  card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
