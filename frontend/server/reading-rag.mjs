@@ -16,7 +16,7 @@ const THEMES=[
  {name:'career',words:['工作','事业','职业','学习','考研','考试','创业','项目','领导','同事','收入','财务','转行','升职','技能']},
  {name:'choice',words:['选择','要不要','是否','该不该','决定','比较','哪个','还是','机会','两条路']},
  {name:'future',words:['未来','接下来','趋势','之后','今年','明年','发展','走向','时间']},
- {name:'reflection',words:['自己','迷茫','成长','情绪','压力','方向','生活','状态','疗愈','内耗','困惑','意义','为什么','如何']},
+ {name:'reflection',words:['自己','迷茫','成长','情绪','压力','方向','生活','状态','疗愈','内耗','困惑','意义']},
 ];
 
 const POSITION_HINTS=[
@@ -24,6 +24,13 @@ const POSITION_HINTS=[
  {words:['事业','资源','优势','工作','行动','建议','下一步'],kind:'work',boost:6},
  {words:['过去','现在','趋势','未来'],kind:'orientation',boost:3},
 ];
+
+export function analyzeReadingQuestion(question){
+ const text=String(question??'').trim().toLowerCase();
+ const themes=THEMES.filter(theme=>theme.words.some(word=>text.includes(word))).map(theme=>theme.name);
+ const matchedTerms=[...new Set(THEMES.flatMap(theme=>theme.words.filter(word=>text.includes(word))))];
+ return {themes,matchedTerms,ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
+}
 
 function chineseNgrams(text){
  const value=String(text??'').toLowerCase(),tokens=new Set(value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[]);
@@ -34,8 +41,7 @@ function chineseNgrams(text){
 }
 
 function themesFor(question){
- const text=String(question??'').toLowerCase();
- return THEMES.filter(theme=>theme.words.some(word=>text.includes(word))).map(theme=>theme.name);
+ return analyzeReadingQuestion(question).themes;
 }
 
 function excerpt(text,max=360){

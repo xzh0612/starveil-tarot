@@ -1,11 +1,22 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
  {id:'c06',reversed:true,position:'关系挑战'},
 ];
+
+test('question analysis exposes transparent routing hints without inventing a theme',()=>{
+ const relationship=analyzeReadingQuestion('我们之间的沟通和边界要怎么调整？');
+ assert.deepEqual(relationship.themes,['relationship']);
+ assert.equal(relationship.confidence,'focused');
+ assert.ok(relationship.matchedTerms.includes('沟通'));
+ const open=analyzeReadingQuestion('我最近想看看牌。');
+ assert.deepEqual(open.themes,[]);
+ assert.equal(open.ambiguous,true);
+ assert.equal(open.confidence,'open');
+});
 
 test('retrieval always grounds each selected card in orientation and provenance',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
