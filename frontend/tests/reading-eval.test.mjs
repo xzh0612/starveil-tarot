@@ -59,6 +59,12 @@ test('reading evaluation accepts an explicit clarification branch',()=>{
  assert.deepEqual(result.issues,[]);
 });
 
+test('reading evaluation rejects a plain text first response',()=>{
+ const result=evaluateReadingFixture({question:'我该怎样处理这段关系？',cards:[cards[0]],output:'先观察再沟通。'});
+ assert.equal(result.ok,false);
+ assert.ok(result.issues.includes('output_contract'));
+});
+
 test('reading evaluation catches missing card coverage and missing action',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const first=evidence.find(e=>e.cardId==='m08'&&e.kind==='orientation');

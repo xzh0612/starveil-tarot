@@ -180,7 +180,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
-  if(requireUncertainty)throw Error('高风险问题需要现实依据说明，请重试。');
+  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireUncertainty)throw Error('首轮解读必须返回结构化 JSON，请重试。');
   return {text,references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}

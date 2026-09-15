@@ -163,3 +163,8 @@ test('plain text provider responses stay backward compatible without inventing r
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
  assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
 });
+
+test('first readings reject plain text so the grounding contract cannot be bypassed',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ assert.throws(()=>parseReadingOutput('保持稳定练习。',{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/首轮解读必须返回结构化 JSON/);
+});
