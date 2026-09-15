@@ -257,6 +257,13 @@ test('first-reading output must cover every selected card with grounded evidence
  assert.throws(()=>parseReadingOutput(missing,{cards,evidence,requireCoverage:true}),/没有覆盖全部牌面/);
 });
 
+test('card readings carry the locked card orientation for the UI',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[1]]});
+ const output=JSON.stringify({text:'逐牌说明。',cardReadings:[{cardId:'c06',position:'关系挑战',reading:'观察一个可验证的角度。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ const parsed=parseReadingOutput(output,{cards:[cards[1]],evidence});
+ assert.equal(parsed.cardReadings[0].orientation,'逆位');
+});
+
 test('first-reading card explanations must cite a core anchor',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const application=evidence.find(item=>item.kind==='relationships');

@@ -75,7 +75,7 @@ type Response = {
   source: 'ai';
   needsClarification?: boolean;
   clarification?: string;
-  cardReadings?: {cardId: string; position: string; reading: string; evidenceIds: string[]}[];
+  cardReadings?: {cardId: string; position: string; orientation: '正位' | '逆位' | string; reading: string; evidenceIds: string[]}[];
   references?: {evidenceId?: string; cardId: string | null; position: string | null; claim?: string; source?: string; sourceLabel?: string; url?: string | null}[];
   followUp?: string;
   uncertainty?: string;
@@ -84,7 +84,7 @@ type Response = {
 type ErrorResponse = {error: string; code?: 'provider_auth' | 'provider_balance' | 'provider_busy' | 'provider_timeout' | 'provider_not_configured' | 'provider_empty' | 'provider_unavailable' | 'rate_limited' | string};
 ```
 
-前端 `src/services.js` 会解析这个错误信封：不展示上游原始响应，只把稳定 `code` 转成可理解的提示，并保留当前牌局供用户重试。成功响应若缺少 `text` 会标记为 `invalid_response`。
+前端 `src/services.js` 会解析这个错误信封：不展示上游原始响应，只把稳定 `code` 转成可理解的提示，并保留当前牌局供用户重试。成功响应若缺少 `text` 会标记为 `invalid_response`。对话面板会把服务端验证过的逐牌解读折叠展示，并保留每张牌的正逆位和证据标签。
 
 首轮明确问题必须覆盖每张牌、返回综合 `synthesis`、非空 `uncertainty` 和至少一条 `actions`；服务端会校验每条行动的 `evidenceIds` 至少包含核心牌义、问题应用语义或本人确认的记忆，并在健康、法律、投资等高风险问题缺少现实边界时拒绝该响应。`evidenceMeta.coverageStatus` 为 `anchor_only` 或 `incomplete` 时，Prompt 要求模型收窄结论并明确不确定。若 `retrievalMeta` 判断问题为 `open` 或 `mixed`，模型可以返回 `needsClarification: true` 和一个具体 `clarification` 问题，此时不会被迫编造逐牌解读。结构化追问只要返回 `references` 就必须提供可由证据支持的 `claim`；纯文本追问仍可兼容显示。若首轮 JSON 不合约，后端最多追加一次只针对结构修复的请求，并附带稳定校验码，再走同一套牌面、证据和安全校验；追问可以只返回相关牌位，行动清单也可以为空。
 
