@@ -29,7 +29,7 @@ This integration runs on the LOCAL Vite dev/preview server. The preserved Sites 
 - Real model inventory authentication: HTTP 200, deepseek-flash and deepseek-v4-pro.
 - Real first reading: HTTP 200, source ai, model deepseek-flash, 827 Chinese/text characters.
 - Real follow-up: remembered the prior two-hours-per-day question and provided an actionable next step.
-- Build passes; 106 tests pass, including the offline RAG/Prompt quality gate, cross-card synthesis, structured actions, calibrated uncertainty, high-stakes boundary checks, and bounded repair tests.
+- Build passes; 115 tests pass, including the offline RAG/Prompt quality gate, cross-card synthesis, structured actions, calibrated uncertainty, high-stakes boundary checks, bounded repair tests, and the client error-envelope adapter.
 - Secret absent from all dist files; /.env.local and /@fs absolute env path return 403 without secret content; git ignores local secret file.
 - Existing Vite bundle-size warning remains.
 
