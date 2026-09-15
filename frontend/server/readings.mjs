@@ -112,7 +112,9 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    const {activeQuestion,retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
    const requiresBoundary=requiresProfessionalBoundary(body.question)||requiresProfessionalBoundary(activeQuestion);
    const allowClarification=hasPriorAssistant||retrievalMeta.confidence!=='focused';
-   const evidence=retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards});
+   const cardEvidence=retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards});
+   const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories:body.memories??[]});
+   const evidence=[...cardEvidence,...memoryEvidence];
    const parseOptions={cards:body.cards,evidence,requireCoverage:!hasPriorAssistant,requireActions:!hasPriorAssistant,requireReferences:!hasPriorAssistant,requireReferenceClaims:!hasPriorAssistant,requireUncertainty:requiresBoundary,allowClarification};
    let answer,provider=initial;
    try{answer=parseReadingOutput(initial.text,parseOptions);}catch(firstError){
