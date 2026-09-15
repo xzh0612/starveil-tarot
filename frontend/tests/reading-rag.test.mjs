@@ -513,6 +513,18 @@ test('missing forecast evidence requires the same uncertainty boundary',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true}).uncertainty,'当前缺少预测参考资料，牌面只能提供有限的趋势线索。');
 });
 
+test('forecast readings require a matching reference-tier citation when available',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const forecastReference=evidence.find(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast'));
+ assert.ok(forecastReference);
+ const missing=JSON.stringify({text:'先观察趋势。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'核心牌义'}]});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalEvidence:['forecast']}),/首轮引用没有覆盖当前回答目标/);
+ const valid=JSON.stringify({text:'先观察趋势。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'核心牌义'},{evidenceId:forecastReference.evidenceId,cardId:'m08',position:'建议',claim:'未来趋势'}]});
+ assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredGoalEvidence:['forecast']}).references.length,2);
+});
+
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});

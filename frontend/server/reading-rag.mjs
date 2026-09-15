@@ -403,6 +403,12 @@ function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
  return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
+const GOAL_REFERENCE_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
+function hasGoalReference(goal,refs,evidenceById){
+ const tier=GOAL_REFERENCE_TIERS[goal];
+ return refs.some(reference=>{const evidence=evidenceById.get(reference.evidenceId);return evidence?.tier===tier&&Array.isArray(evidence.retrievalGoals)&&evidence.retrievalGoals.includes(goal);});
+}
+
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个']);
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false}={}){
@@ -447,7 +453,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -533,6 +539,11 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds)])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:true}))throw Error('解读正文与证据不匹配，请重试。');
+ }
+ if(!needsClarification){
+  const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
+  const missing=goals.filter(goal=>[...evidenceById.values()].some(item=>item?.retrievalGoals?.includes(goal)&&item.tier===GOAL_REFERENCE_TIERS[goal])&&!hasGoalReference(goal,refs,evidenceById));
+  if(missing.length)throw Error('首轮引用没有覆盖当前回答目标，请重试。');
  }
  if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,synthesis.text,...cardReadings.map(item=>item.reading)].join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  return {text:data.text.trim(),synthesis,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
