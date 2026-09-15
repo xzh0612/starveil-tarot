@@ -120,7 +120,7 @@ test('mixed questions retain one application chunk for each explicit domain',()=
 });
 
 test('choice-only questions reserve reflective decision context',()=>{
- const question='两个方向哪个更适合我？';
+ const question='方案 A 还是方案 B？';
  const evidence=retrieveReadingEvidence({question,cards:[cards[0]],maxPerCard:3});
  assert.ok(evidence.some(item=>item.kind==='reflection'));
  const anchors=evidence.filter(item=>item.tier==='anchor');

@@ -198,6 +198,7 @@ function focusedApplicationKinds(themes){
  if(themes[0]==='relationship')return new Set(['relationships']);
  if(themes[0]==='career')return new Set(['work']);
  if(themes[0]==='reflection')return new Set(['reflection']);
+ if(themes[0]==='choice')return new Set(['reflection']);
  return new Set();
 }
 
