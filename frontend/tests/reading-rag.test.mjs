@@ -119,6 +119,17 @@ test('mixed questions retain one application chunk for each explicit domain',()=
  assert.ok(evidence.some(item=>item.kind==='work'));
 });
 
+test('choice-only questions reserve reflective decision context',()=>{
+ const question='两个方向哪个更适合我？';
+ const evidence=retrieveReadingEvidence({question,cards:[cards[0]],maxPerCard:3});
+ assert.ok(evidence.some(item=>item.kind==='reflection'));
+ const anchors=evidence.filter(item=>item.tier==='anchor');
+ const summary=summarizeReadingEvidence(anchors,[cards[0]],{themes:analyzeReadingQuestion(question).themes});
+ assert.deepEqual(summary.expectedApplicationKinds,['reflection']);
+ assert.deepEqual(summary.missingApplicationCardIds,['m08']);
+ assert.equal(summary.coverageStatus,'anchor_only');
+});
+
 test('global evidence budget keeps anchors for every card before optional chunks',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards,maxPerCard:5,maxTotalEvidence:5});
  assert.equal(evidence.length,5);

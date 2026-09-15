@@ -208,6 +208,10 @@ function applicationKindsForThemes(themes){
   if(theme==='career')kinds.push('work');
   if(theme==='reflection')kinds.push('reflection');
  }
+ // A choice-only question still needs an application layer. In the absence
+ // of an explicit relationship or career domain, use the reflective guide as
+ // the safest decision-making context for every card.
+ if(themes.includes('choice')&&!kinds.length)kinds.push('reflection');
  return [...new Set(kinds)];
 }
 
