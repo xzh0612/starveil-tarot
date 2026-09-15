@@ -270,6 +270,12 @@ test('card readings reject text with no meaningful overlap with cited evidence',
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCardReadingSupport:true}),/逐牌解读内容与证据不匹配/);
 });
 
+test('first actions reject vague text without an observable completion marker',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'行动建议。',actions:[{text:'做点什么。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireActions:true,requireConcreteActions:true}),/行动建议必须包含可观察的完成标准/);
+});
+
 test('synthesis rejects prose with no meaningful overlap with cited evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'综合判断。',synthesis:{text:'这意味着对方一定会回来。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}});

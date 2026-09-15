@@ -377,7 +377,14 @@ function isConcreteClarification(text){
  return marks===1||/[哪什么如何怎么是否还是谁何时什么时候哪里多少为何为什么更想想看先看]/u.test(value);
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireUncertainty=false,requireRealityBoundary=false,allowClarification=true}={}){
+const ACTION_VERB_PATTERN=/记录|列出|写下|核实|查阅|联系|沟通|安排|设定|拆分|练习|观察|复盘|比较|暂停|预约|整理|确认|测试|制定|检查|收集|测量|追踪|完成|行动|执行|买入|咨询|询问|阅读/u;
+const ACTION_MARKER_PATTERN=/今天|明天|本周|这周|一周|七天|三天|一天|分钟|小时|一次|两次|第\d+次|一项|一条|一个|每周|截止|结果|是否|回复|回应|复盘|完成|记录|写下|列出|确认/u;
+function isConcreteAction(text){
+ const value=String(text??'').trim();
+ return value.length>=6&&ACTION_VERB_PATTERN.test(value)&&ACTION_MARKER_PATTERN.test(value);
+}
+
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireSynthesis=false,requireSynthesisSupport=false,requireUncertainty=false,requireRealityBoundary=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -430,7 +437,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
  }
- let actions=[];
+ let actions=[];let actionsConcrete=true;
  if(data.actions!==undefined){
   const actionLimit=requireActions&&!needsClarification?3:6;
   if(!Array.isArray(data.actions)||data.actions.length>actionLimit)throw Error('行动建议格式不正确，请重试。');
@@ -439,6 +446,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    const evidenceIds=item.evidenceIds.map(id=>{if(!evidenceById.has(id))throw Error('行动建议引用无效，请重试。');return id;});
    if(!evidenceIds.some(id=>['anchor','application','personal'].includes(evidenceById.get(id)?.tier)))throw Error('行动建议必须引用核心或应用证据，请重试。');
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
+   if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
    return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds};
   });
  }
@@ -448,5 +456,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if((requireUncertainty||requireRealityBoundary)&&!needsClarification&&!uncertainty)throw Error(requireRealityBoundary?'高风险问题需要现实依据说明，请重试。':'首轮解读必须包含不确定性说明，请重试。');
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
+ if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
  return {text:data.text.trim(),synthesis,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

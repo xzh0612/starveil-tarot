@@ -91,7 +91,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const allowClarification=analyzeReadingQuestion(question).confidence!=='focused';
  let parsed=null,relaxed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireSynthesis:true,requireSynthesisSupport:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
