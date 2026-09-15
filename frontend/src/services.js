@@ -1,13 +1,13 @@
 import {cardById} from './domain.js';
 import {witchClips} from './witch-animation.js';
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
- * POST /api/readings/interpret {sessionId, question, deckVersion, cards, messages}
- * -> {text, source:'ai', references:[{cardId, position}]}
+ * POST /api/readings/interpret {sessionId, question, deckVersion, cards, messages, memories?}
+ * -> {text, source:'ai', references:[{evidenceId, cardId, position, claim}], followUp?, uncertainty?}
  */
-export async function interpret({sessionId,question,cards,messages=[],signal}){
+export async function interpret({sessionId,question,cards,messages=[],memories=[],signal}){
  const endpoint=import.meta.env.VITE_READING_ENDPOINT;
  if(endpoint){
-  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,question,cards,messages,deckVersion:'rws-1909-v1'}),signal});
+  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,question,cards,messages,memories,deckVersion:'rws-1909-v1'}),signal});
   if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(data.error||'解读服务暂时未连接。牌面已保留，请稍后重试。');}
   const data=await response.json();if(typeof data.text!=='string')throw Error('解读服务返回格式不正确。');return data;
  }

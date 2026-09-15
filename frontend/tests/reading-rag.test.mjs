@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,parseReadingOutput} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -18,6 +18,17 @@ test('retrieval always grounds each selected card in orientation and provenance'
 test('retrieval selects relationship context for relationship questions',()=>{
  const evidence=retrieveReadingEvidence({question:'我们之间的沟通和边界要怎么调整？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='relationships'));
+});
+
+test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
+ const evidence=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[
+  {id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true},
+  {id:'m2',text:'我喜欢在周末散步。',enabled:true},
+  {id:'m3',text:'这条记录不应发送。',enabled:false},
+ ]});
+ assert.equal(evidence[0].evidenceId,'memory:m1');
+ assert.ok(!evidence.some(item=>item.evidenceId==='memory:m3'));
+ assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
 });
 
 test('structured output accepts only references from the retrieved evidence set',()=>{

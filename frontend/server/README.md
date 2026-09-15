@@ -12,7 +12,7 @@ VITE_READING_ENDPOINT=/api/readings/interpret
 ```
 Never prefix the API key with VITE_. The local file has mode 0600 and is not included in the client build. Change the key there and restart the local server after rotation.
 
-The middleware permits loopback requests only and checks browser origin against the request host. It caps request size, validates card IDs/orientations/roles, retrieves a small grounded evidence set from `reading-rag.mjs`, asks for a JSON answer, and rejects references outside that set. It limits request concurrency/rate and has a 90-second timeout with disconnect cancellation. Only the current question/cards/conversation go to DeepSeek; archives and personal memory are not automatically transmitted. Past demo assistant answers are excluded from model context.
+The middleware permits loopback requests only and checks browser origin against the request host. It caps request size, validates card IDs/orientations/roles, retrieves a small grounded evidence set from `reading-rag.mjs`, asks for a JSON answer, and rejects references outside that set. It limits request concurrency/rate and has a 90-second timeout with disconnect cancellation. Only the current question/cards/conversation and explicitly enabled memory records go to DeepSeek; disabled memories and archives are not transmitted. Past demo assistant answers are excluded from model context.
 
 ## Reading contract
 

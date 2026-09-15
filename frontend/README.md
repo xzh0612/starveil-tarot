@@ -59,6 +59,7 @@ type Request = {
   deckVersion: 'rws-1909-v1';
   cards: {id: string; reversed: boolean; position: string}[];
   messages: {role: 'user' | 'assistant'; text: string}[];
+  memories?: {id: string; text: string; enabled: boolean; source?: string | null}[];
 };
 type Response = {
   text: string;
@@ -69,7 +70,7 @@ type Response = {
 };
 ```
 
-后端只解读已确定的牌，不能重新选择牌。`server/reading-rag.mjs` 会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。当前知识库不会被自动发送；未来接入时只传 enabled 且用户确认的记录，并附来源 ID。
+后端只解读已确定的牌，不能重新选择牌。`server/reading-rag.mjs` 会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。只有你在知识库中明确启用的记录才会按相关性作为 `memoryEvidence` 发送，并与牌义证据分开。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。
 
 ## 资源与来源
 
