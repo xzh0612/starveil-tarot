@@ -118,6 +118,14 @@ function retrievalReasons(chunk,signals){
  return reasons;
 }
 
+function focusedApplicationKinds(themes){
+ if(themes.length!==1)return null;
+ if(themes[0]==='relationship')return new Set(['relationships']);
+ if(themes[0]==='career')return new Set(['work']);
+ if(themes[0]==='reflection')return new Set(['reflection']);
+ return new Set();
+}
+
 export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const terms=chineseNgrams(question),themes=themesFor(question),limit=Math.max(3,Math.min(7,maxPerCard));
@@ -130,7 +138,9 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
-  const chosen=[...required,...sorted].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
+  const focusedKinds=focusedApplicationKinds(themes);
+  const candidates=focusedKinds?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||focusedKinds.has(chunk.kind)):sorted;
+  const chosen=[...required,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
   return chosen.map(chunk=>({
    evidenceId:`${card.id}:${chunk.kind}`,
    cardId:card.id,

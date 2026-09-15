@@ -44,7 +44,7 @@ test('retrieval always grounds each selected card in orientation and provenance'
 });
 
 test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
- const evidence=retrieveReadingEvidence({question:'我们之间的沟通和边界要怎么调整？',cards:[cards[0]]});
+ const evidence=retrieveReadingEvidence({question:'关系中如何平静说出感受和底线？',cards:[cards[0]]});
  const anchor=evidence.find(item=>item.kind==='orientation');
  const application=evidence.find(item=>item.kind==='relationships');
  assert.equal(anchor.tier,'anchor');
@@ -57,6 +57,13 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
 test('retrieval selects relationship context for relationship questions',()=>{
  const evidence=retrieveReadingEvidence({question:'我们之间的沟通和边界要怎么调整？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='relationships'));
+ assert.ok(!evidence.some(item=>item.kind==='work'));
+});
+
+test('focused career retrieval excludes unrelated relationship application chunks',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]]});
+ assert.ok(evidence.some(item=>item.kind==='work'));
+ assert.ok(!evidence.some(item=>item.kind==='relationships'));
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
