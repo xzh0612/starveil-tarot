@@ -399,6 +399,10 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceLabel:evidence.sourceLabel,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
+function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
+ return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
+}
+
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个']);
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false}={}){
@@ -474,7 +478,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if(data.synthesis!==undefined){
   if(!data.synthesis||typeof data.synthesis!=='object'||typeof data.synthesis.text!=='string'||!data.synthesis.text.trim()||data.synthesis.text.length>4_000||!Array.isArray(data.synthesis.evidenceIds)||data.synthesis.evidenceIds.length<1||data.synthesis.evidenceIds.length>12||data.synthesis.evidenceIds.some(id=>typeof id!=='string'))throw Error('综合解读格式不正确，请重试。');
   const evidenceIds=data.synthesis.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.source==='memory'||chunk.cardId===null)throw Error('综合解读引用无效，请重试。');return chunk.evidenceId;});
-  synthesis={text:excerpt(data.synthesis.text,4_000),evidenceIds:[...new Set(evidenceIds)]};
+  synthesis={text:excerpt(data.synthesis.text,4_000),evidenceIds:[...new Set(evidenceIds)]};synthesis.evidence=evidenceDetails(synthesis.evidenceIds,evidenceById);
   if(requireSynthesisSupport&&!needsClarification&&!claimSupportedByEvidence(synthesis.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))synthesisSupportOk=false;
  }
  if(requireSynthesis&&!needsClarification){
@@ -495,7 +499,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.cardId!==item.cardId||chunk.position!==item.position)throw Error('逐牌解读引用无效。');return chunk.evidenceId;});
    if(requireCardReadingSupport&&!needsClarification&&!evidenceIds.some(id=>claimSupportedByEvidence(item.reading,evidenceById.get(id),{allowGeneric:true})))cardReadingSupportOk=false;
    if(requireCoverage&&!needsClarification&&!evidenceIds.some(id=>evidenceById.get(id)?.retrievalRequired===true))throw Error('逐牌解读必须引用该牌的核心锚点，请重试。');
-   seen.add(item.cardId);return {cardId:item.cardId,position:item.position,orientation,reading:excerpt(item.reading,4_000),evidenceIds};
+   seen.add(item.cardId);return {cardId:item.cardId,position:item.position,orientation,reading:excerpt(item.reading,4_000),evidenceIds,evidence:evidenceDetails(evidenceIds,evidenceById)};
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
  }
@@ -511,8 +515,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
    if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsReasonSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
-   const evidenceDetails=evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,evidenceExcerpt:excerpt(chunk.text,220)};});
-   return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds,evidence:evidenceDetails};
+   return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds,evidence:evidenceDetails(evidenceIds,evidenceById)};
   });
  }
  if(requireActions&&!needsClarification&&actions.length<1)throw Error('首轮解读需要行动建议，请重试。');

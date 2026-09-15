@@ -63,7 +63,7 @@ export async function parseReadingResponse(response){
 }
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
  * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?}
- * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?, synthesis?:{text, evidenceIds}, actions?:[{text, reason, evidenceIds, evidence?:[{evidenceId, tier, sourceType, sourceLabel, evidenceExcerpt}]}], references:[{evidenceId, cardId, position, claim, evidenceExcerpt, kind, tier, source, sourceType, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
+ * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?:[{cardId, position, orientation, reading, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, evidenceExcerpt}]}], synthesis?:{text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, evidenceExcerpt}]}, actions?:[{text, reason, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, evidenceExcerpt}]}], references:[{evidenceId, cardId, position, claim, evidenceExcerpt, kind, tier, source, sourceType, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
  */
 export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],signal}){
  const endpoint=env.VITE_READING_ENDPOINT;
