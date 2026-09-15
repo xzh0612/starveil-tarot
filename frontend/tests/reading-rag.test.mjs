@@ -157,6 +157,15 @@ test('first structured citations require a concise support claim',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/引用说明不能为空/);
 });
 
+test('first reading synthesis must cite every selected card',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
+ const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:'牌位线索'};});
+ const base={text:'逐张说明并综合关系。',cardReadings:cards.map(card=>({cardId:card.id,position:card.position,reading:'结合牌位说明一个可观察的角度。',evidenceIds:[refs.find(ref=>ref.cardId===card.id).evidenceId]})),actions:[{text:'先记录一次具体沟通，再复盘结果。',evidenceIds:[refs[0].evidenceId]}],references:refs};
+ const valid=parseReadingOutput(JSON.stringify({...base,synthesis:{text:'两张牌共同提示先稳定表达，再观察现实回应。',evidenceIds:refs.map(ref=>ref.evidenceId)}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true});
+ assert.equal(valid.synthesis.evidenceIds.length,2);
+ assert.throws(()=>parseReadingOutput(JSON.stringify({...base,synthesis:{text:'只谈第一张牌。',evidenceIds:[refs[0].evidenceId]}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true}),/综合解读没有覆盖全部牌面/);
+});
+
 test('clarification responses may pause interpretation while keeping strict validation available',()=>{
  const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
  const clarification=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？',followUp:'请选择一个最想靠近的主题。'});
@@ -200,7 +209,7 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
 
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
- assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
+ assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
 });
 
 test('first readings reject plain text so the grounding contract cannot be bypassed',()=>{

@@ -209,12 +209,12 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireUncertainty=false,allowClarification=true}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireSynthesis=false,requireUncertainty=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
-  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireUncertainty)throw Error('首轮解读必须返回结构化 JSON，请重试。');
-  return {text,references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
+  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireSynthesis||requireUncertainty)throw Error('首轮解读必须返回结构化 JSON，请重试。');
+  return {text,synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
  if(!data||typeof data.text!=='string'||!data.text.trim()||data.text.length>20_000)throw Error('解读格式不正确，请重试。');
@@ -227,6 +227,16 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  const refs=(data.references??[]).slice(0,24).map(item=>validReference(item,evidenceById,cardsById));
  if(requireReferences&&!needsClarification&&(refs.length<cards.length||cards.some(card=>!refs.some(reference=>reference.cardId===card.id))))throw Error('首轮解读引用没有覆盖全部牌面，请重试。');
  if(requireReferenceClaims&&!needsClarification&&refs.some(reference=>!reference.claim))throw Error('引用说明不能为空，请重试。');
+ let synthesis={text:'',evidenceIds:[]};
+ if(data.synthesis!==undefined){
+  if(!data.synthesis||typeof data.synthesis!=='object'||typeof data.synthesis.text!=='string'||!data.synthesis.text.trim()||data.synthesis.text.length>4_000||!Array.isArray(data.synthesis.evidenceIds)||data.synthesis.evidenceIds.length<1||data.synthesis.evidenceIds.length>12||data.synthesis.evidenceIds.some(id=>typeof id!=='string'))throw Error('综合解读格式不正确，请重试。');
+  const evidenceIds=data.synthesis.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.source==='memory'||chunk.cardId===null)throw Error('综合解读引用无效，请重试。');return chunk.evidenceId;});
+  synthesis={text:excerpt(data.synthesis.text,4_000),evidenceIds:[...new Set(evidenceIds)]};
+ }
+ if(requireSynthesis&&!needsClarification){
+  const coveredCards=new Set(synthesis.evidenceIds.map(id=>evidenceById.get(id)?.cardId).filter(Boolean));
+  if(!synthesis.text||!synthesis.evidenceIds.length||cards.length>1&&cards.some(card=>!coveredCards.has(card.id)))throw Error('首轮综合解读没有覆盖全部牌面，请重试。');
+ }
  let cardReadings=[];
  if(data.cardReadings!==undefined){
   if(!Array.isArray(data.cardReadings)||data.cardReadings.length>12)throw Error('逐牌解读格式不正确，请重试。');
@@ -253,5 +263,5 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
  const uncertainty=excerpt(data.uncertainty??'',500);
  if(requireUncertainty&&!uncertainty)throw Error('高风险问题需要现实依据说明，请重试。');
- return {text:data.text.trim(),references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
+ return {text:data.text.trim(),synthesis,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }
