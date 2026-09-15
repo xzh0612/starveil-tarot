@@ -1,4 +1,4 @@
-import {parseReadingOutput,requiresProfessionalBoundary,retrieveReadingEvidence} from './reading-rag.mjs';
+import {analyzeReadingQuestion,parseReadingOutput,requiresProfessionalBoundary,retrieveReadingEvidence} from './reading-rag.mjs';
 
 const ACTION_WORDS=/建议|可以|先|尝试|记录|核实|安排|沟通|复盘|拆分|设定|观察|练习|下一步/u;
 
@@ -88,9 +88,10 @@ export function evaluatePromptContract(messages=[]){
 export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}={}){
  const retrieval=evaluateRetrievalCase({question,cards,requiredKinds});
  const issues=[...retrieval.issues];
+ const allowClarification=analyzeReadingQuestion(question).confidence!=='focused';
  let parsed=null,relaxed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireSynthesis:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question)});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireSynthesis:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}

@@ -60,6 +60,17 @@ test('reading evaluation accepts an explicit clarification branch',()=>{
  assert.deepEqual(result.issues,[]);
 });
 
+test('reading evaluation rejects clarification bypass for a focused question',()=>{
+ const output=JSON.stringify({
+  text:'我想先确认方向。',
+  needsClarification:true,
+  clarification:'这次更想看关系还是事业？',
+ });
+ const result=evaluateReadingFixture({question:'我每天学习两小时，如何保持？',cards:[cards[0]],output});
+ assert.equal(result.ok,false);
+ assert.ok(result.issues.includes('output_contract'));
+});
+
 test('reading evaluation rejects a plain text first response',()=>{
  const result=evaluateReadingFixture({question:'我该怎样处理这段关系？',cards:[cards[0]],output:'先观察再沟通。'});
  assert.equal(result.ok,false);
