@@ -43,10 +43,12 @@ export function evaluatePromptContract(messages=[]){
  if(!/evidence|证据|引用/i.test(system))issues.push('missing_system_evidence_rule');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
+ if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
   !issues.includes('missing_json_contract'),
   !issues.includes('missing_grounded_context'),
+  !issues.includes('missing_context_fence'),
  ];
  return {ok:issues.length===0,score:scoreChecks(checks),issues};
 }
