@@ -50,6 +50,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/保证|必然|绝对|断言/i.test(system))issues.push('missing_calibration_rule');
+ if(!/synthesis[^\n]{0,600}(?:核心锚点|retrievalRequired)/i.test(system))issues.push('missing_synthesis_anchor_rule');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
  if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
@@ -70,6 +71,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_coverage_status'),
   !issues.includes('missing_claim_support'),
   !issues.includes('missing_calibration_rule'),
+  !issues.includes('missing_synthesis_anchor_rule'),
   !issues.includes('missing_anchor_metadata'),
   !issues.includes('missing_grounded_context'),
   !issues.includes('missing_context_fence'),
@@ -93,7 +95,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const allowClarification=analyzeReadingQuestion(question).confidence!=='focused';
  let parsed=null,relaxed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireSynthesis:true,requireSynthesisSupport:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisAnchors:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}

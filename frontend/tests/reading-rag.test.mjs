@@ -332,6 +332,14 @@ test('first reading synthesis must cite every selected card',()=>{
  assert.throws(()=>parseReadingOutput(JSON.stringify({...base,synthesis:{text:'只谈第一张牌。',evidenceIds:[refs[0].evidenceId]}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true}),/综合解读没有覆盖全部牌面/);
 });
 
+test('first synthesis must cite a core anchor for every selected card',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
+ const references=cards.map(card=>evidence.find(item=>item.cardId===card.id&&item.kind==='orientation').evidenceId);
+ const referenceOnly=cards.map(card=>evidence.find(item=>item.cardId===card.id&&item.kind==='waite').evidenceId);
+ const output=JSON.stringify({text:'逐张说明并综合关系。',synthesis:{text:'原典与当前问题形成一个观察线索。',evidenceIds:referenceOnly},cardReadings:cards.map(card=>({cardId:card.id,position:card.position,reading:'结合牌位说明一个可观察的角度。',evidenceIds:[references.find(id=>id.startsWith(`${card.id}:`))]})),actions:[{text:'先记录一次具体沟通，再复盘结果。',evidenceIds:[references[0]]}],references:cards.map(card=>{const id=references.find(value=>value.startsWith(`${card.id}:`));return {evidenceId:id,cardId:card.id,position:card.position,claim:'稳定节奏'};}),uncertainty:'牌面不能确认结果。'});
+ assert.throws(()=>parseReadingOutput(output,{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true,requireSynthesisAnchors:true}),/综合解读必须引用每张牌的核心锚点/);
+});
+
 test('clarification responses may pause interpretation while keeping strict validation available',()=>{
  const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
  const clarification=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？',followUp:'请选择一个最想靠近的主题。'});
