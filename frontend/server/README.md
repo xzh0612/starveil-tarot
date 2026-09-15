@@ -12,7 +12,11 @@ VITE_READING_ENDPOINT=/api/readings/interpret
 ```
 Never prefix the API key with VITE_. The local file has mode 0600 and is not included in the client build. Change the key there and restart the local server after rotation.
 
-The middleware permits loopback requests only and checks browser origin against the request host. It caps request size, validates card IDs/orientations/roles, uses fixed server-side meanings, limits request concurrency/rate, and has a 90-second timeout with disconnect cancellation. Only the current question/cards/conversation go to DeepSeek; archives and personal memory are not automatically transmitted. Past demo assistant answers are excluded from model context.
+The middleware permits loopback requests only and checks browser origin against the request host. It caps request size, validates card IDs/orientations/roles, retrieves a small grounded evidence set from `reading-rag.mjs`, asks for a JSON answer, and rejects references outside that set. It limits request concurrency/rate and has a 90-second timeout with disconnect cancellation. Only the current question/cards/conversation go to DeepSeek; archives and personal memory are not automatically transmitted. Past demo assistant answers are excluded from model context.
+
+## Reading contract
+
+`POST /api/readings/interpret` returns `{text, source, provider, model, references, followUp, uncertainty}`. Each reference includes an `evidenceId`, `cardId`, `position`, and optional `claim`. The model receives only the selected cards plus retrieved evidence, never the full 78-card corpus. A plain-text provider response remains readable for compatibility, but the server adds orientation-level fallback references and records empty follow-up/uncertainty fields.
 
 Model endpoint and names verified against the official docs:
 https://api-docs.deepseek.com/zh-cn/
