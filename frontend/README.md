@@ -80,6 +80,7 @@ type Response = {
   followUp?: string;
   uncertainty?: string;
 };
+type ErrorResponse = {error: string; code?: string};
 ```
 
 首轮明确问题必须覆盖每张牌、返回综合 `synthesis`、非空 `uncertainty` 和至少一条 `actions`；服务端会校验每条行动的 `evidenceIds` 至少包含核心牌义、问题应用语义或本人确认的记忆，并在健康、法律、投资等高风险问题缺少现实边界时拒绝该响应。`evidenceMeta.coverageStatus` 为 `anchor_only` 或 `incomplete` 时，Prompt 要求模型收窄结论并明确不确定。若 `retrievalMeta` 判断问题为 `open` 或 `mixed`，模型可以返回 `needsClarification: true` 和一个 `clarification`，此时不会被迫编造逐牌解读。若首轮 JSON 不合约，后端最多追加一次只针对结构修复的请求，并附带稳定校验码，再走同一套牌面、证据和安全校验；追问可以只返回相关牌位，行动清单也可以为空。
