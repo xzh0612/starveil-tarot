@@ -381,7 +381,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
-  if(requireCoverage||requireActions||requireReferences||requireReferenceClaims||requireReferenceSupport||requireSynthesis||requireUncertainty||requireRealityBoundary)throw Error('首轮解读必须返回结构化 JSON，请重试。');
+  if(requireCoverage||requireActions||requireReferences||requireSynthesis||requireUncertainty||requireRealityBoundary)throw Error('首轮解读必须返回结构化 JSON，请重试。');
   return {text,synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
