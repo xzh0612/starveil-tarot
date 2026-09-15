@@ -81,7 +81,7 @@ type Response = {
   uncertainty?: string;
   evidenceMeta?: {coverageStatus: 'complete' | 'anchor_only' | 'incomplete'};
 };
-type ErrorResponse = {error: string; code?: 'provider_auth' | 'provider_balance' | 'provider_busy' | 'provider_timeout' | 'provider_not_configured' | 'provider_empty' | 'provider_unavailable' | 'rate_limited' | 'card_reading_support' | string};
+type ErrorResponse = {error: string; code?: 'provider_auth' | 'provider_balance' | 'provider_busy' | 'provider_timeout' | 'provider_not_configured' | 'provider_empty' | 'provider_unavailable' | 'rate_limited' | 'card_reading_support' | 'synthesis_support' | string};
 ```
 
 前端 `src/services.js` 会解析这个错误信封：不展示上游原始响应，只把稳定 `code` 转成可理解的提示，并保留当前牌局供用户重试。成功响应若缺少 `text` 会标记为 `invalid_response`。对话面板会把服务端验证过的逐牌解读折叠展示，并保留每张牌的正逆位和证据标签。
