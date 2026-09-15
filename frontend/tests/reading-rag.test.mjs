@@ -85,6 +85,16 @@ test('structured output accepts only references from the retrieved evidence set'
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'fake',cardId:'m08',position:'建议'}]}),{cards,evidence}),/引用证据无效/);
 });
 
+test('structured output can cite relevant personal memory with null card coordinates',()=>{
+ const memory=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
+ const output=JSON.stringify({text:'把先独处整理思绪作为可执行的准备。',references:[{evidenceId:'memory:m1',cardId:null,position:null,claim:'先独处整理思绪'}]});
+ const parsed=parseReadingOutput(output,{cards:[cards[0]],evidence:memory});
+ assert.equal(parsed.references[0].cardId,null);
+ assert.equal(parsed.references[0].position,null);
+ assert.equal(parsed.references[0].tier,'personal');
+ assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'memory:m1',cardId:'m08',position:'建议',claim:'先独处'}]}),{cards:[cards[0]],evidence:memory}),/引用证据无效/);
+});
+
 test('first-reading output must cover every selected card with grounded evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:'牌位线索'};});

@@ -158,8 +158,14 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
 
 function validReference(item,evidenceById,cardsById){
  if(!item||typeof item!=='object'||typeof item.evidenceId!=='string')throw Error('引用证据无效。');
- const evidence=evidenceById.get(item.evidenceId),card=cardsById.get(item.cardId);
- if(!evidence||!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
+ const evidence=evidenceById.get(item.evidenceId);
+ if(!evidence)throw Error('引用证据无效。');
+ if(evidence.source==='memory'){
+  if(item.cardId!==null||item.position!==null)throw Error('引用证据无效。');
+ }else{
+  const card=cardsById.get(item.cardId);
+  if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
+ }
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
