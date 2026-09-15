@@ -10,7 +10,15 @@ const READING_ERROR_HINTS={
  missing_card_readings:'回答没有逐张解释牌面，原牌局仍然保留。',
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
- invalid_response:'服务返回格式不完整，原牌局仍然保留。'
+ invalid_response:'服务返回格式不完整，原牌局仍然保留。',
+ provider_not_configured:'本机后端还没有配置 DeepSeek 密钥，请先完成后端配置。',
+ provider_auth:'DeepSeek 密钥未通过验证，请检查后端配置。',
+ provider_balance:'DeepSeek 账户余额不足，请充值后重试。',
+ provider_busy:'DeepSeek 当前繁忙，请稍后重试。',
+ provider_empty:'DeepSeek 没有返回有效内容，可以保留原牌重试。',
+ provider_timeout:'解读等待超时，原牌局仍然保留，可以稍后重试。',
+ provider_unavailable:'暂时无法连接 DeepSeek，原牌局仍然保留。',
+ rate_limited:'请求较频繁，请稍等片刻再试。'
 };
 
 export function readingErrorHint(code){
