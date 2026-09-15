@@ -12,7 +12,7 @@ export function requiresProfessionalBoundary(question){
 }
 
 const THEMES=[
- {name:'relationship',words:['关系','感情','恋爱','爱情','伴侣','前任','暧昧','复合','婚姻','分手','喜欢','相处','沟通','边界','他','她','我们']},
+ {name:'relationship',words:['关系','感情','恋爱','爱情','伴侣','前任','暧昧','复合','婚姻','分手','喜欢','相处','沟通','边界'],weakWords:['他','她','我们']},
  {name:'career',words:['工作','事业','职业','学习','考研','考试','创业','项目','领导','同事','收入','财务','转行','升职','技能']},
  {name:'choice',words:['选择','要不要','是否','该不该','决定','比较','哪个','还是','机会','两条路']},
  {name:'future',words:['未来','接下来','趋势','之后','今年','明年','发展','走向','时间']},
@@ -27,9 +27,16 @@ const POSITION_HINTS=[
 
 export function analyzeReadingQuestion(question){
  const text=String(question??'').trim().toLowerCase();
- const themes=THEMES.filter(theme=>theme.words.some(word=>text.includes(word))).map(theme=>theme.name);
- const matchedTerms=[...new Set(THEMES.flatMap(theme=>theme.words.filter(word=>text.includes(word))))];
- return {themes,matchedTerms,ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
+ const scored=THEMES.map(theme=>{
+  const strongTerms=theme.words.filter(word=>text.includes(word));
+  const weakTerms=(theme.weakWords??[]).filter(word=>text.includes(word));
+  return {name:theme.name,strongTerms,weakTerms,score:strongTerms.length*2+weakTerms.length*.5};
+ });
+ const strong=scored.filter(item=>item.score>=2),active=strong.length?strong:scored.filter(item=>item.score>0);
+ const themes=active.map(item=>item.name);
+ const matchedTerms=[...new Set(active.flatMap(item=>[...item.strongTerms,...item.weakTerms]))];
+ const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
+ return {themes,matchedTerms,themeScores,ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }
 
 function chineseNgrams(text){

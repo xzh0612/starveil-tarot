@@ -12,10 +12,21 @@ test('question analysis exposes transparent routing hints without inventing a th
  assert.deepEqual(relationship.themes,['relationship']);
  assert.equal(relationship.confidence,'focused');
  assert.ok(relationship.matchedTerms.includes('沟通'));
+ assert.ok(relationship.themeScores.relationship>0);
  const open=analyzeReadingQuestion('我最近想看看牌。');
  assert.deepEqual(open.themes,[]);
  assert.equal(open.ambiguous,true);
  assert.equal(open.confidence,'open');
+});
+
+test('question routing prefers explicit career terms over weak relationship pronouns',()=>{
+ const career=analyzeReadingQuestion('他对我的工作评价，下一步怎么做？');
+ assert.deepEqual(career.themes,['career']);
+ assert.equal(career.confidence,'focused');
+ assert.ok(career.themeScores.career>career.themeScores.relationship);
+ const pronoun=analyzeReadingQuestion('他最近会联系我吗？');
+ assert.deepEqual(pronoun.themes,['relationship']);
+ assert.equal(pronoun.confidence,'focused');
 });
 
 test('retrieval always grounds each selected card in orientation and provenance',()=>{
