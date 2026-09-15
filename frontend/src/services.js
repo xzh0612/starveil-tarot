@@ -38,6 +38,8 @@ const COVERAGE_LABELS={complete:'完整覆盖牌面与当前主题',anchor_only:
 export function evidenceCoverageLabel(status){
  return COVERAGE_LABELS[status]||'覆盖情况待核验';
 }
+const READING_GOAL_LABELS={advice:'建议',forecast:'预测',explanation:'解释',comparison:'比较'};
+export function readingGoalLabel(goal){return READING_GOAL_LABELS[goal]||String(goal||'目标');}
 
 /** Parse the private reading endpoint without leaking raw upstream bodies. */
 export async function parseReadingResponse(response){
