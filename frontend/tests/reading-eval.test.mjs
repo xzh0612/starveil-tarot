@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase} from '../server/reading-eval.mjs';
+import {evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
 import {retrieveReadingEvidence} from '../server/reading-rag.mjs';
 
 const cards=[
@@ -14,6 +14,19 @@ test('retrieval evaluation reports topical coverage and a deterministic score',(
  assert.equal(result.score,100);
  assert.deepEqual(result.missingKinds,[]);
  assert.ok(result.evidence.every(item=>item.sourceLabel));
+});
+
+test('retrieval suite covers the major question intents',()=>{
+ const result=evaluateRetrievalSuite([
+  {name:'relationship',question:'我们之间的沟通和边界要怎么调整？',cards,requiredKinds:['orientation','symbolism','relationships']},
+  {name:'career',question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]],requiredKinds:['orientation','symbolism','work']},
+  {name:'choice',question:'两个机会应该如何比较，哪个更适合我？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
+  {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
+  {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
+ ]);
+ assert.equal(result.ok,true);
+ assert.equal(result.score,100);
+ assert.equal(result.failed,0);
 });
 
 test('reading evaluation accepts grounded first output with an actionable next step',()=>{

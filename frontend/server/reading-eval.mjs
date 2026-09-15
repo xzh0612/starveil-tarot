@@ -24,6 +24,13 @@ export function evaluateRetrievalCase({question,cards,requiredKinds=[]}={}){
  return {ok:issues.length===0,score:scoreChecks(checks),issues,missingKinds,missingCards,evidence};
 }
 
+export function evaluateRetrievalSuite(cases=[]){
+ const results=cases.map(item=>({name:item?.name??'',...evaluateRetrievalCase(item)}));
+ const score=results.length?Math.round(results.reduce((sum,item)=>sum+item.score,0)/results.length):0;
+ const failed=results.filter(item=>!item.ok).length;
+ return {ok:results.length>0&&failed===0,score,failed,results};
+}
+
 /**
  * Checks the stable prompt contract at the message boundary. The rubric is
  * intentionally small so a prompt rewrite can be reviewed in CI without

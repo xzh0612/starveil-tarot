@@ -1,11 +1,18 @@
 import {buildReadingMessages} from '../server/readings.mjs';
-import {evaluatePromptContract,evaluateReadingFixture} from '../server/reading-eval.mjs';
+import {evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
 import {retrieveReadingEvidence} from '../server/reading-rag.mjs';
 
 const question='我们之间的沟通和边界要怎么调整？';
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
  {id:'c06',reversed:true,position:'关系挑战'},
+];
+const retrievalCases=[
+ {name:'relationship',question:'我们之间的沟通和边界要怎么调整？',cards,requiredKinds:['orientation','symbolism','relationships']},
+ {name:'career',question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]],requiredKinds:['orientation','symbolism','work']},
+ {name:'choice',question:'两个机会应该如何比较，哪个更适合我？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
+ {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
+ {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
 ];
 const evidence=retrieveReadingEvidence({question,cards});
 const output=JSON.stringify({
@@ -26,11 +33,13 @@ const output=JSON.stringify({
 const messages=buildReadingMessages({question,cards,messages:[]});
 const report={
  prompt:evaluatePromptContract(messages),
+ retrieval:evaluateRetrievalSuite(retrievalCases),
  reading:evaluateReadingFixture({question,cards,output,requiredKinds:['relationships']}),
 };
 const compact={
  prompt:report.prompt,
+ retrieval:{ok:report.retrieval.ok,score:report.retrieval.score,failed:report.retrieval.failed},
  reading:{ok:report.reading.ok,score:report.reading.score,issues:report.reading.issues},
 };
 console.log(JSON.stringify(compact,null,2));
-if(!report.prompt.ok||!report.reading.ok)process.exitCode=1;
+if(!report.prompt.ok||!report.retrieval.ok||!report.reading.ok)process.exitCode=1;
