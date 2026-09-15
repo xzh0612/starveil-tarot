@@ -2,6 +2,7 @@
 
 The local Vite dev and preview servers install `createReadingMiddleware` for:
 - `POST /api/readings/interpret`: grounded Chinese reading and same-deck follow-ups.
+- `POST /api/readings/debug`: local retrieval and Prompt diagnostics; it never calls DeepSeek and does not require an API key.
 - `GET /api/readings/status`: configuration presence and model name, no credentials. This is not a provider health/balance check.
 
 Server-only settings in ignored `frontend/.env.local`:

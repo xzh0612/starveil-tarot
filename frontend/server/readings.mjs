@@ -83,7 +83,8 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
  return async function readingMiddleware(req,res,next){
   const path=req.url?.split('?')[0];
   const recommend=path==='/api/spreads/recommend';
-  if(!recommend&&path!=='/api/readings/interpret'&&path!=='/api/readings/status')return next();
+  const debug=path==='/api/readings/debug';
+  if(!recommend&&!debug&&path!=='/api/readings/interpret'&&path!=='/api/readings/status')return next();
   const reply=(status,data)=>{if(!res.destroyed){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}};
   // This local prototype deliberately exposes paid requests only on loopback.
   const ip=req.socket.remoteAddress;
@@ -93,11 +94,15 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
   }
   if(path.endsWith('/status'))return reply(200,{configured:!!apiKey,provider:'DeepSeek',model});
   if(req.method!=='POST')return reply(405,{error:'请使用 POST 请求。'});
-  if(!apiKey)return reply(503,{error:'后端尚未配置 DeepSeek 密钥。'});
+  if(!debug&&!apiKey)return reply(503,{error:'后端尚未配置 DeepSeek 密钥。'});
   if(!req.headers['content-type']?.startsWith('application/json'))return reply(415,{error:'请发送 JSON 请求。'});
   let body;
   try{let bytes=0;const chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>160000){reply(413,{error:'对话内容过长。'});return;}chunks.push(chunk);}body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{return reply(400,{error:'请求内容不是有效 JSON。'});}
   let messages;try{messages=recommend?buildRecommendationMessages(body):buildReadingMessages(body);}catch(e){return reply(400,{error:e.message});}
+  if(debug){
+   const contextContent=messages[1]?.content??'',context=JSON.parse(contextContent.slice('<starveil_context>\n'.length,-'\n</starveil_context>'.length));
+   return reply(200,{source:'local',provider:'local',model,prompt:{systemChars:messages[0]?.content?.length??0,contextChars:contextContent.length,historyMessages:Math.max(0,messages.length-2)},question:context.question,activeQuestion:context.activeQuestion,retrievalQuestion:context.retrievalQuestion,queryMeta:context.queryMeta,retrievalMeta:context.retrievalMeta,responsePlan:context.responsePlan,evidence:context.evidence,memoryEvidence:context.memoryEvidence});
+  }
   const now=Date.now();while(requests[0]<now-60000)requests.shift();
   if(active>=2||requests.length>=12)return reply(429,{error:'请求较频繁，请稍等片刻再试。'});
   active++;requests.push(now);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);const disconnect=()=>{if(!res.writableEnded)controller.abort();};res.on('close',disconnect);
