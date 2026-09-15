@@ -213,6 +213,14 @@ test('structured output accepts only references from the retrieved evidence set'
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'fake',cardId:'m08',position:'建议'}]}),{cards,evidence}),/引用证据无效/);
 });
 
+test('structured output deduplicates repeated evidence references',()=>{
+ const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[cards[0]]});
+ const reference={evidenceId:evidence[0].evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'};
+ const parsed=parseReadingOutput(JSON.stringify({text:'保持稳定节奏。',references:[reference,reference]}),{cards:[cards[0]],evidence});
+ assert.equal(parsed.references.length,1);
+ assert.equal(parsed.references[0].evidenceId,evidence[0].evidenceId);
+});
+
 test('structured output can cite relevant personal memory with null card coordinates',()=>{
  const memory=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
  const output=JSON.stringify({text:'把先独处整理思绪作为可执行的准备。',references:[{evidenceId:'memory:m1',cardId:null,position:null,claim:'先独处整理思绪'}]});

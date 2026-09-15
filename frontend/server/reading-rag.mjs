@@ -384,7 +384,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if(needsClarification&&allowClarification===false)throw Error('明确主题不允许跳过首轮解读，请重试。');
  if(needsClarification&&!clarification)throw Error('澄清问题格式不正确，请重试。');
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
- const refs=(data.references??[]).slice(0,24).map(item=>validReference(item,evidenceById,cardsById));
+ const refs=[...new Map((data.references??[]).slice(0,24).map(item=>{const reference=validReference(item,evidenceById,cardsById);return [reference.evidenceId,reference];})).values()];
  if(requireReferences&&!needsClarification&&(refs.length<cards.length||cards.some(card=>!refs.some(reference=>reference.cardId===card.id))))throw Error('首轮解读引用没有覆盖全部牌面，请重试。');
  if(requireReferenceClaims&&!needsClarification&&refs.some(reference=>!reference.claim))throw Error('引用说明不能为空，请重试。');
  if(requireReferenceSupport&&!needsClarification&&refs.some(reference=>!claimSupportedByEvidence(reference.claim,evidenceById.get(reference.evidenceId))))throw Error('引用说明与证据不匹配，请重试。');
