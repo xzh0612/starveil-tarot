@@ -64,12 +64,34 @@ export function readingRetrievalFor(question,messages=[]){
  return {activeQuestion,retrievalQuestion,retrievalMeta:analyzeReadingQuestion(retrievalQuestion),inheritedOriginal};
 }
 
-function chineseNgrams(text){
- const value=String(text??'').toLowerCase(),tokens=new Set(value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[]);
+function tokenList(text){
+ const value=String(text??'').toLowerCase(),tokens=value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[];
  // Include overlapping bigrams so short Chinese questions can match source phrases.
  const chars=[...value].filter(char=>/[\u4e00-\u9fff]/.test(char));
- for(let i=0;i<chars.length-1;i++)tokens.add(chars.slice(i,i+2).join(''));
+ for(let i=0;i<chars.length-1;i++)tokens.push(chars.slice(i,i+2).join(''));
  return tokens;
+}
+
+function chineseNgrams(text){
+ return new Set(tokenList(text));
+}
+
+function bm25Score(text,terms,corpus=[]){
+ const tokens=tokenList(text),length=tokens.length||1;
+ if(!terms.size||!tokens.length||!corpus.length)return 0;
+ const counts=new Map();for(const token of tokens)counts.set(token,(counts.get(token)??0)+1);
+ const documents=corpus.map(chunk=>new Set(tokenList(chunk.text)));
+ const averageLength=corpus.reduce((sum,chunk)=>sum+(tokenList(chunk.text).length||1),0)/Math.max(1,corpus.length);
+ const k1=1.2,b=.75,total=corpus.length;
+ let score=0;
+ for(const term of terms){
+  const frequency=counts.get(term)??0;if(!frequency)continue;
+  const documentFrequency=documents.reduce((sum,document)=>sum+(document.has(term)?1:0),0);
+  const idf=Math.log(1+(total-documentFrequency+.5)/(documentFrequency+.5));
+  const denominator=frequency+k1*(1-b+b*length/Math.max(1,averageLength));
+  score+=idf*(frequency*(k1+1)/denominator);
+ }
+ return Math.min(6,score);
 }
 
 function themesFor(question){
@@ -120,9 +142,10 @@ function matchingSignals(chunk,{position,terms,themes,goals=[]}){
  return {matchedTerms,matchedThemes,matchedGoals,matchedPosition};
 }
 
-function scoreChunk(chunk,{position,terms,themes,goals=[]}){
+function scoreChunk(chunk,{position,terms,themes,goals=[],corpus=[]}){
  let score=chunk.base;
  const signals=matchingSignals(chunk,{position,terms,themes,goals});
+ score+=bm25Score(chunk.text,terms,corpus);
  for(const term of signals.matchedTerms)score+=term.length>2?1.4:.35;
  for(const theme of signals.matchedThemes)score+=theme==='reflection'?4:3;
  for(const goal of signals.matchedGoals)score+=goal==='advice'?1.6:1.2;
@@ -171,9 +194,10 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
  return cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
-  const chunks=candidateChunks(card,question).map((chunk,index)=>{
+  const rawChunks=candidateChunks(card,question);
+  const chunks=rawChunks.map((chunk,index)=>{
    const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -196,6 +220,8 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
    retrievalTerms:chunk.matchedTerms,
    retrievalThemes:chunk.matchedThemes,
    retrievalGoals:chunk.matchedGoals,
+   retrievalMethod:'bm25+rules-v1',
+   retrievalScore:Number(chunk.score.toFixed(3)),
    text:chunk.text,
    source:chunk.source,
    sourceLabel:chunk.sourceLabel,

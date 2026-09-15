@@ -81,6 +81,8 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
  assert.ok(application.retrievalReasons.includes('theme_match'));
  assert.ok(application.retrievalTerms.includes('感受'));
  assert.deepEqual(application.retrievalThemes,['relationship']);
+ assert.equal(application.retrievalMethod,'bm25+rules-v1');
+ assert.equal(typeof application.retrievalScore,'number');
  assert.ok(evidence.some(item=>item.retrievalReasons.includes('keyword_match')));
 });
 
