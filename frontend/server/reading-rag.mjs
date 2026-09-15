@@ -4,6 +4,13 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
+const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','法律','律师','诉讼','合同','纠纷','投资','股票','基金','理财','借贷','保险','税务'];
+
+export function requiresProfessionalBoundary(question){
+ const text=String(question??'').toLowerCase();
+ return PROFESSIONAL_BOUNDARY_WORDS.some(word=>text.includes(word));
+}
+
 const THEMES=[
  {name:'relationship',words:['关系','感情','恋爱','爱情','伴侣','前任','暧昧','复合','婚姻','分手','喜欢','相处','沟通','边界','他','她','我们']},
  {name:'career',words:['工作','事业','职业','学习','考研','考试','创业','项目','领导','同事','收入','财务','转行','升职','技能']},
@@ -110,10 +117,13 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):''};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireUncertainty=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
- if(!text.startsWith('{'))return {text,references:[],cardReadings:[],actions:[],followUp:'',uncertainty:''};
+ if(!text.startsWith('{')){
+  if(requireUncertainty)throw Error('高风险问题需要现实依据说明，请重试。');
+  return {text,references:[],cardReadings:[],actions:[],followUp:'',uncertainty:''};
+ }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
  if(!data||typeof data.text!=='string'||!data.text.trim()||data.text.length>20_000)throw Error('解读格式不正确，请重试。');
  const evidenceById=new Map(evidence.map(item=>[item.evidenceId,item])),cardsById=new Map(cards.map(item=>[item.id,item]));
@@ -142,5 +152,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   });
  }
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
- return {text:data.text.trim(),references:refs,cardReadings,actions,followUp:excerpt(data.followUp??'',500),uncertainty:excerpt(data.uncertainty??'',500)};
+ const uncertainty=excerpt(data.uncertainty??'',500);
+ if(requireUncertainty&&!uncertainty)throw Error('高风险问题需要现实依据说明，请重试。');
+ return {text:data.text.trim(),references:refs,cardReadings,actions,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

@@ -82,7 +82,7 @@ type Response = {
 
 后端只解读已确定的牌，不能重新选择牌。已知牌阵会在服务端与目录位置逐项校验，避免把“关系之镜”的牌位套成通用含义。`server/reading-rag.mjs` 会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。只有你在知识库中明确启用的记录才会按相关性作为 `memoryEvidence` 发送，并与牌义证据分开。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。
 
-`server/reading-eval.mjs` 提供不联网的检索、Prompt 和首轮解读回归评分；它复用生产环境的 `retrieveReadingEvidence` 与 `parseReadingOutput`，因此质量门检查的就是实际发送和校验的协议。
+`server/reading-eval.mjs` 提供不联网的检索、Prompt 和首轮解读回归评分；它复用生产环境的 `retrieveReadingEvidence` 与 `parseReadingOutput`，因此质量门检查的就是实际发送和校验的协议。`requiresProfessionalBoundary` 会识别健康、法律、投资等高风险问题；这类模型输出若缺少 `uncertainty` 现实边界，后端会拒绝返回。
 
 ## 资源与来源
 

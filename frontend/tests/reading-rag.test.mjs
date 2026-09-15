@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -56,6 +56,16 @@ test('structured actions must cite evidence from the current reading',()=>{
  const parsed=parseReadingOutput(valid,{cards:[cards[0]],evidence});
  assert.equal(parsed.actions[0].evidenceIds[0],evidence[0].evidenceId);
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',actions:[{text:'做点什么。',evidenceIds:['fake']}]}),{cards:[cards[0]],evidence}),/行动建议引用无效/);
+});
+
+test('high-stakes questions require an explicit reality-based boundary',()=>{
+ const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards:[cards[0]]});
+ assert.equal(requiresProfessionalBoundary('这项投资要不要买？'),true);
+ assert.equal(requiresProfessionalBoundary('这段关系如何沟通？'),false);
+ const noBoundary=JSON.stringify({text:'可以放心买入。',references:[]});
+ assert.throws(()=>parseReadingOutput(noBoundary,{cards:[cards[0]],evidence,requireUncertainty:true}),/高风险问题需要现实依据说明/);
+ const grounded=JSON.stringify({text:'牌面只能作为反思线索。',uncertainty:'投资决定请依据风险承受能力、产品资料和持牌专业意见。'});
+ assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
 });
 
 test('plain text provider responses stay backward compatible without inventing references',()=>{
