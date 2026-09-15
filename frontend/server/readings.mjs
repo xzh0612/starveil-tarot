@@ -21,16 +21,30 @@ function normalizeSpread(value){
  return {id:'custom',name:value.name.trim(),description:value.description.trim(),positions:value.positions.map(position=>position.trim())};
 }
 
-function createResponsePlan(cardCount,hasPriorAssistant){
+function createResponsePlan(cardCount,hasPriorAssistant,historyMessages=0){
  const count=Math.max(1,Math.min(12,cardCount));
- if(hasPriorAssistant)return {turn:'followup',cardCount:count,targetText:'250—600 中文字',requireCardCoverage:false,requireActions:false,requireReferences:false};
+ if(hasPriorAssistant)return {turn:'followup',cardCount:count,historyMessages,targetText:'250—600 中文字',requireCardCoverage:false,requireActions:false,requireReferences:false};
  const min=700+(count-1)*90,max=1100+(count-1)*140;
- return {turn:'first',cardCount:count,targetText:`${min}—${max} 中文字`,requireCardCoverage:true,requireActions:true,requireReferences:true};
+ return {turn:'first',cardCount:count,historyMessages,targetText:`${min}—${max} 中文字`,requireCardCoverage:true,requireActions:true,requireReferences:true};
 }
 
 function readingMaxTokens(cardCount,hasPriorAssistant){
  if(hasPriorAssistant)return 1400;
  return Math.min(3200,Math.max(1400,900+Math.max(1,Math.min(12,cardCount))*140));
+}
+
+function compactHistory(history,{maxMessages=24,maxMessageChars=4_000,maxTotalChars=24_000}={}){
+ let total=0;const selected=[];
+ for(let index=history.length-1;index>=0&&selected.length<maxMessages;index--){
+  const message=history[index],raw=String(message.text??'');
+  const text=raw.length>maxMessageChars?`${raw.slice(0,maxMessageChars-1)}…`:raw;
+  if(total+text.length>maxTotalChars){
+   if(selected.length===0){selected.unshift({...message,text:text.slice(0,maxTotalChars)});total=maxTotalChars;}
+   continue;
+  }
+  selected.unshift({...message,text});total+=text.length;
+ }
+ return selected;
 }
 
 export function buildReadingMessages(body){
@@ -53,8 +67,8 @@ export function buildReadingMessages(body){
  const evidence=retrieveReadingEvidence({question:body.question,cards:body.cards});
  const memoryEvidence=retrieveMemoryEvidence({question:body.question,memories});
  const retrievalMeta=analyzeReadingQuestion(body.question);
- const responsePlan=createResponsePlan(cards.length,history.some(message=>message.role==='assistant'));
- return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${JSON.stringify({question:body.question,spread,cards,evidence,retrievalMeta,responsePlan,memoryEvidence})}\n</starveil_context>`},...history.slice(-24).map(m=>({role:m.role,content:m.text}))];
+ const promptHistory=compactHistory(history),responsePlan=createResponsePlan(cards.length,history.some(message=>message.role==='assistant'),promptHistory.length);
+ return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${JSON.stringify({question:body.question,spread,cards,evidence,retrievalMeta,responsePlan,memoryEvidence})}\n</starveil_context>`},...promptHistory.map(m=>({role:m.role,content:m.text}))];
 }
 
 export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl=fetch,timeoutMs=90000}={}){
