@@ -134,6 +134,12 @@ test('clarification responses may pause interpretation while keeping strict vali
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'请补充方向。',needsClarification:true}),{cards:[cards[0]],evidence,requireCoverage:true}),/澄清问题格式不正确/);
 });
 
+test('focused first readings cannot use clarification to bypass coverage',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'请补充方向。',needsClarification:true,clarification:'你最想先看哪一部分？'});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,allowClarification:false}),/明确主题不允许跳过首轮解读/);
+});
+
 test('structured actions must cite evidence from the current reading',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const valid=JSON.stringify({text:'先观察再沟通。',actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence[0].evidenceId]}]});

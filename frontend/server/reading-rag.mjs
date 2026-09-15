@@ -176,7 +176,7 @@ function validReference(item,evidenceById,cardsById){
  return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireUncertainty=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireUncertainty=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -188,6 +188,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  const evidenceById=new Map(evidence.map(item=>[item.evidenceId,item])),cardsById=new Map(cards.map(item=>[item.id,item]));
  if(data.needsClarification!==undefined&&typeof data.needsClarification!=='boolean')throw Error('澄清问题格式不正确，请重试。');
  const needsClarification=data.needsClarification===true,clarification=excerpt(data.clarification??'',500);
+ if(needsClarification&&allowClarification===false)throw Error('明确主题不允许跳过首轮解读，请重试。');
  if(needsClarification&&!clarification)throw Error('澄清问题格式不正确，请重试。');
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
  const refs=(data.references??[]).slice(0,24).map(item=>validReference(item,evidenceById,cardsById));
