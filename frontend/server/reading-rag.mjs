@@ -216,6 +216,15 @@ function applicationKindsForThemes(themes){
  return [...new Set(kinds)];
 }
 
+function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence){
+ if(Number.isFinite(maxTotalEvidence))return Math.floor(maxTotalEvidence);
+ const count=Array.isArray(cards)?cards.length:0,routing=analyzeReadingQuestion(question);
+ const applicationCount=Math.min(3,Math.max(1,applicationKindsForThemes(routing.themes).length,routing.goals.includes('forecast')?1:0));
+ // Reserve two anchors plus one application/reference layer per card. Keep a
+ // bounded floor for small spreads and a hard ceiling for prompt size.
+ return Math.min(96,Math.max(48,count*(2+applicationCount)));
+}
+
 export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8}={}){
  if(!Array.isArray(evidence))return [];
  const getScore=item=>{
@@ -290,12 +299,12 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
  return perCard;
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8}={}){
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8}={}){
  const evidence=collectReadingEvidence({question,cards,maxPerCard});
- return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence,semanticWeight});
+ return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight});
 }
 
-export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500}={}){
+export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500}={}){
  const evidence=collectReadingEvidence({question,cards,maxPerCard});
  let resolvedScores=semanticScores;
  if(typeof semanticReranker==='function'){
@@ -307,7 +316,7 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
   clearTimeout(timer);
   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
  }
- return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence,semanticWeight});
+ return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){

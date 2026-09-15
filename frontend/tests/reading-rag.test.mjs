@@ -171,6 +171,15 @@ test('global optional selection rotates across cards before taking a second chun
  assert.equal(new Set(optional.map(item=>item.cardId)).size,3);
 });
 
+test('default evidence budget expands for large mixed spreads',()=>{
+ const cardsForSpread=Array.from({length:12},(_,index)=>({id:`m${String(index).padStart(2,'0')}`,reversed:index%2===1,position:`位置 ${index+1}`}));
+ const question='我该如何处理这段关系，同时规划接下来的工作，也想调整自己的状态？';
+ const evidence=retrieveReadingEvidence({question,cards:cardsForSpread});
+ const summary=summarizeReadingEvidence(evidence,cardsForSpread,{themes:analyzeReadingQuestion(question).themes,goals:analyzeReadingQuestion(question).goals});
+ assert.equal(evidence.length,60);
+ assert.deepEqual(summary.missingApplicationCardIds,[]);
+});
+
 test('async semantic reranker receives full candidates and falls back on failure',async()=>{
  const seen=[];
  const boosted=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4,semanticReranker:async({evidence})=>{seen.push(evidence.length);return {'m08:modern':1};}});
