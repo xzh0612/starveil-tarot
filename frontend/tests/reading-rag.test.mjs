@@ -145,6 +145,17 @@ test('semantic reranker hook changes optional ordering without displacing anchor
  assert.equal(direct[0].retrievalScore,6);
 });
 
+test('global optional selection rotates across cards before taking a second chunk',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[
+  {id:'m08',reversed:false,position:'建议'},
+  {id:'c06',reversed:true,position:'关系挑战'},
+  {id:'w01',reversed:false,position:'过去'},
+ ],maxPerCard:7,maxTotalEvidence:9});
+ const optional=evidence.filter(item=>!item.retrievalRequired);
+ assert.equal(optional.length,3);
+ assert.equal(new Set(optional.map(item=>item.cardId)).size,3);
+});
+
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
  const evidence=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[
   {id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true},

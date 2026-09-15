@@ -227,7 +227,16 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  const optional=ranked.filter(item=>item.retrievalRequired!==true).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
  const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
  const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
- return [...required,...optional].slice(0,budget);
+ const optionalBudget=Math.max(0,budget-required.length),remaining=[...optional],selected=[];
+ while(selected.length<optionalBudget&&remaining.length){
+  const represented=new Set(selected.map(item=>item.cardId??item.evidenceId));
+  const fresh=remaining.filter(item=>!represented.has(item.cardId??item.evidenceId));
+  const pool=fresh.length?fresh:remaining;
+  const next=pool[0];
+  selected.push(next);
+  remaining.splice(remaining.indexOf(next),1);
+ }
+ return [...required,...selected];
 }
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8}={}){
