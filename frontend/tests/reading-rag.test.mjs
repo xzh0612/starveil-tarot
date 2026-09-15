@@ -356,6 +356,12 @@ test('clarification must contain a concrete question cue',()=>{
  assert.throws(()=>parseReadingOutput(vague,{cards:[cards[0]],evidence,requireCoverage:true}),/澄清问题格式不正确/);
 });
 
+test('clarification cannot carry a partial structured reading',()=>{
+ const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
+ const output=JSON.stringify({text:'我先确认方向。',needsClarification:true,clarification:'这次更想看关系还是事业？',cardReadings:[{cardId:'m08',position:'建议',reading:'先观察一个角度。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence}),/澄清时不能同时返回结构化解读/);
+});
+
 test('focused first readings cannot use clarification to bypass coverage',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'请补充方向。',needsClarification:true,clarification:'你最想先看哪一部分？'});
