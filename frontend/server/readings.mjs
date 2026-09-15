@@ -48,8 +48,12 @@ function compactHistory(history,{maxMessages=24,maxMessageChars=4_000,maxTotalCh
 }
 
 function fenceHistoryMessage(message){
- const payload=JSON.stringify({role:message.role,text:message.text}).replaceAll('<','\\u003c');
+ const payload=safeJson({role:message.role,text:message.text});
  return `<starveil_history>\n${payload}\n</starveil_history>`;
+}
+
+function safeJson(value){
+ return JSON.stringify(value).replaceAll('<','\\u003c');
 }
 
 export function buildReadingMessages(body,{evidenceOverride=null}={}){
@@ -77,7 +81,7 @@ export function buildReadingMessages(body,{evidenceOverride=null}={}){
  if(evidenceMeta.missingAnchorCardIds.length)throw new Error('检索证据不完整，请重试。');
  const promptHistory=compactHistory(history),responsePlan=createResponsePlan(cards.length,history.some(message=>message.role==='assistant'),promptHistory.length);
  const allowClarification=history.some(message=>message.role==='assistant')||retrievalMeta.confidence!=='focused';
- return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${JSON.stringify({question:body.question,activeQuestion,retrievalQuestion,queryMeta:{inheritedOriginal},spread,cards,evidence,evidenceMeta,retrievalMeta,responsePlan,clarificationMeta:{allowClarification},safetyMeta:{requiresProfessionalBoundary:requiresBoundary},memoryEvidence})}\n</starveil_context>`},...promptHistory.map(m=>({role:m.role,content:fenceHistoryMessage(m)}))];
+ return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${safeJson({question:body.question,activeQuestion,retrievalQuestion,queryMeta:{inheritedOriginal},spread,cards,evidence,evidenceMeta,retrievalMeta,responsePlan,clarificationMeta:{allowClarification},safetyMeta:{requiresProfessionalBoundary:requiresBoundary},memoryEvidence})}\n</starveil_context>`},...promptHistory.map(m=>({role:m.role,content:fenceHistoryMessage(m)}))];
 }
 
 export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl=fetch,timeoutMs=90000,semanticReranker=null,semanticWeight=8,semanticTimeoutMs=1_500}={}){
