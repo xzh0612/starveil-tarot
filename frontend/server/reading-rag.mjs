@@ -13,7 +13,7 @@ export function requiresProfessionalBoundary(question){
 
 const THEMES=[
  {name:'relationship',words:['关系','感情','恋爱','爱情','伴侣','对象','前任','暧昧','复合','婚姻','分手','喜欢','相处','沟通','边界','冷战','联系','聊天','告白','家庭','朋友'],weakWords:['他','她','我们']},
- {name:'career',words:['工作','事业','职业','学习','备考','复习','考研','考试','创业','项目','领导','同事','收入','财务','转行','跳槽','求职','面试','绩效','薪资','升职','技能','论文','升学']},
+ {name:'career',words:['工作','事业','职业','学习','备考','复习','考研','考试','创业','项目','领导','同事','收入','财务','转行','跳槽','辞职','换岗','职场','就业','求职','面试','绩效','薪资','升职','技能','论文','升学']},
  {name:'choice',words:['选择','要不要','是否','该不该','决定','比较','哪个','还是','机会','两条路','取舍','纠结','路径']},
  {name:'future',words:['未来','接下来','趋势','之后','近期','今年','明年','发展','走向','时间']},
  {name:'reflection',words:['自己','自我','迷茫','成长','情绪','压力','焦虑','不安','疲惫','方向','生活','状态','疗愈','内耗','困惑','意义','自信']},
@@ -76,20 +76,40 @@ function chineseNgrams(text){
  return new Set(tokenList(text));
 }
 
+function queryExpansionTerms(routing){
+ const terms=new Set();
+ for(const themeName of routing.themes??[]){
+  const theme=THEMES.find(item=>item.name===themeName);
+  for(const term of theme?.words??[])terms.add(term);
+ }
+ for(const goalName of routing.goals??[]){
+  const goal=GOALS.find(item=>item.name===goalName);
+  for(const term of goal?.words??[])terms.add(term);
+ }
+ return terms;
+}
+
+function weightedQueryTerms(question,routing){
+ const direct=chineseNgrams(question),expanded=queryExpansionTerms(routing),weights=new Map([...direct].map(term=>[term,1]));
+ for(const term of expanded)if(!weights.has(term))weights.set(term,.35);
+ return {direct,expanded,weights};
+}
+
 function bm25Score(text,terms,corpus=[]){
  const tokens=tokenList(text),length=tokens.length||1;
- if(!terms.size||!tokens.length||!corpus.length)return 0;
+ const weighted=terms instanceof Map?terms:new Map((terms??[]).map(term=>[term,1]));
+ if(!weighted.size||!tokens.length||!corpus.length)return 0;
  const counts=new Map();for(const token of tokens)counts.set(token,(counts.get(token)??0)+1);
  const documents=corpus.map(chunk=>new Set(tokenList(chunk.text)));
  const averageLength=corpus.reduce((sum,chunk)=>sum+(tokenList(chunk.text).length||1),0)/Math.max(1,corpus.length);
  const k1=1.2,b=.75,total=corpus.length;
  let score=0;
- for(const term of terms){
+ for(const [term,weight] of weighted){
   const frequency=counts.get(term)??0;if(!frequency)continue;
   const documentFrequency=documents.reduce((sum,document)=>sum+(document.has(term)?1:0),0);
   const idf=Math.log(1+(total-documentFrequency+.5)/(documentFrequency+.5));
   const denominator=frequency+k1*(1-b+b*length/Math.max(1,averageLength));
-  score+=idf*(frequency*(k1+1)/denominator);
+  score+=weight*idf*(frequency*(k1+1)/denominator);
  }
  return Math.min(6,score);
 }
@@ -126,10 +146,12 @@ function goalMatchesChunk(goal,kind){
  return false;
 }
 
-function matchingSignals(chunk,{position,terms,themes,goals=[]}){
+function matchingSignals(chunk,{position,terms,themes,goals=[],directTerms=new Set()}){
  const text=chunk.text.toLowerCase();
- const termList=terms instanceof Set?[...terms]:Array.isArray(terms)?terms:[];
+ const termList=terms instanceof Map?[...terms.keys()]:terms instanceof Set?[...terms]:Array.isArray(terms)?terms:[];
  const matchedTerms=termList.filter(term=>text.includes(term)).slice(0,8);
+ const matchedDirectTerms=matchedTerms.filter(term=>directTerms.has(term));
+ const matchedExpandedTerms=matchedTerms.filter(term=>!directTerms.has(term));
  const matchedThemes=themes.filter(theme=>{
   if(theme==='relationship')return chunk.kind==='relationships';
   if(theme==='career')return chunk.kind==='work';
@@ -139,12 +161,12 @@ function matchingSignals(chunk,{position,terms,themes,goals=[]}){
  });
  const matchedGoals=goals.filter(goal=>goalMatchesChunk(goal,chunk.kind));
  const matchedPosition=POSITION_HINTS.some(hint=>hint.words.some(word=>String(position).includes(word))&&chunk.kind===hint.kind);
- return {matchedTerms,matchedThemes,matchedGoals,matchedPosition};
+ return {matchedTerms,matchedDirectTerms,matchedExpandedTerms,matchedThemes,matchedGoals,matchedPosition};
 }
 
-function scoreChunk(chunk,{position,terms,themes,goals=[],corpus=[]}){
+function scoreChunk(chunk,{position,terms,themes,goals=[],corpus=[],directTerms=new Set()}){
  let score=chunk.base;
- const signals=matchingSignals(chunk,{position,terms,themes,goals});
+ const signals=matchingSignals(chunk,{position,terms,themes,goals,directTerms});
  score+=bm25Score(chunk.text,terms,corpus);
  for(const term of signals.matchedTerms)score+=term.length>2?1.4:.35;
  for(const theme of signals.matchedThemes)score+=theme==='reflection'?4:3;
@@ -165,7 +187,8 @@ function retrievalReasons(chunk,signals){
  if(signals.matchedThemes.length)reasons.push('theme_match');
  if(signals.matchedGoals.length&&!['symbolism','orientation'].includes(chunk.kind))reasons.push('goal_match');
  if(signals.matchedPosition)reasons.push('position_match');
- if(signals.matchedTerms.length)reasons.push('keyword_match');
+ if(signals.matchedDirectTerms.length)reasons.push('keyword_match');
+ if(signals.matchedExpandedTerms.length&&!['symbolism','orientation'].includes(chunk.kind))reasons.push('expansion_match');
  if(!reasons.length)reasons.push('fallback_context');
  return reasons;
 }
@@ -190,14 +213,14 @@ function applicationKindsForThemes(themes){
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
- const terms=chineseNgrams(question),routing=analyzeReadingQuestion(question),themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
+ const routing=analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,routing),terms=queryTerms.weights,themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
  const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
   const rawChunks=candidateChunks(card,question);
   const chunks=rawChunks.map((chunk,index)=>{
-   const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
+   const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals,directTerms:queryTerms.direct});
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks,directTerms:queryTerms.direct}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedDirectTerms:signals.matchedDirectTerms,matchedExpandedTerms:signals.matchedExpandedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -218,9 +241,11 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvi
    tier:evidenceTier(chunk.kind),
    retrievalReasons:chunk.retrievalReasons,
    retrievalTerms:chunk.matchedTerms,
+   retrievalDirectTerms:chunk.matchedDirectTerms,
+   retrievalExpandedTerms:chunk.matchedExpandedTerms,
    retrievalThemes:chunk.matchedThemes,
    retrievalGoals:chunk.matchedGoals,
-   retrievalMethod:'bm25+rules-v1',
+   retrievalMethod:'bm25+rules+expansion-v1',
    retrievalScore:Number(chunk.score.toFixed(3)),
    retrievalRequired:['symbolism','orientation'].includes(chunk.kind),
    text:chunk.text,

@@ -81,7 +81,8 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
  assert.ok(application.retrievalReasons.includes('theme_match'));
  assert.ok(application.retrievalTerms.includes('感受'));
  assert.deepEqual(application.retrievalThemes,['relationship']);
- assert.equal(application.retrievalMethod,'bm25+rules-v1');
+ assert.equal(application.retrievalMethod,'bm25+rules+expansion-v1');
+ assert.ok(application.retrievalDirectTerms.includes('感受'));
  assert.equal(typeof application.retrievalScore,'number');
  assert.ok(evidence.some(item=>item.retrievalReasons.includes('keyword_match')));
 });
@@ -91,6 +92,13 @@ test('retrieval exposes response-goal signals for application evidence',()=>{
  const application=evidence.find(item=>item.kind==='relationships');
  assert.ok(application.retrievalGoals.includes('advice'));
  assert.ok(application.retrievalReasons.includes('goal_match'));
+});
+
+test('retrieval keeps direct and low-weight lexicon expansion terms separate',()=>{
+ const evidence=retrieveReadingEvidence({question:'我想跳槽，怎么准备？',cards:[{id:'m00',reversed:false,position:'建议'}]});
+ const work=evidence.find(item=>item.kind==='work');
+ assert.ok(work.retrievalExpandedTerms.includes('辞职'));
+ assert.ok(!work.retrievalDirectTerms.includes('辞职'));
 });
 
 test('retrieval selects relationship context for relationship questions',()=>{
