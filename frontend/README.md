@@ -9,6 +9,14 @@ npm run dev -- --host 0.0.0.0 --port 4173 --strictPort
 
 打开 http://localhost:4173 。生产构建：`npm run build`。领域测试：`node --test tests/domain.test.mjs`。
 
+运行 RAG／Prompt 离线质量门：
+
+```sh
+npm run eval:reading
+```
+
+质量门不会调用付费模型，固定检查检索主题是否命中、每张牌是否有正逆位证据、首轮是否逐牌覆盖、引用是否来自本次证据集、回答是否包含可执行动作，以及 system／user 消息是否保留证据边界和 JSON 输出约束。要回归一次真实模型输出，可把响应 JSON 传给 `evaluateReadingFixture`，不需要改动生产接口。
+
 ## 当前可操作能力
 
 - 全屏单页：开门、占卜室、牌阵、抽牌、翻牌、阅读面板、档案、图鉴、知识库、设置。
@@ -73,6 +81,8 @@ type Response = {
 ```
 
 后端只解读已确定的牌，不能重新选择牌。已知牌阵会在服务端与目录位置逐项校验，避免把“关系之镜”的牌位套成通用含义。`server/reading-rag.mjs` 会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。只有你在知识库中明确启用的记录才会按相关性作为 `memoryEvidence` 发送，并与牌义证据分开。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。
+
+`server/reading-eval.mjs` 提供不联网的检索、Prompt 和首轮解读回归评分；它复用生产环境的 `retrieveReadingEvidence` 与 `parseReadingOutput`，因此质量门检查的就是实际发送和校验的协议。
 
 ## 资源与来源
 

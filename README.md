@@ -28,6 +28,14 @@ npm run dev -- --host 0.0.0.0 --port 4173 --strictPort
 npm run build
 ```
 
+RAG 与 Prompt 离线质量门：
+
+```bash
+npm --prefix frontend run eval:reading
+```
+
+它不调用 DeepSeek，只用固定问题、牌面和模拟 JSON 检查证据主题覆盖、逐牌覆盖、引用合法性、可执行建议和 Prompt 上下文边界。
+
 ## DeepSeek 配置
 
 复制 `frontend/.env.example` 为 `frontend/.env.local`，填入后端变量：
@@ -51,7 +59,7 @@ Vite 本地服务器会挂载两个接口：
 node --test tests/*.test.mjs
 ```
 
-包含牌义完整性、固定牌序、随机洗牌、牌阵推荐、DeepSeek 后端校验、网站静态资源和 Sites 构建检查。
+包含牌义完整性、固定牌序、随机洗牌、牌阵推荐、DeepSeek 后端校验、RAG／Prompt 质量门、网站静态资源和 Sites 构建检查。
 
 ## 目录
 
