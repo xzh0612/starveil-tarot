@@ -107,10 +107,11 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
  const terms=chineseNgrams(question),limit=Math.max(1,Math.min(10,max));
  return memories.filter(memory=>memory&&memory.enabled===true&&typeof memory.id==='string'&&memory.id.length<=120&&typeof memory.text==='string'&&memory.text.trim())
   .map((memory,index)=>{
-   const text=memory.text.trim().slice(0,2_000),lower=text.toLowerCase();
-   let score=0;for(const term of terms)if(lower.includes(term))score+=term.length>2?1.4:.35;
-   return {memory,index,text,score};
-  })
+  const text=memory.text.trim().slice(0,2_000),lower=text.toLowerCase();
+  let score=0;for(const term of terms)if(lower.includes(term))score+=term.length>2?1.4:.35;
+  return {memory,index,text,score};
+ })
+  .filter(item=>item.score>0)
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
   .map(({memory,text})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',text,source:'memory',sourceLabel:'你确认的知识库',url:null}));

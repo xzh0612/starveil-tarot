@@ -38,8 +38,14 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
   {id:'m3',text:'这条记录不应发送。',enabled:false},
  ]});
  assert.equal(evidence[0].evidenceId,'memory:m1');
+ assert.ok(!evidence.some(item=>item.evidenceId==='memory:m2'));
  assert.ok(!evidence.some(item=>item.evidenceId==='memory:m3'));
  assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
+});
+
+test('memory retrieval returns no unrelated personal records',()=>{
+ const evidence=retrieveMemoryEvidence({question:'我该如何准备考试？',memories:[{id:'m1',text:'我喜欢在周末散步。',enabled:true},{id:'m2',text:'家里的猫叫月光。',enabled:true}]});
+ assert.deepEqual(evidence,[]);
 });
 
 test('structured output accepts only references from the retrieved evidence set',()=>{
