@@ -390,6 +390,12 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
 });
 
+test('high-stakes uncertainty must name a reality check rather than a vague disclaimer',()=>{
+ const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'请谨慎。',uncertainty:'不确定。'});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireRealityBoundary:true}),/高风险问题需要现实依据说明/);
+});
+
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
  assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});

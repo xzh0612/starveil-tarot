@@ -59,7 +59,7 @@ function safeJson(value){
 function repairCode(error){
  const message=String(error?.message??'');
  const rules=[
-  [/高风险问题需要现实依据说明/u,'missing_uncertainty'],
+  [/高风险问题需要现实依据说明/u,'missing_reality_boundary'],
   [/首轮解读必须包含不确定性说明/u,'missing_uncertainty'],
   [/首轮解读必须返回结构化 JSON/u,'output_not_json'],
   [/引用没有覆盖全部牌面/u,'missing_reference_coverage'],

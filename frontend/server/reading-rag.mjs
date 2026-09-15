@@ -383,6 +383,11 @@ function isConcreteAction(text){
  const value=String(text??'').trim();
  return value.length>=6&&ACTION_VERB_PATTERN.test(value)&&ACTION_MARKER_PATTERN.test(value);
 }
+const REALITY_BOUNDARY_PATTERN=/现实|核实|资料|专业|医生|律师|持牌|风险|证据|咨询|法规|合同|投资|财务/u;
+function hasRealityBoundary(text){
+ const value=String(text??'').trim();
+ return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
+}
 
 export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireSynthesis=false,requireSynthesisSupport=false,requireUncertainty=false,requireRealityBoundary=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
@@ -454,6 +459,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  for(const value of ['followUp','uncertainty'])if(data[value]!==undefined&&typeof data[value]!=='string')throw Error('解读格式不正确，请重试。');
  const uncertainty=excerpt(data.uncertainty??'',500);
  if((requireUncertainty||requireRealityBoundary)&&!needsClarification&&!uncertainty)throw Error(requireRealityBoundary?'高风险问题需要现实依据说明，请重试。':'首轮解读必须包含不确定性说明，请重试。');
+ if(requireRealityBoundary&&!needsClarification&&!hasRealityBoundary(uncertainty))throw Error('高风险问题需要现实依据说明，请重试。');
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
