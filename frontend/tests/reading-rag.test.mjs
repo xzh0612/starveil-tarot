@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -167,6 +167,18 @@ test('async semantic reranker receives full candidates and falls back on failure
  assert.ok(fallback.every(item=>item.retrievalSemanticScore===0));
  const timed=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxTotalEvidence:4,semanticTimeoutMs:5,semanticReranker:()=>new Promise(()=>{})});
  assert.ok(timed.every(item=>item.retrievalSemanticScore===0));
+});
+
+test('evidence summary reports tier and per-card coverage for prompt diagnostics',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards});
+ const summary=summarizeReadingEvidence(evidence,cards);
+ assert.equal(summary.total,evidence.length);
+ assert.equal(summary.requiredCount,4);
+ assert.deepEqual(summary.missingAnchorCardIds,[]);
+ assert.equal(summary.perCard.m08.hasSymbolism,true);
+ assert.equal(summary.perCard.m08.hasOrientation,true);
+ assert.ok(summary.tiers.anchor>=4);
+ assert.equal(summary.semanticCount,0);
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{

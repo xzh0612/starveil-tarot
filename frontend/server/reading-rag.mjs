@@ -320,6 +320,28 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .map(({memory,text})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
 }
 
+export function summarizeReadingEvidence(evidence,cards=[]){
+ const items=Array.isArray(evidence)?evidence:[],expected=[...new Set((Array.isArray(cards)?cards:[]).map(card=>card?.id).filter(Boolean))];
+ const selectedCardIds=[...new Set(items.map(item=>item?.cardId).filter(Boolean))];
+ const countsBy=(values)=>Object.fromEntries([...new Set(values)].map(value=>[value,values.filter(item=>item===value).length]));
+ const perCard=Object.fromEntries(expected.map(cardId=>{
+  const cardItems=items.filter(item=>item?.cardId===cardId),kinds=new Set(cardItems.map(item=>item.kind));
+  return [cardId,{total:cardItems.length,anchorCount:cardItems.filter(item=>item.tier==='anchor').length,applicationKinds:[...new Set(cardItems.filter(item=>item.tier==='application').map(item=>item.kind))].sort(),hasSymbolism:kinds.has('symbolism'),hasOrientation:kinds.has('orientation')}];
+ }));
+ return {
+  total:items.length,
+  requiredCount:items.filter(item=>item?.retrievalRequired===true).length,
+  optionalCount:items.filter(item=>item?.retrievalRequired!==true).length,
+  selectedCardIds,
+  expectedCardIds:expected,
+  missingAnchorCardIds:expected.filter(cardId=>!perCard[cardId].hasSymbolism||!perCard[cardId].hasOrientation),
+  tiers:countsBy(items.map(item=>item?.tier).filter(Boolean)),
+  kinds:countsBy(items.map(item=>item?.kind).filter(Boolean)),
+  semanticCount:items.filter(item=>Number(item?.retrievalSemanticScore)>0).length,
+  perCard,
+ };
+}
+
 function validReference(item,evidenceById,cardsById){
  if(!item||typeof item!=='object'||typeof item.evidenceId!=='string')throw Error('引用证据无效。');
  const evidence=evidenceById.get(item.evidenceId);
