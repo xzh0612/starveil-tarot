@@ -6,3 +6,4 @@ dist/
 .codegraph/
 .playwright-cli/
 output/
+.workbuddy/
