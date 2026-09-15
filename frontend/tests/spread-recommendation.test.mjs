@@ -1,0 +1,31 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {spreads} from '../src/domain.js';
+import {recommendLocalSpreads} from '../src/spread-recommendation.js';
+
+test('local recommendations prioritize relationship questions with a useful reason',()=>{
+ const result=recommendLocalSpreads('我和她还有机会继续发展吗？');
+ assert.ok(result.length>=2&&result.length<=3);
+ assert.equal(result[0].id,'love');
+ assert.ok(result[0].reason.length>=20);
+ assert.ok(spreads.some(s=>s.id===result[0].id));
+});
+
+test('local recommendations prioritize career questions and remain deterministic',()=>{
+ const question='我该不该换工作，下一步职业方向是什么？';
+ const first=recommendLocalSpreads(question),second=recommendLocalSpreads(question);
+ assert.deepEqual(first,second);
+ assert.equal(first[0].id,'career');
+ assert.equal(new Set(first.map(item=>item.id)).size,first.length);
+});
+
+test('local recommendations use a broad reflective spread for an open question',()=>{
+ const result=recommendLocalSpreads('最近有点迷茫，想知道现在该如何整理自己');
+ assert.ok(['three','one','time'].includes(result[0].id));
+ assert.ok(result.every(item=>item.reason&&item.reason.length<=300));
+});
+
+test('empty or whitespace questions return no recommendations',()=>{
+ assert.deepEqual(recommendLocalSpreads('   '),[]);
+ assert.deepEqual(recommendLocalSpreads(''),[]);
+});

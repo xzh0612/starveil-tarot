@@ -1,4 +1,5 @@
 .recommend-empty{font-size:13px;color:#cbb6d7;padding:22px 0}
+.recommend-notice{font-size:11px;color:#cbb6d7;border-left:1px solid #d5bfe160;padding:9px 12px;margin:18px 0 0;background:#b69ac80a}
 .recommend-loading{padding:24px 16px;border:1px solid #d5bfe12b;background:#b69ac80a;font-size:13px;color:#dfcfe9;border-radius:6px;margin:18px 0}
 .recommend-loading>span{display:inline-block;width:7px;height:7px;background:#d7b8ef;border-radius:50%;margin-right:12px;animation:pulse 1.5s infinite}.recommend-loading small{display:block;font-size:11px;margin:9px 0 0 19px;color:#b7a0c7}
 .recommend-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:25px 0 14px}.recommend-heading .eyebrow{margin:0;letter-spacing:.1em}.recommend-heading>small{font-size:10px;color:#b6a2bf}
