@@ -74,6 +74,7 @@ function repairCode(error){
   [/逐牌解读牌位不匹配/u,'card_position_mismatch'],
   [/逐牌解读引用无效/u,'invalid_card_evidence'],
   [/逐牌解读格式不正确/u,'invalid_card_reading'],
+  [/逐牌解读必须引用该牌的核心锚点/u,'missing_card_anchor'],
   [/首轮解读需要行动建议/u,'missing_actions'],
   [/行动建议必须引用核心或应用证据/u,'action_evidence_tier'],
   [/行动建议引用无效/u,'invalid_action_evidence'],
