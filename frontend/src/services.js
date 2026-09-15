@@ -2,7 +2,7 @@ import {cardById} from './domain.js';
 import {witchClips} from './witch-animation.js';
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
  * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?}
- * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?, actions?, references:[{evidenceId, cardId, position, claim}], followUp?, uncertainty?}
+ * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?, actions?, references:[{evidenceId, cardId, position, claim, kind, tier, source, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
  */
 export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],signal}){
  const endpoint=import.meta.env.VITE_READING_ENDPOINT;

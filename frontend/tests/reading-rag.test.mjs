@@ -67,6 +67,9 @@ test('structured output accepts only references from the retrieved evidence set'
  const parsed=parseReadingOutput(valid,{cards,evidence});
  assert.equal(parsed.text,'把稳定节奏拆成可执行的小步。');
  assert.equal(parsed.references[0].evidenceId,evidence[0].evidenceId);
+ assert.equal(parsed.references[0].tier,evidence[0].tier);
+ assert.equal(parsed.references[0].sourceLabel,evidence[0].sourceLabel);
+ assert.deepEqual(parsed.references[0].retrievalReasons,evidence[0].retrievalReasons);
  assert.equal(parsed.followUp,'你最容易在哪个时段中断？');
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'fake',cardId:'m08',position:'建议'}]}),{cards,evidence}),/引用证据无效/);
 });
