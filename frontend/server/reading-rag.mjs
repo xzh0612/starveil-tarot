@@ -369,6 +369,14 @@ function claimSupportedByEvidence(claim,evidence){
  return claimTerms.some(term=>evidenceTerms.has(term));
 }
 
+function isConcreteClarification(text){
+ const value=String(text??'').trim();
+ if(value.length<4)return false;
+ const marks=(value.match(/[？?]/g)??[]).length;
+ if(marks>1)return false;
+ return marks===1||/[哪什么如何怎么是否还是谁何时什么时候哪里多少为何为什么更想想看先看]/u.test(value);
+}
+
 export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireSynthesis=false,requireUncertainty=false,requireRealityBoundary=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
@@ -382,7 +390,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if(data.needsClarification!==undefined&&typeof data.needsClarification!=='boolean')throw Error('澄清问题格式不正确，请重试。');
  const needsClarification=data.needsClarification===true,clarification=excerpt(data.clarification??'',500);
  if(needsClarification&&allowClarification===false)throw Error('明确主题不允许跳过首轮解读，请重试。');
- if(needsClarification&&!clarification)throw Error('澄清问题格式不正确，请重试。');
+ if(needsClarification&&!isConcreteClarification(clarification))throw Error('澄清问题格式不正确，请重试。');
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
  const refs=[];const seenReferenceIds=new Set();
  for(const item of data.references??[]){

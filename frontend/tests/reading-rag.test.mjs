@@ -308,6 +308,12 @@ test('clarification responses may pause interpretation while keeping strict vali
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'请补充方向。',needsClarification:true}),{cards:[cards[0]],evidence,requireCoverage:true}),/澄清问题格式不正确/);
 });
 
+test('clarification must contain a concrete question cue',()=>{
+ const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
+ const vague=JSON.stringify({text:'请补充方向。',needsClarification:true,clarification:'请补充。'});
+ assert.throws(()=>parseReadingOutput(vague,{cards:[cards[0]],evidence,requireCoverage:true}),/澄清问题格式不正确/);
+});
+
 test('focused first readings cannot use clarification to bypass coverage',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'请补充方向。',needsClarification:true,clarification:'你最想先看哪一部分？'});
