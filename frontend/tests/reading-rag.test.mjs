@@ -84,6 +84,12 @@ test('focused career retrieval excludes unrelated relationship application chunk
  assert.ok(!evidence.some(item=>item.kind==='relationships'));
 });
 
+test('mixed questions retain one application chunk for each explicit domain',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系，同时规划接下来的工作？',cards:[cards[0]],maxPerCard:5});
+ assert.ok(evidence.some(item=>item.kind==='relationships'));
+ assert.ok(evidence.some(item=>item.kind==='work'));
+});
+
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
  const evidence=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[
   {id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true},

@@ -133,6 +133,16 @@ function focusedApplicationKinds(themes){
  return new Set();
 }
 
+function applicationKindsForThemes(themes){
+ const kinds=[];
+ for(const theme of themes){
+  if(theme==='relationship')kinds.push('relationships');
+  if(theme==='career')kinds.push('work');
+  if(theme==='reflection')kinds.push('reflection');
+ }
+ return [...new Set(kinds)];
+}
+
 export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const terms=chineseNgrams(question),themes=themesFor(question),limit=Math.max(3,Math.min(7,maxPerCard));
@@ -147,7 +157,11 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
   const focusedKinds=focusedApplicationKinds(themes);
   const candidates=focusedKinds?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||focusedKinds.has(chunk.kind)):sorted;
-  const chosen=[...required,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
+  // Mixed questions need one application chunk per explicit domain before
+  // lower-priority reference chunks fill the remaining budget.
+  const applicationKinds=applicationKindsForThemes(themes);
+  const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);
+  const chosen=[...required,...thematic,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
   return chosen.map(chunk=>({
    evidenceId:`${card.id}:${chunk.kind}`,
    cardId:card.id,
