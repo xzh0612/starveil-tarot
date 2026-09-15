@@ -62,7 +62,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const issues=[...retrieval.issues];
  let parsed=null,relaxed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}

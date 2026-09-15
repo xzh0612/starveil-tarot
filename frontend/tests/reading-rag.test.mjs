@@ -68,6 +68,13 @@ test('first structured reading requires a top-level reference for every card',()
  assert.throws(()=>parseReadingOutput(missingReference,{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true}),/引用没有覆盖全部牌面/);
 });
 
+test('first structured citations require a concise support claim',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'先观察再沟通。',cardReadings:[{cardId:'m08',position:'建议',reading:'观察一个可验证的角度。',evidenceIds:[orientation.evidenceId]}],actions:[{text:'今天记录一次沟通并在一周后复盘。',evidenceIds:[orientation.evidenceId]}],references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/引用说明不能为空/);
+});
+
 test('clarification responses may pause interpretation while keeping strict validation available',()=>{
  const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
  const clarification=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？',followUp:'请选择一个最想靠近的主题。'});
