@@ -211,7 +211,26 @@ function applicationKindsForThemes(themes){
  return [...new Set(kinds)];
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48}={}){
+export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8}={}){
+ if(!Array.isArray(evidence))return [];
+ const getScore=item=>{
+  const raw=semanticScores instanceof Map?semanticScores.get(item.evidenceId):semanticScores?.[item.evidenceId];
+  const value=Number(raw);
+  return Number.isFinite(value)?Math.max(0,Math.min(1,value)):0;
+ };
+ const weight=Number.isFinite(semanticWeight)?Math.max(0,Math.min(20,semanticWeight)):8;
+ const ranked=evidence.map(item=>{
+  const semanticScore=getScore(item),score=Number((Number(item.retrievalScore??0)+semanticScore*weight).toFixed(3));
+  return {...item,retrievalScore:score,retrievalSemanticScore:semanticScore,retrievalMethod:semanticScore>0?`${item.retrievalMethod}+semantic-v1`:item.retrievalMethod};
+ });
+ const required=ranked.filter(item=>item.retrievalRequired===true);
+ const optional=ranked.filter(item=>item.retrievalRequired!==true).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
+ const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
+ const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
+ return [...required,...optional].slice(0,budget);
+}
+
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const routing=analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,routing),terms=queryTerms.weights,themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
  const perCard=cards.flatMap(card=>{
@@ -254,11 +273,7 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvi
    url:chunk.url??null,
  }));
  });
- const anchorEvidence=perCard.filter(item=>item.retrievalRequired);
- const optional=perCard.filter(item=>!item.retrievalRequired).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
- const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
- const budget=Math.max(anchorEvidence.length,Math.min(96,Math.max(1,requested)));
- return [...anchorEvidence,...optional].slice(0,budget);
+ return rerankReadingEvidence(perCard,{semanticScores,maxTotalEvidence,semanticWeight});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){

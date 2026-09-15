@@ -45,14 +45,14 @@ export function evaluatePromptContract(messages=[]){
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
  if(!/goal|目标/i.test(system))issues.push('missing_goal_routing');
- if(!/retrievalMethod|retrievalScore/i.test(system))issues.push('missing_ranker_metadata');
+ if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/i.test(system))issues.push('missing_ranker_metadata');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
  if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
  if(!/tier|retrievalReasons/.test(user))issues.push('missing_evidence_metadata');
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
- if(!/retrievalMethod|retrievalScore/.test(user))issues.push('missing_ranker_metadata_context');
+ if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/.test(user))issues.push('missing_ranker_metadata_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),

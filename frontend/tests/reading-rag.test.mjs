@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,rerankReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -127,6 +127,22 @@ test('global evidence budget keeps anchors for every card before optional chunks
   assert.ok(evidence.some(item=>item.cardId===card.id&&item.kind==='symbolism'));
   assert.ok(evidence.some(item=>item.cardId===card.id&&item.kind==='orientation'));
  }
+});
+
+test('semantic reranker hook changes optional ordering without displacing anchors',()=>{
+ const base=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4});
+ assert.equal(base.length,4);
+ assert.equal(base[0].retrievalRequired,true);
+ const boosted=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4,semanticScores:{'m08:modern':1}});
+ assert.equal(boosted.length,4);
+ assert.equal(boosted[0].retrievalRequired,true);
+ const modern=boosted.find(item=>item.kind==='modern');
+ assert.equal(modern.retrievalSemanticScore,1);
+ assert.ok(modern.retrievalMethod.endsWith('+semantic-v1'));
+ assert.equal(modern.retrievalScore,9);
+ const direct=rerankReadingEvidence([{evidenceId:'x',retrievalScore:2,retrievalRequired:false,retrievalMethod:'test'}],{semanticScores:new Map([['x',2]]),maxTotalEvidence:1,semanticWeight:4});
+ assert.equal(direct[0].retrievalSemanticScore,1);
+ assert.equal(direct[0].retrievalScore,6);
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
