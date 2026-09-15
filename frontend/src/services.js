@@ -40,6 +40,8 @@ export function evidenceCoverageLabel(status){
 }
 const READING_GOAL_LABELS={advice:'建议',forecast:'预测',explanation:'解释',comparison:'比较'};
 export function readingGoalLabel(goal){return READING_GOAL_LABELS[goal]||String(goal||'目标');}
+const REFERENCE_SOURCE_LABELS={personal_memory:'你的知识库',fixed_card_meaning:'固定牌义',external_reference:'外部资料',other:'未分类来源'};
+export function referenceSourceLabel(sourceType,tier){return REFERENCE_SOURCE_LABELS[sourceType]||(tier==='personal'?'你的知识库':'牌义/资料');}
 
 /** Parse the private reading endpoint without leaking raw upstream bodies. */
 export async function parseReadingResponse(response){
@@ -61,7 +63,7 @@ export async function parseReadingResponse(response){
 }
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
  * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?}
- * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?, synthesis?:{text, evidenceIds}, actions?, references:[{evidenceId, cardId, position, claim, kind, tier, source, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
+ * -> {text, source:'ai', needsClarification?, clarification?, cardReadings?, synthesis?:{text, evidenceIds}, actions?, references:[{evidenceId, cardId, position, claim, kind, tier, source, sourceType, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
  */
 export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],signal}){
  const endpoint=env.VITE_READING_ENDPOINT;

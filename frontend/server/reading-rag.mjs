@@ -4,6 +4,12 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
+// Keep provenance separate from the human-readable source name. The model and
+// client can use this stable enum to tell fixed card meaning from external
+// context and the user's private memory without parsing labels.
+const SOURCE_TYPE_BY_SOURCE={editorial:'fixed_card_meaning',memory:'personal_memory',waite:'external_reference',corpora:'external_reference'};
+export function evidenceSourceType(source){return SOURCE_TYPE_BY_SOURCE[source]||'other';}
+
 const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','法律','律师','诉讼','合同','纠纷','投资','股票','基金','理财','借贷','保险','税务'];
 
 export function requiresProfessionalBoundary(question){
@@ -292,6 +298,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
    retrievalRequired:['symbolism','orientation'].includes(chunk.kind),
    text:chunk.text,
    source:chunk.source,
+   sourceType:evidenceSourceType(chunk.source),
    sourceLabel:chunk.sourceLabel,
    url:chunk.url??null,
  }));
@@ -336,7 +343,7 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .filter(item=>item.strongTerms.length>0||item.shortTerms.length>=2||item.shortTerms.some(term=>!genericTerms.has(term)))
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
-  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
+  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceLabel:'你确认的知识库',url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
@@ -389,7 +396,7 @@ function validReference(item,evidenceById,cardsById){
   const card=cardsById.get(item.cardId);
   if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
  }
- return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceLabel:evidence.sourceLabel,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
+ return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceLabel:evidence.sourceLabel,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel,readingGoalLabel} from '../src/services.js';
+import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel} from '../src/services.js';
 
 test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('invalid_synthesis_evidence'),/合读部分的牌义依据未通过核验/);
@@ -18,6 +18,9 @@ test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('unknown_code'),/没有通过服务端核验/);
  assert.equal(readingGoalLabel('forecast'),'预测');
  assert.equal(readingGoalLabel('unknown'),'unknown');
+ assert.equal(referenceSourceLabel('personal_memory'),'你的知识库');
+ assert.equal(referenceSourceLabel('fixed_card_meaning'),'固定牌义');
+ assert.equal(referenceSourceLabel(undefined,'personal'),'你的知识库');
 });
 
 test('evidence coverage diagnostics have explicit user-facing labels',()=>{

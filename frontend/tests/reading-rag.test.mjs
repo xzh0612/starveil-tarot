@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,evidenceSourceType} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -227,6 +227,7 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.ok(!evidence.some(item=>item.evidenceId==='memory:m3'));
  assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
  assert.equal(evidence[0].tier,'personal');
+ assert.equal(evidence[0].sourceType,'personal_memory');
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
  assert.ok(evidence[0].retrievalTerms.length>0);
  assert.equal(evidence[0].retrievalMethod,'memory-keyword-v2');
@@ -281,6 +282,7 @@ test('structured output can cite relevant personal memory with null card coordin
  assert.equal(parsed.references[0].cardId,null);
  assert.equal(parsed.references[0].position,null);
  assert.equal(parsed.references[0].tier,'personal');
+ assert.equal(parsed.references[0].sourceType,'personal_memory');
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'memory:m1',cardId:'m08',position:'建议',claim:'先独处'}]}),{cards:[cards[0]],evidence:memory}),/引用证据无效/);
 });
 
@@ -291,6 +293,13 @@ test('structured references retain fixed source provenance',()=>{
  const parsed=parseReadingOutput(output,{cards:[cards[0]],evidence});
  assert.equal(parsed.references[0].url,waite.url);
  assert.equal(parsed.references[0].source,'waite');
+ assert.equal(parsed.references[0].sourceType,'external_reference');
+});
+
+test('evidence source types stay stable across fixed, external, and unknown sources',()=>{
+ assert.equal(evidenceSourceType('editorial'),'fixed_card_meaning');
+ assert.equal(evidenceSourceType('corpora'),'external_reference');
+ assert.equal(evidenceSourceType('future-source'),'other');
 });
 
 test('first-reading output must cover every selected card with grounded evidence',()=>{
