@@ -443,7 +443,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -481,6 +481,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   const coveredCards=new Set(synthesis.evidenceIds.map(id=>evidenceById.get(id)?.cardId).filter(Boolean));
   if(!synthesis.text||!synthesis.evidenceIds.length||cards.length>1&&cards.some(card=>!coveredCards.has(card.id)))throw Error('首轮综合解读没有覆盖全部牌面，请重试。');
   if(requireSynthesisAnchors&&cards.some(card=>!synthesis.evidenceIds.some(id=>evidenceById.get(id)?.cardId===card.id&&evidenceById.get(id)?.retrievalRequired===true)))throw Error('首轮综合解读必须引用每张牌的核心锚点，请重试。');
+  if(requireSynthesisCardSupport&&cards.length>1&&cards.some(card=>!synthesis.evidenceIds.some(id=>evidenceById.get(id)?.cardId===card.id&&claimSupportedByEvidence(synthesis.text,evidenceById.get(id),{allowGeneric:true}))))synthesisSupportOk=false;
  }
  let cardReadings=[];let cardReadingSupportOk=true;
  if(requireCoverage&&!needsClarification&&data.cardReadings===undefined)throw Error('首轮解读必须包含逐牌解读，请重试。');

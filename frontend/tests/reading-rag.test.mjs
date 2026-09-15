@@ -404,9 +404,16 @@ test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
  const base={text:'逐张说明并综合关系。',cardReadings:cards.map(card=>({cardId:card.id,position:card.position,reading:'结合牌位说明一个可观察的角度。',evidenceIds:[refs.find(ref=>ref.cardId===card.id).evidenceId]})),actions:[{text:'先记录一次具体沟通，再复盘结果。',evidenceIds:[refs[0].evidenceId]}],references:refs};
- const valid=parseReadingOutput(JSON.stringify({...base,synthesis:{text:'两张牌共同提示先稳定表达，再观察现实回应。',evidenceIds:refs.map(ref=>ref.evidenceId)}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true});
+ const valid=parseReadingOutput(JSON.stringify({...base,synthesis:{text:'第一张牌提示用稳定、温柔的方式行动；第二张牌提醒比较过去与当前事实。',evidenceIds:refs.map(ref=>ref.evidenceId)}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true,requireSynthesisCardSupport:true});
  assert.equal(valid.synthesis.evidenceIds.length,2);
  assert.throws(()=>parseReadingOutput(JSON.stringify({...base,synthesis:{text:'只谈第一张牌。',evidenceIds:[refs[0].evidenceId]}}),{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireSynthesis:true}),/综合解读没有覆盖全部牌面/);
+});
+
+test('first synthesis prose must support every cited card',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
+ const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
+ const output=JSON.stringify({text:'逐张说明并综合关系。',synthesis:{text:'只复述第一张牌的稳定与温柔。',evidenceIds:refs.map(ref=>ref.evidenceId)},references:refs});
+ assert.throws(()=>parseReadingOutput(output,{cards,evidence,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true}),/综合解读内容与证据不匹配/);
 });
 
 test('first synthesis must cite a core anchor for every selected card',()=>{
