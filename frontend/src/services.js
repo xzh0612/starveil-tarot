@@ -15,6 +15,7 @@ const READING_ERROR_HINTS={
  card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
  overconfident_claim:'回答包含牌面无法确认的绝对预测，原牌局仍然保留。',
  action_concreteness:'行动建议不够可执行，请稍后重试原牌局。',
+ action_reason:'行动建议缺少与牌面相关的理由，原牌局仍然保留。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
  invalid_response:'服务返回格式不完整，原牌局仍然保留。',
  provider_not_configured:'本机后端还没有配置 DeepSeek 密钥，请先完成后端配置。',
