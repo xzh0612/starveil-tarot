@@ -384,6 +384,8 @@ test('first structured citations require a concise support claim',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/引用说明不能为空/);
  const unsupported=JSON.stringify({text:'先观察再沟通。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'保证一定复合'}]});
  assert.throws(()=>parseReadingOutput(unsupported,{cards:[cards[0]],evidence,requireReferenceSupport:true}),/引用说明与证据不匹配/);
+ const generic=JSON.stringify({text:'先观察再沟通。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'行动建议'}]});
+ assert.throws(()=>parseReadingOutput(generic,{cards:[cards[0]],evidence,requireReferenceSupport:true}),/引用说明与证据不匹配/);
 });
 
 test('first reading synthesis must cite every selected card',()=>{

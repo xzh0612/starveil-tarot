@@ -393,11 +393,14 @@ function validReference(item,evidenceById,cardsById){
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
-function claimSupportedByEvidence(claim,evidence){
+const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个']);
+function claimSupportedByEvidence(claim,evidence,{allowGeneric=false}={}){
  const claimTerms=[...chineseNgrams(claim)].filter(term=>term.length>=2&&!CLAIM_STOPWORDS.has(term));
  if(!claimTerms.length)return false;
  const evidenceTerms=chineseNgrams(evidence?.text??'');
- return claimTerms.some(term=>evidenceTerms.has(term));
+ const specificTerms=allowGeneric?claimTerms:claimTerms.filter(term=>!CLAIM_GENERIC_TERMS.has(term));
+ if(!specificTerms.length)return false;
+ return specificTerms.some(term=>evidenceTerms.has(term));
 }
 
 function isConcreteClarification(text){
@@ -465,7 +468,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
   if(!data.synthesis||typeof data.synthesis!=='object'||typeof data.synthesis.text!=='string'||!data.synthesis.text.trim()||data.synthesis.text.length>4_000||!Array.isArray(data.synthesis.evidenceIds)||data.synthesis.evidenceIds.length<1||data.synthesis.evidenceIds.length>12||data.synthesis.evidenceIds.some(id=>typeof id!=='string'))throw Error('综合解读格式不正确，请重试。');
   const evidenceIds=data.synthesis.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.source==='memory'||chunk.cardId===null)throw Error('综合解读引用无效，请重试。');return chunk.evidenceId;});
   synthesis={text:excerpt(data.synthesis.text,4_000),evidenceIds:[...new Set(evidenceIds)]};
-  if(requireSynthesisSupport&&!needsClarification&&!claimSupportedByEvidence(synthesis.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')}))synthesisSupportOk=false;
+  if(requireSynthesisSupport&&!needsClarification&&!claimSupportedByEvidence(synthesis.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))synthesisSupportOk=false;
  }
  if(requireSynthesis&&!needsClarification){
   const coveredCards=new Set(synthesis.evidenceIds.map(id=>evidenceById.get(id)?.cardId).filter(Boolean));
@@ -482,7 +485,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    const card=cardsById.get(item.cardId);if(card.position!==item.position)throw Error('逐牌解读牌位不匹配。');
    const orientation=card.reversed===true?'逆位':card.reversed===false?'正位':card.orientation??'未知方向';
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.cardId!==item.cardId||chunk.position!==item.position)throw Error('逐牌解读引用无效。');return chunk.evidenceId;});
-   if(requireCardReadingSupport&&!needsClarification&&!evidenceIds.some(id=>claimSupportedByEvidence(item.reading,evidenceById.get(id))))cardReadingSupportOk=false;
+   if(requireCardReadingSupport&&!needsClarification&&!evidenceIds.some(id=>claimSupportedByEvidence(item.reading,evidenceById.get(id),{allowGeneric:true})))cardReadingSupportOk=false;
    if(requireCoverage&&!needsClarification&&!evidenceIds.some(id=>evidenceById.get(id)?.retrievalRequired===true))throw Error('逐牌解读必须引用该牌的核心锚点，请重试。');
    seen.add(item.cardId);return {cardId:item.cardId,position:item.position,orientation,reading:excerpt(item.reading,4_000),evidenceIds};
   });
@@ -498,7 +501,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
    if(!evidenceIds.some(id=>['anchor','application','personal'].includes(evidenceById.get(id)?.tier)))throw Error('行动建议必须引用核心或应用证据，请重试。');
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
-   if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')}))actionsReasonSupported=false;
+   if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsReasonSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
    return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds};
   });
@@ -517,7 +520,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if(requireTextSupport&&!needsClarification){
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds)])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
-  if(!claimSupportedByEvidence(data.text,{text:groundedText}))throw Error('解读正文与证据不匹配，请重试。');
+  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:true}))throw Error('解读正文与证据不匹配，请重试。');
  }
  if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,synthesis.text,...cardReadings.map(item=>item.reading)].join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  return {text:data.text.trim(),synthesis,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
