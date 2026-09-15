@@ -64,7 +64,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/<starveil_context>[\s\S]*<\/starveil_context>/.test(user))issues.push('missing_context_fence');
  if(!/tier|retrievalReasons/.test(user))issues.push('missing_evidence_metadata');
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
- if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/.test(user))issues.push('missing_ranker_metadata_context');
+ if(!/sourceType|sourceLabel/.test(user)||!/retrievalRequired/.test(user))issues.push('missing_prompt_evidence_provenance');
  if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
  if(!/coverageStatus/.test(user))issues.push('missing_coverage_status_context');
  if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
@@ -95,7 +95,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_context_fence'),
   !issues.includes('missing_evidence_metadata'),
   !issues.includes('missing_goal_metadata'),
-  !issues.includes('missing_ranker_metadata_context'),
+  !issues.includes('missing_prompt_evidence_provenance'),
   !issues.includes('missing_evidence_diagnostics_context'),
   !issues.includes('missing_coverage_status_context'),
   !issues.includes('missing_goal_coverage_context'),
