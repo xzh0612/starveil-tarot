@@ -74,6 +74,7 @@ export function buildReadingMessages(body,{evidenceOverride=null}={}){
  const evidence=Array.isArray(evidenceOverride)?evidenceOverride:retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards});
  const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories});
  const evidenceMeta=summarizeReadingEvidence(evidence,cards);
+ if(evidenceMeta.missingAnchorCardIds.length)throw new Error('检索证据不完整，请重试。');
  const promptHistory=compactHistory(history),responsePlan=createResponsePlan(cards.length,history.some(message=>message.role==='assistant'),promptHistory.length);
  const allowClarification=history.some(message=>message.role==='assistant')||retrievalMeta.confidence!=='focused';
  return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${JSON.stringify({question:body.question,activeQuestion,retrievalQuestion,queryMeta:{inheritedOriginal},spread,cards,evidence,evidenceMeta,retrievalMeta,responsePlan,clarificationMeta:{allowClarification},safetyMeta:{requiresProfessionalBoundary:requiresBoundary},memoryEvidence})}\n</starveil_context>`},...promptHistory.map(m=>({role:m.role,content:fenceHistoryMessage(m)}))];
