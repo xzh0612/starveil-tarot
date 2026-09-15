@@ -39,6 +39,13 @@ export function analyzeReadingQuestion(question){
  return {themes,matchedTerms,themeScores,ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }
 
+export function readingQueryFor(question,messages=[]){
+ const fallback=String(question??'').trim().slice(0,2_000);
+ if(!Array.isArray(messages))return fallback;
+ const latest=[...messages].reverse().find(message=>message?.role==='user'&&message.source!=='demo'&&typeof message.text==='string'&&message.text.trim());
+ return latest?latest.text.trim().slice(0,2_000):fallback;
+}
+
 function chineseNgrams(text){
  const value=String(text??'').toLowerCase(),tokens=new Set(value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[]);
  // Include overlapping bigrams so short Chinese questions can match source phrases.

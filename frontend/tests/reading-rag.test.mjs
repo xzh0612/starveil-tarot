@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -27,6 +27,12 @@ test('question routing prefers explicit career terms over weak relationship pron
  const pronoun=analyzeReadingQuestion('他最近会联系我吗？');
  assert.deepEqual(pronoun.themes,['relationship']);
  assert.equal(pronoun.confidence,'focused');
+});
+
+test('active reading query follows the latest real user message',()=>{
+ const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
+ assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
+ assert.equal(readingQueryFor('原始关系问题',[{role:'assistant',text:'只有回答'}]),'原始关系问题');
 });
 
 test('retrieval always grounds each selected card in orientation and provenance',()=>{
