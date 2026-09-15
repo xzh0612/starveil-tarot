@@ -290,14 +290,17 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvi
  return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence,semanticWeight});
 }
 
-export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8,semanticReranker=null}={}){
+export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500}={}){
  const evidence=collectReadingEvidence({question,cards,maxPerCard});
  let resolvedScores=semanticScores;
  if(typeof semanticReranker==='function'){
-  try{
-   const result=await semanticReranker({question,cards,evidence:[...evidence]});
-   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
-  }catch{}
+  const timeout=Number.isFinite(semanticTimeoutMs)?Math.max(0,Math.min(10_000,semanticTimeoutMs)):1_500;
+  const task=Promise.resolve().then(()=>semanticReranker({question,cards,evidence:[...evidence]})).catch(()=>null);
+  let timer;
+  const guard=new Promise(resolve=>{timer=setTimeout(()=>resolve(null),timeout);});
+  const result=await Promise.race([task,guard]);
+  clearTimeout(timer);
+  if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
  }
  return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence,semanticWeight});
 }

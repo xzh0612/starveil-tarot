@@ -165,6 +165,8 @@ test('async semantic reranker receives full candidates and falls back on failure
  assert.equal(boosted.find(item=>item.kind==='modern').retrievalSemanticScore,1);
  const fallback=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4,semanticReranker:async()=>{throw Error('offline');}});
  assert.ok(fallback.every(item=>item.retrievalSemanticScore===0));
+ const timed=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxTotalEvidence:4,semanticTimeoutMs:5,semanticReranker:()=>new Promise(()=>{})});
+ assert.ok(timed.every(item=>item.retrievalSemanticScore===0));
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
