@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,rerankReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -156,6 +156,15 @@ test('global optional selection rotates across cards before taking a second chun
  const optional=evidence.filter(item=>!item.retrievalRequired);
  assert.equal(optional.length,3);
  assert.equal(new Set(optional.map(item=>item.cardId)).size,3);
+});
+
+test('async semantic reranker receives full candidates and falls back on failure',async()=>{
+ const seen=[];
+ const boosted=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4,semanticReranker:async({evidence})=>{seen.push(evidence.length);return {'m08:modern':1};}});
+ assert.equal(seen[0],5);
+ assert.equal(boosted.find(item=>item.kind==='modern').retrievalSemanticScore,1);
+ const fallback=await retrieveReadingEvidenceAsync({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4,semanticReranker:async()=>{throw Error('offline');}});
+ assert.ok(fallback.every(item=>item.retrievalSemanticScore===0));
 });
 
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{

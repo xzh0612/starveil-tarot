@@ -239,7 +239,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  return [...required,...selected];
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8}={}){
+export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const routing=analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,routing),terms=queryTerms.weights,themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
  const perCard=cards.flatMap(card=>{
@@ -282,7 +282,24 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvi
    url:chunk.url??null,
  }));
  });
- return rerankReadingEvidence(perCard,{semanticScores,maxTotalEvidence,semanticWeight});
+ return perCard;
+}
+
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8}={}){
+ const evidence=collectReadingEvidence({question,cards,maxPerCard});
+ return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence,semanticWeight});
+}
+
+export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=48,semanticScores={},semanticWeight=8,semanticReranker=null}={}){
+ const evidence=collectReadingEvidence({question,cards,maxPerCard});
+ let resolvedScores=semanticScores;
+ if(typeof semanticReranker==='function'){
+  try{
+   const result=await semanticReranker({question,cards,evidence:[...evidence]});
+   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
+  }catch{}
+ }
+ return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence,semanticWeight});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){
