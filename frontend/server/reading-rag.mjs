@@ -46,6 +46,13 @@ export function readingQueryFor(question,messages=[]){
  return latest?latest.text.trim().slice(0,2_000):fallback;
 }
 
+export function readingRetrievalFor(question,messages=[]){
+ const original=String(question??'').trim().slice(0,2_000),activeQuestion=readingQueryFor(original,messages),activeMeta=analyzeReadingQuestion(activeQuestion);
+ const inheritedOriginal=Boolean(original&&activeQuestion!==original&&activeMeta.confidence==='open');
+ const retrievalQuestion=(inheritedOriginal?`${original}\n${activeQuestion}`:activeQuestion).slice(0,4_000);
+ return {activeQuestion,retrievalQuestion,retrievalMeta:analyzeReadingQuestion(retrievalQuestion),inheritedOriginal};
+}
+
 function chineseNgrams(text){
  const value=String(text??'').toLowerCase(),tokens=new Set(value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[]);
  // Include overlapping bigrams so short Chinese questions can match source phrases.

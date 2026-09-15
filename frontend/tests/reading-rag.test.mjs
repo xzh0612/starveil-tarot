@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor} from '../server/reading-rag.mjs';
+import {retrieveReadingEvidence,retrieveMemoryEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -33,6 +33,14 @@ test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
  assert.equal(readingQueryFor('原始关系问题',[{role:'assistant',text:'只有回答'}]),'原始关系问题');
+});
+
+test('generic follow-ups inherit the original theme for retrieval continuity',()=>{
+ const result=readingRetrievalFor('我该如何处理这段关系？',[{role:'assistant',text:'上一轮回答',source:'ai'},{role:'user',text:'那我该怎么做？'}]);
+ assert.equal(result.activeQuestion,'那我该怎么做？');
+ assert.equal(result.inheritedOriginal,true);
+ assert.ok(result.retrievalQuestion.includes('我该如何处理这段关系？'));
+ assert.deepEqual(result.retrievalMeta.themes,['relationship']);
 });
 
 test('retrieval always grounds each selected card in orientation and provenance',()=>{
