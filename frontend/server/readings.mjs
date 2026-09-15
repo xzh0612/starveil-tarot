@@ -73,6 +73,7 @@ function repairCode(error){
   [/逐牌解读引用无效/u,'invalid_card_evidence'],
   [/逐牌解读格式不正确/u,'invalid_card_reading'],
   [/首轮解读需要行动建议/u,'missing_actions'],
+  [/行动建议必须引用核心或应用证据/u,'action_evidence_tier'],
   [/行动建议引用无效/u,'invalid_action_evidence'],
   [/行动建议格式不正确/u,'invalid_action'],
   [/澄清问题格式不正确|明确主题不允许跳过首轮解读/u,'clarification_contract'],
