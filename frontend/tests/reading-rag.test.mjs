@@ -262,6 +262,24 @@ test('first structured reading requires a top-level reference for every card',()
  assert.throws(()=>parseReadingOutput(missingReference,{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true}),/引用没有覆盖全部牌面/);
 });
 
+test('first structured references require a core anchor for every card',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
+ const applicationRefs=cards.map(card=>{
+  const item=evidence.find(e=>e.cardId===card.id&&e.kind==='relationships');
+  return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};
+ });
+ const output=JSON.stringify({
+  text:'逐张说明并综合关系。',
+  cardReadings:cards.map(card=>{
+   const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');
+   return {cardId:card.id,position:card.position,reading:'结合牌位说明一个可观察的角度。',evidenceIds:[item.evidenceId]};
+  }),
+  actions:[{text:'先记录一次具体沟通，再复盘结果。',evidenceIds:[evidence[0].evidenceId]}],
+  references:applicationRefs,
+ });
+ assert.throws(()=>parseReadingOutput(output,{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/核心锚点/);
+});
+
 test('first structured citations require a concise support claim',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const orientation=evidence.find(item=>item.kind==='orientation');

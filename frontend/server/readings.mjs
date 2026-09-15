@@ -63,6 +63,7 @@ function repairCode(error){
   [/首轮解读必须包含不确定性说明/u,'missing_uncertainty'],
   [/首轮解读必须返回结构化 JSON/u,'output_not_json'],
   [/引用没有覆盖全部牌面/u,'missing_reference_coverage'],
+  [/首轮引用必须包含每张牌的核心锚点/u,'missing_reference_anchor'],
   [/引用说明不能为空/u,'missing_reference_claim'],
   [/引用说明与证据不匹配/u,'unsupported_reference_claim'],
   [/引用证据无效/u,'invalid_reference'],
