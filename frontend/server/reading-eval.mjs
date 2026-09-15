@@ -46,6 +46,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
  if(!/goal|目标/i.test(system))issues.push('missing_goal_routing');
  if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/i.test(system))issues.push('missing_ranker_metadata');
+ if(!/evidenceMeta/i.test(system))issues.push('missing_evidence_diagnostics');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
@@ -53,6 +54,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/tier|retrievalReasons/.test(user))issues.push('missing_evidence_metadata');
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
  if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/.test(user))issues.push('missing_ranker_metadata_context');
+ if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
@@ -61,6 +63,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_synthesis_contract'),
   !issues.includes('missing_goal_routing'),
   !issues.includes('missing_ranker_metadata'),
+  !issues.includes('missing_evidence_diagnostics'),
   !issues.includes('missing_claim_support'),
   !issues.includes('missing_anchor_metadata'),
   !issues.includes('missing_grounded_context'),
@@ -68,6 +71,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_evidence_metadata'),
   !issues.includes('missing_goal_metadata'),
   !issues.includes('missing_ranker_metadata_context'),
+  !issues.includes('missing_evidence_diagnostics_context'),
   !issues.includes('missing_anchor_metadata_context'),
  ];
  return {ok:issues.length===0,score:scoreChecks(checks),issues};
