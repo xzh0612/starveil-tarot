@@ -16,6 +16,10 @@ const READING_ERROR_HINTS={
 export function readingErrorHint(code){
  return READING_ERROR_HINTS[code]||'这次解读没有通过服务端核验，原牌局仍然保留。';
 }
+const COVERAGE_LABELS={complete:'完整覆盖牌面与当前主题',anchor_only:'以核心牌义为主，应用语义较少',incomplete:'核心牌义证据不完整'};
+export function evidenceCoverageLabel(status){
+ return COVERAGE_LABELS[status]||'覆盖情况待核验';
+}
 
 /** Parse the private reading endpoint without leaking raw upstream bodies. */
 export async function parseReadingResponse(response){

@@ -166,6 +166,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    const cardEvidence=evidenceOverride??retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards});
    const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories:body.memories??[]});
    const evidence=[...cardEvidence,...memoryEvidence];
+   const evidenceMeta=summarizeReadingEvidence(cardEvidence,body.cards,{themes:retrievalMeta.themes});
    const parseOptions={cards:body.cards,evidence,requireCoverage:!hasPriorAssistant,requireActions:!hasPriorAssistant,requireReferences:!hasPriorAssistant,requireReferenceClaims:!hasPriorAssistant,requireReferenceSupport:!hasPriorAssistant,requireSynthesis:!hasPriorAssistant,requireUncertainty:!hasPriorAssistant,requireRealityBoundary:requiresBoundary,allowClarification};
    let answer,provider=initial;
    try{answer=parseReadingOutput(initial.text,parseOptions);}catch(firstError){
@@ -176,7 +177,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
     try{answer=parseReadingOutput(repaired.text,parseOptions);provider=repaired;}catch{return reply(502,{error:firstError.message,code:repairCode(firstError)});}
    }
    const fallbackReferences=body.cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return item?{evidenceId:item.evidenceId,cardId:item.cardId,position:item.position,claim:''}:{cardId:card.id,position:card.position};});
-   reply(200,{text:answer.text,source:'ai',provider:'DeepSeek',model:provider.data.model??model,truncated:provider.choice.finish_reason==='length',references:answer.references.length?answer.references:fallbackReferences,cardReadings:answer.cardReadings,synthesis:answer.synthesis,actions:answer.actions,needsClarification:answer.needsClarification,clarification:answer.clarification,followUp:answer.followUp,uncertainty:answer.uncertainty});
+   reply(200,{text:answer.text,source:'ai',provider:'DeepSeek',model:provider.data.model??model,truncated:provider.choice.finish_reason==='length',references:answer.references.length?answer.references:fallbackReferences,cardReadings:answer.cardReadings,synthesis:answer.synthesis,actions:answer.actions,needsClarification:answer.needsClarification,clarification:answer.clarification,followUp:answer.followUp,uncertainty:answer.uncertainty,evidenceMeta});
   }catch{return reply(controller.signal.aborted?504:502,{error:controller.signal.aborted?'解读等待超时或已取消，原牌局已保留。':'暂时无法连接 DeepSeek，请稍后重试。'});}
   finally{clearTimeout(timer);res.off('close',disconnect);active--;}
  };

@@ -1,10 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {parseReadingResponse,readingErrorHint} from '../src/services.js';
+import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel} from '../src/services.js';
 
 test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('invalid_synthesis_evidence'),/合读部分的牌义依据未通过核验/);
  assert.match(readingErrorHint('unknown_code'),/没有通过服务端核验/);
+});
+
+test('evidence coverage diagnostics have explicit user-facing labels',()=>{
+ assert.match(evidenceCoverageLabel('complete'),/完整覆盖/);
+ assert.match(evidenceCoverageLabel('anchor_only'),/核心牌义为主/);
+ assert.match(evidenceCoverageLabel('unknown'),/待核验/);
 });
 
 test('reading response preserves the server validation code on failure',async()=>{

@@ -79,6 +79,7 @@ type Response = {
   references?: {evidenceId?: string; cardId: string; position: string; claim?: string}[];
   followUp?: string;
   uncertainty?: string;
+  evidenceMeta?: {coverageStatus: 'complete' | 'anchor_only' | 'incomplete'};
 };
 type ErrorResponse = {error: string; code?: string};
 ```
