@@ -472,6 +472,17 @@ test('anchor-only retrieval requires an explicit evidence limitation',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true,requireCoverageBoundary:true}).uncertainty,'当前只有核心牌义，关系应用证据不足，需要结合现实资料。');
 });
 
+test('missing forecast evidence requires the same uncertainty boundary',()=>{
+ const question='我之后会怎样发展？';
+ const card={id:'m08',reversed:false,position:'建议'};
+ const full=retrieveReadingEvidence({question,cards:[card]});
+ const evidence=full.filter(item=>item.tier==='anchor');
+ const vague=JSON.stringify({text:'趋势会很清晰。',uncertainty:'牌面不能确认结果。'});
+ assert.throws(()=>parseReadingOutput(vague,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true}),/证据覆盖不足/);
+ const grounded=JSON.stringify({text:'先观察趋势。',uncertainty:'当前缺少预测参考资料，牌面只能提供有限的趋势线索。'});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true}).uncertainty,'当前缺少预测参考资料，牌面只能提供有限的趋势线索。');
+});
+
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
