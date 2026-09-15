@@ -396,6 +396,18 @@ test('high-stakes uncertainty must name a reality check rather than a vague disc
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireRealityBoundary:true}),/高风险问题需要现实依据说明/);
 });
 
+test('calibration rejects absolute predictive claims even when the output is structured',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCardReadingSupport:true,requireCalibratedLanguage:true}),/绝对断言/);
+});
+
+test('calibration allows a negated boundary around an absolute prediction',()=>{
+ const output=JSON.stringify({text:'牌面不能保证一定会复合，仍需观察现实沟通。'});
+ const parsed=parseReadingOutput(output,{requireCalibratedLanguage:true});
+ assert.equal(parsed.text,'牌面不能保证一定会复合，仍需观察现实沟通。');
+});
+
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
  assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});

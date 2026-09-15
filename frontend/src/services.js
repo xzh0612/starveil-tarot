@@ -12,6 +12,7 @@ const READING_ERROR_HINTS={
  missing_card_readings:'回答没有逐张解释牌面，原牌局仍然保留。',
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
  card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
+ overconfident_claim:'回答包含牌面无法确认的绝对预测，原牌局仍然保留。',
  action_concreteness:'行动建议不够可执行，请稍后重试原牌局。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
  invalid_response:'服务返回格式不完整，原牌局仍然保留。',

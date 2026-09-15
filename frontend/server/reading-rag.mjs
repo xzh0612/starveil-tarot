@@ -388,8 +388,16 @@ function hasRealityBoundary(text){
  const value=String(text??'').trim();
  return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
 }
+const ABSOLUTE_CLAIM_PATTERN=/(?:百分之百|绝对|必然|肯定|一定|注定|保证)(?:.{0,4})(?:会|能|可以|不会|不能|复合|回来|联系|发生|实现|结婚|录取|升职|盈利|获利|解决|治愈|痊愈|安全|准确)/u;
+const NEGATED_ABSOLUTE_PATTERN=/(?:不能|无法|不会|不代表|并不|不是|不保证|不意味着|不说明|不要|别|不应|不等于).{0,8}$/u;
+function hasAbsoluteClaim(text){
+ return String(text??'').split(/[。！？!?；;\n]+/u).some(segment=>{
+  const match=segment.match(ABSOLUTE_CLAIM_PATTERN);if(!match)return false;
+  return !NEGATED_ABSOLUTE_PATTERN.test(segment.slice(0,match.index));
+ });
+}
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireSynthesis=false,requireSynthesisSupport=false,requireUncertainty=false,requireRealityBoundary=false,allowClarification=true}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireSynthesis=false,requireSynthesisSupport=false,requireUncertainty=false,requireRealityBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -463,5 +471,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requireCoverage
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
+ if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,synthesis.text,...cardReadings.map(item=>item.reading)].join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  return {text:data.text.trim(),synthesis,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }
