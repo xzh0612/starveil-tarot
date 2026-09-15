@@ -29,6 +29,16 @@ test('question routing prefers explicit career terms over weak relationship pron
  assert.equal(pronoun.confidence,'focused');
 });
 
+test('question routing recognizes common synonyms across reading intents',()=>{
+ const career=analyzeReadingQuestion('我想跳槽，怎么准备面试？');
+ assert.deepEqual(career.themes,['career']);
+ assert.ok(career.matchedTerms.includes('跳槽'));
+ const relationship=analyzeReadingQuestion('我们最近冷战，如何重新联系？');
+ assert.deepEqual(relationship.themes,['relationship']);
+ const reflection=analyzeReadingQuestion('我最近很焦虑，也感到疲惫，怎么调整？');
+ assert.deepEqual(reflection.themes,['reflection']);
+});
+
 test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
