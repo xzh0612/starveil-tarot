@@ -51,6 +51,14 @@ test('reading evaluation accepts grounded first output with an actionable next s
  assert.deepEqual(result.issues,[]);
 });
 
+test('reading evaluation accepts an explicit clarification branch',()=>{
+ const output=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？'});
+ const result=evaluateReadingFixture({question:'我最近想看看牌。',cards:[cards[0]],output});
+ assert.equal(result.ok,true);
+ assert.equal(result.score,100);
+ assert.deepEqual(result.issues,[]);
+});
+
 test('reading evaluation catches missing card coverage and missing action',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const first=evidence.find(e=>e.cardId==='m08'&&e.kind==='orientation');

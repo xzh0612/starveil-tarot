@@ -1,4 +1,5 @@
 .message-evidence{margin-top:17px;border-top:1px solid var(--line);padding-top:11px;color:#cdb6dc;font-size:11px}
+.message-clarification{margin-top:16px;padding:12px;background:#c5a9db0c;border-left:2px solid #c9a9dc66;display:grid;gap:8px}.message-clarification>span{color:#b99acc;font-size:10px;letter-spacing:.08em;text-transform:uppercase}.message-clarification>b{font-size:12px;font-weight:400;line-height:1.7;color:#eadcf2}.message-clarification button{justify-self:start;color:#d8bee8;font-size:11px}.message-clarification button:hover{transform:translateX(3px);color:#fff}
 .message-actions{margin-top:16px;padding:11px 12px;background:#c5a9db0c;border:1px solid #c4a8d51c;border-radius:4px;color:#d9c4e4}
 .message-actions>span{display:block;margin-bottom:8px;color:#b99acc;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
 .message-actions ol{margin:0;padding-left:21px;display:grid;gap:8px}.message-actions li{padding-left:2px}.message-actions b{display:block;font-size:11px;font-weight:400;line-height:1.65}.message-actions small{display:block;margin-top:2px;color:#a994b5;font-size:9px;line-height:1.6}

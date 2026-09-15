@@ -68,6 +68,13 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
  }
  const inspected=parsed??relaxed;
+ if(inspected?.needsClarification===true){
+  const hasClarification=typeof inspected.clarification==='string'&&inspected.clarification.trim().length>0;
+  if(!hasClarification)issues.push('missing_clarification');
+  const uniqueIssues=[...new Set(issues)];
+  const checks=[retrieval.ok,parsed!==null,hasClarification];
+  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
+ }
  const references=inspected?.references??[];
  const hasReferenceCoverage=(cards??[]).every(card=>references.some(reference=>reference.cardId===card.id));
  if(!hasReferenceCoverage)issues.push('missing_references');

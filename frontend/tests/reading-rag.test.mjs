@@ -68,6 +68,16 @@ test('first structured reading requires a top-level reference for every card',()
  assert.throws(()=>parseReadingOutput(missingReference,{cards,evidence,requireCoverage:true,requireActions:true,requireReferences:true}),/引用没有覆盖全部牌面/);
 });
 
+test('clarification responses may pause interpretation while keeping strict validation available',()=>{
+ const evidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[cards[0]]});
+ const clarification=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？',followUp:'请选择一个最想靠近的主题。'});
+ const parsed=parseReadingOutput(clarification,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true});
+ assert.equal(parsed.needsClarification,true);
+ assert.equal(parsed.clarification,'这次更想看关系、事业，还是一个具体决定？');
+ assert.deepEqual(parsed.cardReadings,[]);
+ assert.throws(()=>parseReadingOutput(JSON.stringify({text:'请补充方向。',needsClarification:true}),{cards:[cards[0]],evidence,requireCoverage:true}),/澄清问题格式不正确/);
+});
+
 test('structured actions must cite evidence from the current reading',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const valid=JSON.stringify({text:'先观察再沟通。',actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence[0].evidenceId]}]});
@@ -95,5 +105,5 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
 
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
- assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],cardReadings:[],actions:[],followUp:'',uncertainty:''});
+ assert.deepEqual(parsed,{text:'保持稳定练习。',references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
 });
