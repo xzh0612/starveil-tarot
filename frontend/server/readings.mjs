@@ -104,12 +104,12 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
   if(!req.headers['content-type']?.startsWith('application/json'))return reply(415,{error:'请发送 JSON 请求。'});
   let body;
   try{let bytes=0;const chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>160000){reply(413,{error:'对话内容过长。'});return;}chunks.push(chunk);}body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{return reply(400,{error:'请求内容不是有效 JSON。'});}
-  let evidenceOverride=null;
+  let evidenceOverride=null,messages;try{messages=recommend?buildRecommendationMessages(body):buildReadingMessages(body);}catch(e){return reply(400,{error:e.message});}
   if(!recommend&&!debug&&typeof semanticReranker==='function'){
    const {retrievalQuestion}=readingRetrievalFor(body.question,body.messages??[]);
    evidenceOverride=await retrieveReadingEvidenceAsync({question:retrievalQuestion,cards:body.cards,semanticReranker,semanticWeight,semanticTimeoutMs});
+   try{messages=buildReadingMessages(body,{evidenceOverride});}catch(e){return reply(400,{error:e.message});}
   }
-  let messages;try{messages=recommend?buildRecommendationMessages(body):buildReadingMessages(body,{evidenceOverride});}catch(e){return reply(400,{error:e.message});}
   if(debug){
    const contextContent=messages[1]?.content??'',context=JSON.parse(contextContent.slice('<starveil_context>\n'.length,-'\n</starveil_context>'.length));
    return reply(200,{source:'local',provider:'local',model,prompt:{systemChars:messages[0]?.content?.length??0,contextChars:contextContent.length,historyMessages:Math.max(0,messages.length-2)},question:context.question,activeQuestion:context.activeQuestion,retrievalQuestion:context.retrievalQuestion,queryMeta:context.queryMeta,retrievalMeta:context.retrievalMeta,responsePlan:context.responsePlan,evidenceMeta:context.evidenceMeta,evidence:context.evidence,memoryEvidence:context.memoryEvidence});
