@@ -254,6 +254,7 @@ test('structured output accepts only references from the retrieved evidence set'
  assert.equal(parsed.references[0].evidenceId,evidence[0].evidenceId);
  assert.equal(parsed.references[0].tier,evidence[0].tier);
  assert.equal(parsed.references[0].sourceLabel,evidence[0].sourceLabel);
+ assert.equal(parsed.references[0].evidenceExcerpt,evidence[0].text);
  assert.deepEqual(parsed.references[0].retrievalReasons,evidence[0].retrievalReasons);
  assert.equal(parsed.followUp,'你最容易在哪个时段中断？');
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'fake',cardId:'m08',position:'建议'}]}),{cards,evidence}),/引用证据无效/);
@@ -283,6 +284,7 @@ test('structured output can cite relevant personal memory with null card coordin
  assert.equal(parsed.references[0].position,null);
  assert.equal(parsed.references[0].tier,'personal');
  assert.equal(parsed.references[0].sourceType,'personal_memory');
+ assert.equal(parsed.references[0].evidenceExcerpt,memory[0].text);
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'memory:m1',cardId:'m08',position:'建议',claim:'先独处'}]}),{cards:[cards[0]],evidence:memory}),/引用证据无效/);
 });
 
@@ -294,6 +296,7 @@ test('structured references retain fixed source provenance',()=>{
  assert.equal(parsed.references[0].url,waite.url);
  assert.equal(parsed.references[0].source,'waite');
  assert.equal(parsed.references[0].sourceType,'external_reference');
+ assert.equal(parsed.references[0].evidenceExcerpt,waite.text);
 });
 
 test('evidence source types stay stable across fixed, external, and unknown sources',()=>{
