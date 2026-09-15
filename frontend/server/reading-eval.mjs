@@ -62,9 +62,12 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const references=inspected?.references??[];
  const hasReferenceCoverage=(cards??[]).every(card=>references.some(reference=>reference.cardId===card.id));
  if(!hasReferenceCoverage)issues.push('missing_references');
- const readingText=[inspected?.text??'',...(inspected?.cardReadings??[]).map(item=>item.reading)].join('\n');
+ const actions=inspected?.actions??[];
+ const hasActions=Array.isArray(actions)&&actions.length>0;
+ if(!hasActions)issues.push('missing_actions');
+ const readingText=[inspected?.text??'',...(inspected?.cardReadings??[]).map(item=>item.reading),...actions.map(item=>item.text)].join('\n');
  if(!ACTION_WORDS.test(readingText))issues.push('missing_action');
  const uniqueIssues=[...new Set(issues)];
- const checks=[retrieval.ok,parsed!==null,hasReferenceCoverage,ACTION_WORDS.test(readingText)];
+ const checks=[retrieval.ok,parsed!==null,hasReferenceCoverage,hasActions,ACTION_WORDS.test(readingText)];
  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
 }
