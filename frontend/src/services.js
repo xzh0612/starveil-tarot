@@ -9,6 +9,7 @@ const READING_ERROR_HINTS={
  invalid_synthesis_evidence:'合读部分的牌义依据未通过核验，原牌局仍然保留。',
  missing_card_readings:'回答没有逐张解释牌面，原牌局仍然保留。',
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
+ card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
  invalid_response:'服务返回格式不完整，原牌局仍然保留。',
  provider_not_configured:'本机后端还没有配置 DeepSeek 密钥，请先完成后端配置。',

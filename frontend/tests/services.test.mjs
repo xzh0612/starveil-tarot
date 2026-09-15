@@ -4,6 +4,7 @@ import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel} from '../sr
 
 test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('invalid_synthesis_evidence'),/合读部分的牌义依据未通过核验/);
+ assert.match(readingErrorHint('card_reading_support'),/逐牌解释/);
  assert.match(readingErrorHint('provider_auth'),/密钥未通过验证/);
  assert.match(readingErrorHint('unknown_code'),/没有通过服务端核验/);
 });

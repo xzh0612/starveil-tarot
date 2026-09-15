@@ -37,7 +37,8 @@ test('reading evaluation accepts grounded first output with an actionable next s
   actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把担忧变成可观察材料。',evidenceIds:[evidence.find(e=>e.kind==='orientation').evidenceId]}],
   cardReadings:cards.map(card=>{
    const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');
-   return {cardId:card.id,position:card.position,reading:'结合牌位观察一个可验证的角度，并给出下一步。',evidenceIds:[item.evidenceId]};
+   const reading=card.id==='m08'?'结合稳定而明确的提示，观察一个可验证的角度，并给出下一步。':'比较记忆和当前事实，再观察一个可验证的角度，并给出下一步。';
+   return {cardId:card.id,position:card.position,reading,evidenceIds:[item.evidenceId]};
   }),
   references:cards.map(card=>{
    const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');

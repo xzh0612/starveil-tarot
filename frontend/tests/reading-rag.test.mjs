@@ -264,6 +264,12 @@ test('card readings carry the locked card orientation for the UI',()=>{
  assert.equal(parsed.cardReadings[0].orientation,'逆位');
 });
 
+test('card readings reject text with no meaningful overlap with cited evidence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'逐牌说明。',cardReadings:[{cardId:'m08',position:'建议',reading:'这张牌保证对方一定会回来。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCardReadingSupport:true}),/逐牌解读内容与证据不匹配/);
+});
+
 test('first-reading card explanations must cite a core anchor',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const application=evidence.find(item=>item.kind==='relationships');
