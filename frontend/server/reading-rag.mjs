@@ -64,17 +64,44 @@ function candidateChunks(card,question){
  ].filter(Boolean);
 }
 
-function scoreChunk(chunk,{question,position,terms,themes}){
+function matchingSignals(chunk,{position,terms,themes}){
+ const text=chunk.text.toLowerCase();
+ const termList=terms instanceof Set?[...terms]:Array.isArray(terms)?terms:[];
+ const matchedTerms=termList.filter(term=>text.includes(term)).slice(0,8);
+ const matchedThemes=themes.filter(theme=>{
+  if(theme==='relationship')return chunk.kind==='relationships';
+  if(theme==='career')return chunk.kind==='work';
+  if(theme==='reflection')return ['orientation','reflection'].includes(chunk.kind);
+  if(theme==='future')return ['orientation','waite'].includes(chunk.kind);
+  return false;
+ });
+ const matchedPosition=POSITION_HINTS.some(hint=>hint.words.some(word=>String(position).includes(word))&&chunk.kind===hint.kind);
+ return {matchedTerms,matchedThemes,matchedPosition};
+}
+
+function scoreChunk(chunk,{position,terms,themes}){
  let score=chunk.base;
- for(const term of terms)if(chunk.text.toLowerCase().includes(term))score+=term.length>2?1.4:.35;
- for(const theme of themes){
-  if(theme==='relationship'&&chunk.kind==='relationships')score+=8;
-  if(theme==='career'&&chunk.kind==='work')score+=8;
-  if(theme==='reflection'&&['orientation','reflection'].includes(chunk.kind))score+=4;
-  if(theme==='future'&&['orientation','waite'].includes(chunk.kind))score+=3;
- }
- for(const hint of POSITION_HINTS)if(hint.words.some(word=>String(position).includes(word))&&chunk.kind===hint.kind)score+=hint.boost;
+ const signals=matchingSignals(chunk,{position,terms,themes});
+ for(const term of signals.matchedTerms)score+=term.length>2?1.4:.35;
+ for(const theme of signals.matchedThemes)score+=theme==='reflection'?4:3;
+ for(const hint of POSITION_HINTS)if(signals.matchedPosition&&hint.kind===chunk.kind)score+=hint.boost;
  return score;
+}
+
+function evidenceTier(kind){
+ if(['symbolism','orientation'].includes(kind))return 'anchor';
+ if(['relationships','work','reflection'].includes(kind))return 'application';
+ return 'reference';
+}
+
+function retrievalReasons(chunk,signals){
+ const reasons=[];
+ if(['symbolism','orientation'].includes(chunk.kind))reasons.push('required_anchor');
+ if(signals.matchedThemes.length)reasons.push('theme_match');
+ if(signals.matchedPosition)reasons.push('position_match');
+ if(signals.matchedTerms.length)reasons.push('keyword_match');
+ if(!reasons.length)reasons.push('fallback_context');
+ return reasons;
 }
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
@@ -83,7 +110,10 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
  return cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
-  const chunks=candidateChunks(card,question).map((chunk,index)=>({...chunk,score:scoreChunk(chunk,{question,position:card.position,terms,themes}),index}));
+  const chunks=candidateChunks(card,question).map((chunk,index)=>{
+   const signals=matchingSignals(chunk,{position:card.position,terms,themes});
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes}),retrievalReasons:retrievalReasons(chunk,signals),index};
+  });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
   const chosen=[...required,...sorted].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
@@ -94,6 +124,8 @@ export function retrieveReadingEvidence({question,cards,maxPerCard=5}={}){
    position:card.position,
    orientation:card.reversed?'逆位':'正位',
    kind:chunk.kind,
+   tier:evidenceTier(chunk.kind),
+   retrievalReasons:chunk.retrievalReasons,
    text:chunk.text,
    source:chunk.source,
    sourceLabel:chunk.sourceLabel,
@@ -114,7 +146,7 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .filter(item=>item.score>0)
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
-  .map(({memory,text})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
+  .map(({memory,text})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],text,source:'memory',sourceLabel:'你确认的知识库',url:null}));
 }
 
 function validReference(item,evidenceById,cardsById){

@@ -26,6 +26,17 @@ test('retrieval always grounds each selected card in orientation and provenance'
  assert.ok(evidence.every(item=>item.evidenceId&&item.source&&item.text));
 });
 
+test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
+ const evidence=retrieveReadingEvidence({question:'我们之间的沟通和边界要怎么调整？',cards:[cards[0]]});
+ const anchor=evidence.find(item=>item.kind==='orientation');
+ const application=evidence.find(item=>item.kind==='relationships');
+ assert.equal(anchor.tier,'anchor');
+ assert.ok(anchor.retrievalReasons.includes('required_anchor'));
+ assert.equal(application.tier,'application');
+ assert.ok(application.retrievalReasons.includes('theme_match'));
+ assert.ok(evidence.some(item=>item.retrievalReasons.includes('keyword_match')));
+});
+
 test('retrieval selects relationship context for relationship questions',()=>{
  const evidence=retrieveReadingEvidence({question:'我们之间的沟通和边界要怎么调整？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='relationships'));
@@ -41,6 +52,8 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.ok(!evidence.some(item=>item.evidenceId==='memory:m2'));
  assert.ok(!evidence.some(item=>item.evidenceId==='memory:m3'));
  assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
+ assert.equal(evidence[0].tier,'personal');
+ assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
 });
 
 test('memory retrieval returns no unrelated personal records',()=>{
