@@ -300,7 +300,7 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
  assert.equal(requiresProfessionalBoundary('这项投资要不要买？'),true);
  assert.equal(requiresProfessionalBoundary('这段关系如何沟通？'),false);
  const noBoundary=JSON.stringify({text:'可以放心买入。',references:[]});
- assert.throws(()=>parseReadingOutput(noBoundary,{cards:[cards[0]],evidence,requireUncertainty:true}),/高风险问题需要现实依据说明/);
+ assert.throws(()=>parseReadingOutput(noBoundary,{cards:[cards[0]],evidence,requireUncertainty:true,requireRealityBoundary:true}),/高风险问题需要现实依据说明/);
  const grounded=JSON.stringify({text:'牌面只能作为反思线索。',uncertainty:'投资决定请依据风险承受能力、产品资料和持牌专业意见。'});
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
 });
