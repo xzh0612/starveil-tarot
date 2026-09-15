@@ -76,3 +76,34 @@ test('rejects unsupported structured follow-up card prose without forcing struct
 test('rejects an absolute predictive claim with a stable calibration code',async()=>{let calls=0;await withServer({apiKey:'test-secret',fetchImpl:async()=>{calls++;return Response.json({choices:[{message:{content:JSON.stringify({text:'这张牌显示稳定节奏，并保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:['m08:orientation']}],references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定节奏'}]})}}]})}},async url=>{const body=fixture();body.messages=[{role:'assistant',text:'上一轮回答',source:'ai'},{role:'user',text:'那结果呢？'}];const response=await post(url,body);const data=await response.json();assert.equal(response.status,502);assert.equal(calls,2);assert.equal(data.code,'overconfident_claim');assert.match(data.error,/绝对断言/);});});
 
 test('rejects an unsupported first reading body with a stable text code',async()=>{let calls=0;await withServer({apiKey:'test-secret',fetchImpl:async()=>{calls++;return Response.json({choices:[{message:{content:JSON.stringify({text:'对方已经中奖并马上搬去火星。',synthesis:{text:'核心建议与稳定节奏相互呼应。',evidenceIds:['m08:orientation']},cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:['m08:orientation']}],actions:[{text:'今天记录一次具体行动。',reason:'依据牌面稳定、明确的行动提示，把行动落到现实记录。',evidenceIds:['m08:orientation']}],references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定节奏'}],uncertainty:'牌面不能证明结果。'})}}]})}},async url=>{const response=await post(url,fixture());const data=await response.json();assert.equal(response.status,502);assert.equal(calls,2);assert.equal(data.code,'text_support');});});
+
+test('rejects a multi-card synthesis that only supports one card',async()=>{
+ let calls=0;
+ await withServer({apiKey:'test-secret',fetchImpl:async()=>{
+  calls++;
+  const content=JSON.stringify({
+   text:'先把稳定表达和当前事实分开观察。',
+   synthesis:{text:'只复述第一张牌的稳定与温柔。',evidenceIds:['m08:orientation','c06:orientation']},
+   cardReadings:[
+    {cardId:'m08',position:'建议',reading:'结合稳定而明确的方式观察一个可验证角度。',evidenceIds:['m08:orientation']},
+    {cardId:'c06',position:'关系挑战',reading:'比较记忆和当前事实，再观察一个可验证角度。',evidenceIds:['c06:orientation']},
+   ],
+   actions:[{text:'今天记录一次具体沟通，并在一周后复盘。',reason:'把稳定表达和当前事实转成可核验材料。',evidenceIds:['m08:orientation']}],
+   references:[
+    {evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定、明确'},
+    {evidenceId:'c06:orientation',cardId:'c06',position:'关系挑战',claim:'当前事实'},
+   ],
+   uncertainty:'牌面不能确认对方的真实想法。',
+  });
+  return Response.json({choices:[{message:{content},finish_reason:'stop'}]});
+ }},async url=>{
+  const body=fixture();
+  body.question='我该怎样处理这段关系？';
+  body.cards=[{id:'m08',reversed:false,position:'建议'},{id:'c06',reversed:true,position:'关系挑战'}];
+  const response=await post(url,body);
+  const data=await response.json();
+  assert.equal(response.status,502);
+  assert.equal(calls,2);
+  assert.equal(data.code,'synthesis_support');
+ });
+});
