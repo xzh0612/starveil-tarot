@@ -221,6 +221,14 @@ test('structured output deduplicates repeated evidence references',()=>{
  assert.equal(parsed.references[0].evidenceId,evidence[0].evidenceId);
 });
 
+test('reference deduplication preserves unique evidence after repeated entries',()=>{
+ const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[cards[0]]});
+ const first={evidenceId:evidence[0].evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'};
+ const second={evidenceId:evidence[1].evidenceId,cardId:'m08',position:'建议',claim:'力量'};
+ const parsed=parseReadingOutput(JSON.stringify({text:'保持稳定节奏。',references:[...Array(24).fill(first),second]}),{cards:[cards[0]],evidence});
+ assert.deepEqual(parsed.references.map(item=>item.evidenceId),[first.evidenceId,second.evidenceId]);
+});
+
 test('structured output can cite relevant personal memory with null card coordinates',()=>{
  const memory=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
  const output=JSON.stringify({text:'把先独处整理思绪作为可执行的准备。',references:[{evidenceId:'memory:m1',cardId:null,position:null,claim:'先独处整理思绪'}]});
