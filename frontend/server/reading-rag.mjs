@@ -343,7 +343,7 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .filter(item=>item.strongTerms.length>0||item.shortTerms.length>=2||item.shortTerms.some(term=>!genericTerms.has(term)))
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
-  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceLabel:'你确认的知识库',url:null}));
+  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
@@ -396,11 +396,11 @@ function validReference(item,evidenceById,cardsById){
   const card=cardsById.get(item.cardId);
   if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
  }
- return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceLabel:evidence.sourceLabel,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
+ return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceLabel:evidence.sourceLabel,memoryStatus:evidence.memoryStatus??null,memoryUse:evidence.memoryUse??null,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
 function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
- return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
+ return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
 const GOAL_REFERENCE_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};

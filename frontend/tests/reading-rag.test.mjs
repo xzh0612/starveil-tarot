@@ -228,6 +228,8 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.ok(evidence.every(item=>item.source==='memory'&&item.cardId===null));
  assert.equal(evidence[0].tier,'personal');
  assert.equal(evidence[0].sourceType,'personal_memory');
+ assert.equal(evidence[0].memoryStatus,'user_confirmed');
+ assert.equal(evidence[0].memoryUse,'context_only');
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
  assert.ok(evidence[0].retrievalTerms.length>0);
  assert.equal(evidence[0].retrievalMethod,'memory-keyword-v2');
