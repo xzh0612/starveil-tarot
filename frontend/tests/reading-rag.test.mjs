@@ -540,6 +540,8 @@ test('mixed first readings require one grounded section per routed goal',()=>{
  assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/必须按目标分别返回目标分段/);
  const wrongEvidence=JSON.stringify({text:'目标依据不匹配。',goalSections:[{goal:'advice',text:'以 Fortitude 的力量作为建议。',evidenceIds:['m08:waite']},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']}]});
  assert.throws(()=>parseReadingOutput(wrongEvidence,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段引用无效/);
+ const wrongTier=JSON.stringify({text:'预测分段缺少参考层级。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']},{goal:'forecast',text:'以稳定线索作为趋势参考。',evidenceIds:['m08:orientation']}]});
+ assert.throws(()=>parseReadingOutput(wrongTier,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段缺少目标层级证据/);
 });
 
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{

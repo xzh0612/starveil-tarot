@@ -126,6 +126,7 @@ function repairCode(error){
   [/行动建议引用无效/u,'invalid_action_evidence'],
   [/目标分段内容与证据不匹配/u,'goal_section_support'],
   [/目标分段引用无效/u,'goal_section_evidence'],
+  [/目标分段缺少目标层级证据/u,'goal_section_tier'],
   [/目标分段格式不正确/u,'invalid_goal_section'],
   [/首轮解读必须按目标分别返回目标分段/u,'missing_goal_sections'],
   [/行动建议格式不正确/u,'invalid_action'],
