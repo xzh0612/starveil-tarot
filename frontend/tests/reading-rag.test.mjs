@@ -171,6 +171,20 @@ test('global optional selection rotates across cards before taking a second chun
  assert.equal(new Set(optional.map(item=>item.cardId)).size,3);
 });
 
+test('default evidence budget reserves one required tier per routed goal',()=>{
+ const spread=[
+  {id:'m08',reversed:false,position:'建议'},
+  {id:'c06',reversed:true,position:'关系挑战'},
+  {id:'w01',reversed:false,position:'过去'},
+ ];
+ const question='我之后会怎样发展？同时两个机会哪个更适合我？';
+ const evidence=retrieveReadingEvidence({question,cards:spread});
+ assert.ok(evidence.some(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast')));
+ assert.ok(evidence.some(item=>item.tier==='application'&&item.retrievalGoals.includes('comparison')));
+ const tight=retrieveReadingEvidence({question,cards:spread,maxTotalEvidence:6});
+ assert.equal(tight.length,6);
+});
+
 test('default evidence budget expands for large mixed spreads',()=>{
  const cardsForSpread=Array.from({length:12},(_,index)=>({id:`m${String(index).padStart(2,'0')}`,reversed:index%2===1,position:`位置 ${index+1}`}));
  const question='我该如何处理这段关系，同时规划接下来的工作，也想调整自己的状态？';

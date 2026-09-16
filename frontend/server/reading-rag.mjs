@@ -33,6 +33,7 @@ const GOALS=[
  {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','理解']},
  {name:'comparison',words:['比较','区别','哪个','利弊','优缺点','取舍']},
 ];
+const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 
 const POSITION_HINTS=[
  {words:['关系','感受','需求','互动','挑战'],kind:'relationships',boost:6},
@@ -233,7 +234,7 @@ function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence){
  return Math.min(96,Math.max(48,count*(2+applicationCount)));
 }
 
-export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8}={}){
+export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8,requiredGoalEvidence=[]}={}){
  if(!Array.isArray(evidence))return [];
  const getScore=item=>{
   const raw=semanticScores instanceof Map?semanticScores.get(item.evidenceId):semanticScores?.[item.evidenceId];
@@ -246,10 +247,16 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   return {...item,retrievalScore:score,retrievalSemanticScore:semanticScore,retrievalMethod:semanticScore>0?`${item.retrievalMethod}+semantic-v1`:item.retrievalMethod};
  });
  const required=ranked.filter(item=>item.retrievalRequired===true);
- const optional=ranked.filter(item=>item.retrievalRequired!==true).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
  const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
  const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
- const optionalBudget=Math.max(0,budget-required.length),remaining=[...optional],selected=[];
+ const reservedIds=new Set(required.map(item=>item.evidenceId)),goalReserved=[];
+ for(const goal of [...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])]){
+  const tier=GOAL_REQUIRED_TIERS[goal];
+  const candidate=ranked.find(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal));
+  if(candidate&&goalReserved.length<Math.max(0,budget-required.length)){goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
+ }
+ const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
+ const optionalBudget=Math.max(0,budget-required.length-goalReserved.length),remaining=[...optional],selected=[];
  while(selected.length<optionalBudget&&remaining.length){
   const represented=new Set(selected.map(item=>item.cardId??item.evidenceId));
   const fresh=remaining.filter(item=>!represented.has(item.cardId??item.evidenceId));
@@ -258,7 +265,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   selected.push(next);
   remaining.splice(remaining.indexOf(next),1);
  }
- return [...required,...selected];
+ return [...required,...goalReserved,...selected];
 }
 
 export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
@@ -310,7 +317,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8}={}){
  const evidence=collectReadingEvidence({question,cards,maxPerCard});
- return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight});
+ return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight,requiredGoalEvidence:analyzeReadingQuestion(question).goals});
 }
 
 export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500}={}){
@@ -325,7 +332,7 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
   clearTimeout(timer);
   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
  }
- return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight});
+ return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight,requiredGoalEvidence:analyzeReadingQuestion(question).goals});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){
