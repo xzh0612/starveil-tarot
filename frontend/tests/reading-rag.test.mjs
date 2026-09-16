@@ -309,6 +309,21 @@ test('modern reference retrieval follows card orientation',()=>{
  assert.doesNotMatch(reversed.text,/Imposing restrictions/);
 });
 
+test('question routing covers common outcome, meaning and suitability phrases',()=>{
+ const reunion=analyzeReadingQuestion('我们会复合吗？');
+ assert.deepEqual(reunion.goals,['forecast']);
+ const returnQuestion=analyzeReadingQuestion('他还会回来吗？');
+ assert.deepEqual(returnQuestion.goals,['forecast']);
+ const timing=analyzeReadingQuestion('多久能复合？');
+ assert.deepEqual(timing.goals,['forecast']);
+ const meaning=analyzeReadingQuestion('这张牌说明了什么？');
+ assert.deepEqual(meaning.goals,['explanation']);
+ const relationshipChoice=analyzeReadingQuestion('这段关系值得继续吗？');
+ assert.deepEqual(relationshipChoice.goals,['comparison']);
+ const jobFit=analyzeReadingQuestion('这份工作适合我吗？');
+ assert.deepEqual(jobFit.goals,['comparison']);
+});
+
 test('global evidence budget reserves position matches before generic references',()=>{
  const evidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],maxPerCard:7,maxTotalEvidence:3,semanticScores:{'m08:modern':1},semanticWeight:20});
  assert.equal(evidence.length,3);
