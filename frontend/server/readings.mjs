@@ -1,6 +1,6 @@
 import {DECK_VERSION,cardById,spreads} from '../src/domain.js';
 import {buildRecommendationMessages,parseRecommendations} from './spread-recommendations.mjs';
-import {READING_KNOWLEDGE_VERSION,parseReadingOutput,readingRetrievalFor,retrieveMemoryEvidence,retrieveReadingEvidence,retrieveReadingEvidenceAsync,requiresProfessionalBoundary,summarizeReadingEvidence} from './reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,READING_KNOWLEDGE_VERSION,parseReadingOutput,readingRetrievalFor,retrieveMemoryEvidence,retrieveReadingEvidence,retrieveReadingEvidenceAsync,requiresProfessionalBoundary,summarizeReadingEvidence} from './reading-rag.mjs';
 
 // Keep Prompt changes independently traceable from the fixed deck and RAG corpus.
 export const READING_PROMPT_VERSION='nyx-prompt-v12';
@@ -69,7 +69,7 @@ function promptEvidenceItem(item){
  return {evidenceId:item.evidenceId,cardId:item.cardId,cardName:item.cardName,position:item.position,orientation:item.orientation,kind:item.kind,tier:item.tier,sourceType:item.sourceType,sourceLabel:item.sourceLabel,memoryStatus:item.memoryStatus??null,memoryUse:item.memoryUse??null,retrievalRequired:item.retrievalRequired===true,text:item.text};
 }
 
-const GOAL_EVIDENCE_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
+const GOAL_EVIDENCE_TIERS=GOAL_REFERENCE_TIERS;
 
 function createGoalPlan(goals,evidencePlan){
  const routed=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>Object.hasOwn(RESPONSE_EMPHASIS,goal)&&goal!=='mixed'&&goal!=='open'))];

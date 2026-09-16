@@ -459,7 +459,7 @@ function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
  return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
-const GOAL_REFERENCE_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
+export const GOAL_REFERENCE_TIERS=Object.freeze({advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'});
 const READING_GOALS=new Set(Object.keys(GOAL_REFERENCE_TIERS));
 function hasGoalReference(goal,refs,evidenceById){
  const tier=GOAL_REFERENCE_TIERS[goal];

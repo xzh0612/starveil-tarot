@@ -1,11 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,evidenceSourceType} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,evidenceSourceType} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
  {id:'c06',reversed:true,position:'关系挑战'},
 ];
+
+test('goal evidence tiers use one shared immutable contract',()=>{
+ assert.deepEqual(GOAL_REFERENCE_TIERS,{advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'});
+ assert.equal(Object.isFrozen(GOAL_REFERENCE_TIERS),true);
+});
 
 test('question analysis exposes transparent routing hints without inventing a theme',()=>{
  const relationship=analyzeReadingQuestion('我们之间的沟通和边界要怎么调整？');
