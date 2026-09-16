@@ -79,6 +79,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/(?:text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念|text 正文的每个实质句都必须与本轮引用 evidence 共享具体、非通用概念)/i.test(system))issues.push('missing_text_specific_support_rule');
  if(!/逗号、顿号和常见转折\/并列\/因果连接词分句也必须分别与所引 evidence 共享具体、非通用概念，不得在已命中的分句后追加证据之外的事实/u.test(system))issues.push('missing_clause_support_rule');
  if(!/首轮 text 的关键判断必须能在 references 或 goalSections 的 evidenceIds 中找到/i.test(system))issues.push('missing_text_reference_scope_rule');
+ if(!/mixed 模式的首轮 text 还必须分别复述每个 goalSections 目标至少一个具体概念，不能只覆盖其中一个目标/i.test(system))issues.push('missing_mixed_text_goal_coverage_rule');
  if(!/anchor_only[^\n]{0,500}(?:证据|资料)[^\n]{0,500}(?:不足|限制|不确定)/i.test(system))issues.push('missing_coverage_boundary_rule');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
@@ -133,6 +134,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_text_specific_support_rule'),
   !issues.includes('missing_clause_support_rule'),
   !issues.includes('missing_text_reference_scope_rule'),
+  !issues.includes('missing_mixed_text_goal_coverage_rule'),
   !issues.includes('missing_coverage_boundary_rule'),
   !issues.includes('missing_anchor_metadata'),
   !issues.includes('missing_grounded_context'),

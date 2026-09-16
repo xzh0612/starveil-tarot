@@ -532,7 +532,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -579,6 +579,18 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireGoalSections&&!needsClarification){
   const required=[...new Set((Array.isArray(requiredGoalSections)?requiredGoalSections:[]).filter(goal=>READING_GOALS.has(goal)))];
   if(required.some(goal=>!goalSections.some(item=>item.goal===goal)))throw Error('首轮解读必须按目标分别返回目标分段，请重试。');
+ }
+ let goalTextCoverageOk=true;
+ if(requireGoalTextCoverage&&!needsClarification&&goalSections.length>1){
+  const targets=[...new Set((Array.isArray(requiredGoalSections)&&requiredGoalSections.length?requiredGoalSections:goalSections.map(item=>item.goal)).filter(goal=>READING_GOALS.has(goal)))];
+  for(const goal of targets){
+   const section=goalSections.find(item=>item.goal===goal);
+   const sectionIds=section?.evidenceIds??[];
+   const referenceIds=refs.filter(reference=>evidenceById.get(reference.evidenceId)?.retrievalGoals?.includes(goal)).map(reference=>reference.evidenceId);
+   const goalEvidenceIds=[...new Set([...sectionIds,...referenceIds])];
+   const goalEvidence=goalEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
+   if(section&&!claimSupportedByEvidence(data.text,{text:goalEvidence},{allowGeneric:false,requireSentenceSupport:false}))goalTextCoverageOk=false;
+  }
  }
  let synthesis={text:'',evidenceIds:[]};let synthesisSupportOk=true;
  if(data.synthesis!==undefined){
@@ -642,6 +654,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
+ if(requireGoalTextCoverage&&!needsClarification&&!goalTextCoverageOk)throw Error('首轮正文没有覆盖每个回答目标，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set(isFollowUp
