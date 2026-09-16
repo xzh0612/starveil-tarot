@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v21';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v22';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -290,10 +290,10 @@ function applicationKindsForThemes(themes,goals=[]){
  return [...new Set(kinds)];
 }
 
-function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence){
+function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,routing=null){
  if(Number.isFinite(maxTotalEvidence))return Math.floor(maxTotalEvidence);
- const count=Array.isArray(cards)?cards.length:0,routing=analyzeReadingQuestion(question);
- const applicationCount=Math.min(3,Math.max(1,applicationKindsForThemes(routing.themes,routing.goals).length,routing.goals.includes('forecast')?1:0));
+ const count=Array.isArray(cards)?cards.length:0,resolvedRouting=routing??analyzeReadingQuestion(question);
+ const applicationCount=Math.min(3,Math.max(1,applicationKindsForThemes(resolvedRouting.themes,resolvedRouting.goals).length,resolvedRouting.goals.includes('forecast')?1:0));
  // Reserve two anchors plus one application/reference layer per card. Keep a
  // bounded floor for small spreads and a hard ceiling for prompt size.
  return Math.min(96,Math.max(48,count*(2+applicationCount)));
@@ -339,9 +339,9 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  return [...required,...goalReserved,...positionReserved,...selected];
 }
 
-export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
+export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
- const routing=analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,routing),terms=queryTerms.weights,themes=routing.themes,goals=routing.goals,limit=Math.max(3,Math.min(7,maxPerCard));
+ const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard));
  const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
@@ -395,13 +395,13 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
  return perCard;
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8}={}){
- const evidence=collectReadingEvidence({question,cards,maxPerCard});
- return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight,requiredGoalEvidence:analyzeReadingQuestion(question).goals});
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,routing=null}={}){
+ const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting});
+ return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals});
 }
 
-export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500}={}){
- const evidence=collectReadingEvidence({question,cards,maxPerCard});
+export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500,routing=null}={}){
+ const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting});
  let resolvedScores=semanticScores;
  if(typeof semanticReranker==='function'){
   const timeout=Number.isFinite(semanticTimeoutMs)?Math.max(0,Math.min(10_000,semanticTimeoutMs)):1_500;
@@ -412,7 +412,7 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
   clearTimeout(timer);
   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
  }
- return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence),semanticWeight,requiredGoalEvidence:analyzeReadingQuestion(question).goals});
+ return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){

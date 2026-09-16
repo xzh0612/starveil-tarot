@@ -60,6 +60,9 @@ test('follow-up routing separates inherited context from the current goal',()=>{
  assert.equal(domainSwitch.inheritedOriginal,false);
  assert.deepEqual(domainSwitch.retrievalMeta.themes,['career']);
  assert.deepEqual(domainSwitch.retrievalMeta.goals,['advice']);
+ const routedEvidence=retrieveReadingEvidence({question:domainSwitch.retrievalQuestion,cards:[cards[0]],routing:domainSwitch.retrievalMeta});
+ assert.ok(routedEvidence.some(item=>item.kind==='work'&&item.retrievalGoals.includes('advice')));
+ assert.deepEqual(summarizeReadingEvidence(routedEvidence,[cards[0]],domainSwitch.retrievalMeta).missingGoalCoverage,[]);
 });
 
 test('question routing recognizes common synonyms across reading intents',()=>{
