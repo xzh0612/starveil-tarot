@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v15';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v16';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -484,7 +484,9 @@ function hasGoalReference(goal,refs,goalSections,evidenceById){
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
-const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方']);
+const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方','关系','感情','工作','事业','状态','未来','现在','复合','联系','回来','喜欢','感觉','持续','伤害','持续伤害']);
+const CLAIM_GENERIC_TERM_LIST=[...CLAIM_GENERIC_TERMS];
+const isGenericClaimTerm=term=>CLAIM_GENERIC_TERMS.has(term)||CLAIM_GENERIC_TERM_LIST.some(generic=>generic.length>term.length&&generic.includes(term));
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
  // A supported sentence must not smuggle an unsupported clause after
@@ -494,7 +496,7 @@ function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSent
  let meaningful=false;
  for(const sentence of sentences){
   const claimTerms=[...chineseNgrams(sentence)].filter(term=>term.length>=2&&!CLAIM_STOPWORDS.has(term));
-  const specificTerms=allowGeneric?claimTerms:claimTerms.filter(term=>!CLAIM_GENERIC_TERMS.has(term));
+  const specificTerms=allowGeneric?claimTerms:claimTerms.filter(term=>!isGenericClaimTerm(term));
   if(!specificTerms.length)continue;
   meaningful=true;
   const supported=specificTerms.some(term=>evidenceTerms.has(term));

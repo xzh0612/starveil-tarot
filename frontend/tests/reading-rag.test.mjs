@@ -690,6 +690,14 @@ test('first structured citations require a concise support claim',()=>{
  assert.throws(()=>parseReadingOutput(generic,{cards:[cards[0]],evidence,requireReferenceSupport:true}),/引用说明与证据不匹配/);
 });
 
+test('grounding does not accept broad relationship words as unsupported facts',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该怎么处理这段关系？',cards:[card]});
+ assert.throws(()=>parseReadingOutput('关系会在三天后复合。',{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}),/追问正文与证据不匹配/);
+ assert.throws(()=>parseReadingOutput('对方会持续伤害我。',{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}),/追问正文与证据不匹配/);
+ assert.doesNotThrow(()=>parseReadingOutput('理解对方不意味着容忍持续伤害。',{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}));
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
