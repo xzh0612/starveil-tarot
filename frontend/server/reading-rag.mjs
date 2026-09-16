@@ -599,7 +599,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(!evidenceIds.some(id=>['anchor','application','personal'].includes(evidenceById.get(id)?.tier)))throw Error('行动建议必须引用核心或应用证据，请重试。');
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
-   if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsReasonSupported=false;
+   if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false}))actionsReasonSupported=false;
    if(requireActionTextSupport&&!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false}))actionsTextSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
    if(!needsClarification&&availableActionGoals.length&&!evidenceIds.some(id=>availableActionGoals.some(goal=>evidenceById.get(id)?.tier===GOAL_REFERENCE_TIERS[goal]&&Array.isArray(evidenceById.get(id)?.retrievalGoals)&&evidenceById.get(id).retrievalGoals.includes(goal))))actionsGoalTierSupported=false;

@@ -173,6 +173,9 @@ test('prompt evaluation requires evidence boundaries, JSON contract and user con
  const missingActionSpecificRule=[...messages];
  missingActionSpecificRule[0]={...messages[0],content:messages[0].content.replace('具体、非通用概念，不能只依赖行动/观察/结果等通用词','有意义概念')};
  assert.ok(evaluatePromptContract(missingActionSpecificRule).issues.includes('missing_action_specific_text_rule'));
+ const missingActionSpecificReasonRule=[...messages];
+ missingActionSpecificReasonRule[0]={...messages[0],content:messages[0].content.replace('正文和 reason 都必须与所引 evidence 共享具体、非通用概念','正文和 reason 都必须与所引 evidence 共享有意义概念')};
+ assert.ok(evaluatePromptContract(missingActionSpecificReasonRule).issues.includes('missing_action_specific_reason_rule'));
  const missingPositionEvidenceRule=[...messages];
  missingPositionEvidenceRule[0]={...messages[0],content:messages[0].content.replace('positionEvidenceIds 标记因牌位语义命中的证据；首轮逐牌解读只要某牌的 positionEvidenceIds 有值，就必须至少引用其中一条对应 ID；','')};
  assert.ok(evaluatePromptContract(missingPositionEvidenceRule).issues.includes('missing_position_evidence_rule'));

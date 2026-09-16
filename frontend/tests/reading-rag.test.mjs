@@ -481,6 +481,12 @@ test('first action text cannot pass on generic action words alone',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireActions:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true}),/行动建议内容与证据不匹配/);
 });
 
+test('first action reasons cannot pass on generic words alone',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'先观察再沟通。',actions:[{text:'今天记录一次稳定节奏的具体行动。',reason:'这是一条行动建议，并观察结果。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireActions:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true}),/行动理由与牌面证据不匹配/);
+});
+
 test('synthesis rejects prose with no meaningful overlap with cited evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'综合判断。',synthesis:{text:'这意味着对方一定会回来。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}});
