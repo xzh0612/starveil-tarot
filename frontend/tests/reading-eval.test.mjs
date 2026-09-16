@@ -34,7 +34,7 @@ test('reading evaluation accepts grounded first output with an actionable next s
  const output=JSON.stringify({
   text:'先把感受和事实分开记录，再约一次明确的沟通，观察对方是否愿意回应。',
   synthesis:{text:'两张牌共同把关系焦点落在稳定、明确的表达，以及比较过去与当前事实上。',evidenceIds:cards.map(card=>evidence.find(e=>e.cardId===card.id&&e.kind==='orientation').evidenceId)},
-  actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'依据牌面稳定、明确的行动线索，把担忧变成可观察材料。',evidenceIds:[evidence.find(e=>e.kind==='orientation').evidenceId]}],
+  actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'依据牌面稳定、明确的行动线索，把担忧变成可观察材料。',evidenceIds:[evidence.find(e=>e.kind==='orientation').evidenceId,evidence.find(e=>e.kind==='relationships').evidenceId]}],
   cardReadings:cards.map(card=>{
    const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');
    const reading=card.id==='m08'?'结合稳定而明确的提示，观察一个可验证的角度，并给出下一步。':'比较记忆和当前事实，再观察一个可验证的角度，并给出下一步。';

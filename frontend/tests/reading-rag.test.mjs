@@ -49,6 +49,8 @@ test('question routing recognizes common synonyms across reading intents',()=>{
  assert.deepEqual(relationship.themes,['relationship']);
  const reflection=analyzeReadingQuestion('我最近很焦虑，也感到疲惫，怎么调整？');
  assert.deepEqual(reflection.themes,['reflection']);
+ const how=analyzeReadingQuestion('我怎样处理这段关系？');
+ assert.deepEqual(how.goals,['advice']);
 });
 
 test('question routing distinguishes the requested response goal',()=>{
