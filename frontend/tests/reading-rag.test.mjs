@@ -533,6 +533,8 @@ test('first reading text cannot borrow support from non-reference fields',()=>{
  const relationships=evidence.find(item=>item.kind==='relationships');
  const output=JSON.stringify({text:'平静说出感受和底线。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定、温柔'}],actions:[{text:'记录一次沟通。',reason:'依据关系中的边界。',evidenceIds:[relationships.evidenceId]}]});
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
+ const synthesisOutput=JSON.stringify({text:'平静说出感受和底线。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定、温柔'}],synthesis:{text:'把关系中的边界纳入观察。',evidenceIds:[relationships.evidenceId]}});
+ assert.throws(()=>parseReadingOutput(synthesisOutput,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
 test('first reading text cannot pass on generic evidence words alone',()=>{
