@@ -31,7 +31,10 @@ const GOALS=[
  {name:'advice',words:['怎么办','如何','怎么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','建议','下一步','行动','安排','调整','改善','应不应该']},
  {name:'forecast',words:['会不会','是否会','能否','何时','什么时候','几率','结果','趋势','未来','之后','接下来','近期','今年','明年','发展','走向','可能性','会怎样']},
  {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','理解']},
- {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍']},
+ // Decision questions are often phrased without the words "比较" or
+ // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
+ // still supplies decision-oriented application evidence.
+ {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍','要不要','该不该','是否值得','值不值得']},
 ];
 const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 

@@ -72,6 +72,15 @@ test('question routing recognizes explicit path and option comparisons',()=>{
  assert.deepEqual(option.goals,['comparison']);
 });
 
+test('question routing treats yes-or-no decisions as comparison goals',()=>{
+ const contact=analyzeReadingQuestion('我要不要主动联系他？');
+ assert.deepEqual(contact.goals,['comparison']);
+ const career=analyzeReadingQuestion('我该不该换工作？');
+ assert.deepEqual(career.goals,['comparison']);
+ const evidence=retrieveReadingEvidence({question:'我要不要主动联系他？',cards:[cards[0]]});
+ assert.ok(evidence.some(item=>item.kind==='relationships'&&item.retrievalGoals.includes('comparison')));
+});
+
 test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
