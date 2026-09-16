@@ -300,6 +300,15 @@ test('global evidence budget keeps anchors for every card before optional chunks
  }
 });
 
+test('modern reference retrieval follows card orientation',()=>{
+ const upright=retrieveReadingEvidence({question:'我想理解这张牌的意义。',cards:[{id:'m08',reversed:false,position:'现在'}],maxPerCard:7}).find(item=>item.kind==='modern');
+ const reversed=retrieveReadingEvidence({question:'我想理解这张牌的意义。',cards:[{id:'m08',reversed:true,position:'现在'}],maxPerCard:7}).find(item=>item.kind==='modern');
+ assert.match(upright.text,/Imposing restrictions/);
+ assert.doesNotMatch(upright.text,/Indulging weakness/);
+ assert.match(reversed.text,/Indulging weakness/);
+ assert.doesNotMatch(reversed.text,/Imposing restrictions/);
+});
+
 test('global evidence budget reserves position matches before generic references',()=>{
  const evidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],maxPerCard:7,maxTotalEvidence:3,semanticScores:{'m08:modern':1},semanticWeight:20});
  assert.equal(evidence.length,3);

@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v12';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v13';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -187,7 +187,8 @@ function excerpt(text,max=360){
 function candidateChunks(card,question){
  const guide=cardGuides[card.id],reference=references[card.id];
  const orientation=card.reversed?'reversed':'upright';
- const modern=[...(reference?.light??[]).slice(0,3),...(reference?.shadow??[]).slice(0,3)].join('；');
+ const modernItems=card.reversed?(reference?.shadow??[]):(reference?.light??[]);
+ const modern=modernItems.slice(0,3).join('；'),modernLabel=card.reversed?'挑战面':'建设面';
  return [
   {kind:'symbolism',text:guide.symbolism,source:'editorial',sourceLabel:'星幕编辑牌义',base:4},
   {kind:'orientation',text:guide[orientation],source:'editorial',sourceLabel:`星幕编辑牌义 · ${card.reversed?'逆位':'正位'}`,base:10},
@@ -195,7 +196,7 @@ function candidateChunks(card,question){
   {kind:'work',text:guide.work,source:'editorial',sourceLabel:'星幕编辑牌义 · 事业与行动',base:2},
   {kind:'reflection',text:guide.question,source:'editorial',sourceLabel:'星幕编辑牌义 · 反思问题',base:1},
   reference?.waite&&{kind:'waite',text:excerpt(reference.waite),source:'waite',sourceLabel:'A. E. Waite · The Pictorial Key to the Tarot',url:reference.waiteUrl,base:2},
-  modern&&{kind:'modern',text:excerpt(`建设面与挑战面：${modern}`,420),source:'corpora',sourceLabel:'Corpora · tarot interpretations',url:reference.modernUrl,base:1},
+  modern&&{kind:'modern',text:excerpt(`${modernLabel}：${modern}`,420),source:'corpora',sourceLabel:'Corpora · tarot interpretations',url:reference.modernUrl,base:1},
  ].filter(Boolean);
 }
 
