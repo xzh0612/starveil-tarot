@@ -62,6 +62,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/missingApplicationKindsByCard/i.test(system))issues.push('missing_application_domain_diagnostics');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
+ if(!/responsePlan[^\n]{0,700}directAnswer/i.test(system))issues.push('missing_direct_answer_plan_rule');
  if(!/goalPlan[^\n]{0,700}(?:order|evidenceIds|逐一回应)/i.test(system))issues.push('missing_goal_plan_rule');
  if(!/goalSections[^\n]{0,700}(?:目标|goal|分段|evidenceIds)/i.test(system))issues.push('missing_goal_sections_rule');
  if(!/首轮[^\n]{0,120}(?:直接回应|先回答) activeQuestion[^\n]{0,160}(?:goalPlan|牌位)/u.test(system))issues.push('missing_direct_answer_order_rule');
@@ -102,6 +103,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/missingApplicationKindsByCard/.test(user))issues.push('missing_application_domain_diagnostics_context');
  if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
  if(!/responsePlan/.test(user)||!/goal/.test(user)||!/emphasis/.test(user))issues.push('missing_response_plan_goal_context');
+ if(!/responsePlan/.test(user)||!/directAnswer/.test(user))issues.push('missing_direct_answer_plan_context');
  if(!/goalPlan/.test(user)||!/goalOrder|order/.test(user))issues.push('missing_goal_plan_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
@@ -118,6 +120,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_application_domain_diagnostics'),
   !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
+  !issues.includes('missing_direct_answer_plan_rule'),
   !issues.includes('missing_goal_plan_rule'),
   !issues.includes('missing_goal_sections_rule'),
   !issues.includes('missing_synthesis_per_card_rule'),
@@ -157,6 +160,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_application_domain_diagnostics_context'),
   !issues.includes('missing_goal_coverage_context'),
   !issues.includes('missing_response_plan_goal_context'),
+  !issues.includes('missing_direct_answer_plan_context'),
   !issues.includes('missing_goal_plan_context'),
   !issues.includes('missing_anchor_metadata_context'),
  ];
