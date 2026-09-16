@@ -724,6 +724,14 @@ test('single-goal readings reject an unrequested goal section',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,allowedGoalSections:['advice']}),/目标分段目标未被本轮路由/);
 });
 
+test('single-goal goal sections must also use specific evidence terms',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该怎么处理这段关系？',cards:[card]});
+ const adviceApplication=evidence.find(item=>item.tier==='application'&&item.retrievalGoals.includes('advice'));
+ const output=JSON.stringify({text:'先回答当前目标。',goalSections:[{goal:'advice',text:'说明方向并观察结果。',evidenceIds:[adviceApplication.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,allowedGoalSections:['advice']}),/目标分段内容与证据不匹配/);
+});
+
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
