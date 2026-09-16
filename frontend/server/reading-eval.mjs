@@ -67,16 +67,17 @@ export function evaluatePromptContract(messages=[]){
  if(!/澄清分支[^\n]{0,300}(?:必须为空|不得同时返回)/u.test(system))issues.push('missing_clarification_exclusivity');
  if(!/action[^\n]{0,600}(?:reason|理由)[^\n]{0,300}(?:必须|非空|说明)/i.test(system))issues.push('missing_action_reason_rule');
  if(!/action[^\n]{0,900}(?:reason|理由)[^\n]{0,900}(?:证据|evidence)/i.test(system))issues.push('missing_action_reason_support_rule');
- if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_reason_rule');
+ if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句(?:、逐个分句)?与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_reason_rule');
  if(!/action[^\n]{0,900}(?:正文|内容)[^\n]{0,900}(?:证据|evidence)/i.test(system))issues.push('missing_action_text_support_rule');
- if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_text_rule');
- if(!/追问返回 actions，其正文必须与 action\.evidenceIds 的证据共享具体、非通用概念，reason 若提供也必须被同一组证据支持/u.test(system))issues.push('missing_followup_action_support_rule');
+ if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句(?:、逐个分句)?与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_text_rule');
+ if(!/追问返回 actions，其正文的每个实质句和逗号分句必须与 action\.evidenceIds 的证据共享具体、非通用概念，reason 若提供也必须逐句、逐个分句被同一组证据支持/u.test(system))issues.push('missing_followup_action_support_rule');
  if(!/(?:goalSections、cardReadings、synthesis 的正文都必须分别复述所引 evidence 中的(?:具体、非通用|非通用)概念|只要返回 goalSections、cardReadings 或 synthesis，即使是单目标或结构化追问，(?:其中)?每个实质句都必须与所引 evidence 共享具体、非通用概念|只要返回 goalSections、cardReadings 或 synthesis，即使是单目标或结构化追问，正文也必须分别复述所引 evidence 中的(?:具体、非通用|非通用)概念)/i.test(system))issues.push('missing_structured_specific_support_rule');
  if(!/首轮 goalSections 还必须优先使用该目标的 requiredEvidenceTier/i.test(system))issues.push('missing_goal_section_tier_rule');
  if(!/结构化追问若本轮有明确 goal，也必须在 references 或对应 goalSections 中优先引用该目标的 requiredEvidenceTier/u.test(system))issues.push('missing_followup_goal_tier_rule');
  if(!/advice 或 comparison 目标有可用 application 证据时，每条首轮 action 至少引用一个对应目标的 application ID/u.test(system))issues.push('missing_action_goal_evidence_rule');
  if(!/text[^\n]{0,700}(?:正文|内容)[^\n]{0,700}(?:证据|evidence)/i.test(system))issues.push('missing_text_support_rule');
  if(!/(?:text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念|text 正文的每个实质句都必须与本轮引用 evidence 共享具体、非通用概念)/i.test(system))issues.push('missing_text_specific_support_rule');
+ if(!/逗号分句也必须分别与所引 evidence 共享具体、非通用概念，不得在已命中的分句后追加证据之外的事实/u.test(system))issues.push('missing_clause_support_rule');
  if(!/首轮 text 的关键判断必须能在 references 或 goalSections 的 evidenceIds 中找到/i.test(system))issues.push('missing_text_reference_scope_rule');
  if(!/anchor_only[^\n]{0,500}(?:证据|资料)[^\n]{0,500}(?:不足|限制|不确定)/i.test(system))issues.push('missing_coverage_boundary_rule');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
@@ -130,6 +131,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_action_goal_evidence_rule'),
   !issues.includes('missing_text_support_rule'),
   !issues.includes('missing_text_specific_support_rule'),
+  !issues.includes('missing_clause_support_rule'),
   !issues.includes('missing_text_reference_scope_rule'),
   !issues.includes('missing_coverage_boundary_rule'),
   !issues.includes('missing_anchor_metadata'),

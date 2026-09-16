@@ -18,15 +18,15 @@ const retrievalCases=[
 ];
 const evidence=retrieveReadingEvidence({question,cards});
 const output=JSON.stringify({
- text:'先把感受与事实分开记录，再约一次有边界的沟通，观察对方是否愿意回应，并在一周后复盘结果。',
- synthesis:{text:'两张牌共同把关系焦点落在稳定、明确的表达，以及比较记忆和当前事实上。',evidenceIds:cards.map(card=>evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation').evidenceId)},
+ text:'先比较记忆和当前事实，再平静说出感受和底线，并观察当下互动是否健康。',
+ synthesis:{text:'稳定、温柔而明确的方式与克制情绪相连，也要比较记忆和当前事实。',evidenceIds:cards.map(card=>evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation').evidenceId)},
  cardReadings:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
-  const reading=card.id==='m08'?'结合稳定而明确的提示，观察一个可验证的角度，并给出下一步。':'比较记忆和当前事实，再观察一个可验证的角度，并给出下一步。';
+  const reading=card.id==='m08'?'用稳定、温柔而明确的方式面对情绪，并练习克制。':'比较记忆和当前事实，再不因熟悉就忽略已经发生的变化。';
   const position=evidence.find(candidate=>candidate.cardId===card.id&&candidate.retrievalReasons?.includes('position_match'));
   return {cardId:card.id,position:card.position,reading,evidenceIds:[item.evidenceId,...(position?[position.evidenceId]:[])]};
  }),
- actions:[{text:'今天记录一次自己的感受和底线，并在一周后复盘。',reason:'依据牌面稳定、明确的行动线索，把抽象担忧变成可观察材料。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId,evidence.find(item=>item.cardId==='m08'&&item.kind==='relationships').evidenceId]}],
+ actions:[{text:'今天记录一次感受和底线，并练习克制情绪。',reason:'依据稳定、温柔而明确的方式，把情绪交给克制。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId,evidence.find(item=>item.cardId==='m08'&&item.kind==='relationships').evidenceId]}],
  references:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
   const application=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='relationships');

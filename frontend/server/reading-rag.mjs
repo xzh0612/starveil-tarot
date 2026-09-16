@@ -482,7 +482,9 @@ const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方']);
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
- const sentences=String(claim??'').split(/[。！？!?；;\n]+/u).map(item=>item.trim()).filter(Boolean);
+ // A supported sentence must not smuggle an unsupported clause after a
+ // comma. Keep enumeration commas (、) intact because they join one concept.
+ const sentences=String(claim??'').split(/[。！？!?；;，,\n]+/u).map(item=>item.trim()).filter(Boolean);
  if(!sentences.length)return false;
  let meaningful=false;
  for(const sentence of sentences){

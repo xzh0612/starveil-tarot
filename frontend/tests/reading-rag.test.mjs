@@ -854,6 +854,17 @@ test('structured follow-up actions must stay grounded in their evidence',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}).actions.length,1);
 });
 
+test('grounding rejects an unsupported comma clause after a supported clause',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const work=evidence.find(item=>item.kind==='work');
+ const unsupported=JSON.stringify({text:'保持稳定节奏。',actions:[{text:'保持稳定节奏，但对方已经搬去火星。',evidenceIds:[orientation.evidenceId,work.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(unsupported,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}),/行动建议内容与证据不匹配/);
+ const grounded=JSON.stringify({text:'保持稳定节奏。',actions:[{text:'今天记录一次稳定节奏，并练习克制情绪。',evidenceIds:[orientation.evidenceId,work.evidenceId]}]});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}).actions.length,1);
+});
+
 test('structured follow-ups require the routed goal evidence tier',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
