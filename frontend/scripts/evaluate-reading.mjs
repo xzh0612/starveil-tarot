@@ -14,6 +14,7 @@ const retrievalCases=[
  {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
  {name:'possibility',question:'我们能不能复合？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite']},
  {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
+ {name:'position-semantics',question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],requiredKinds:['orientation','symbolism','work'],requiredPositionKinds:['work']},
 ];
 const evidence=retrieveReadingEvidence({question,cards});
 const output=JSON.stringify({

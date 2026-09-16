@@ -16,6 +16,13 @@ test('retrieval evaluation reports topical coverage and a deterministic score',(
  assert.ok(result.evidence.every(item=>item.sourceLabel));
 });
 
+test('retrieval evaluation checks spread position semantics',()=>{
+ const result=evaluateRetrievalCase({question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],requiredKinds:['orientation','symbolism','work'],requiredPositionKinds:['work']});
+ assert.equal(result.ok,true);
+ assert.deepEqual(result.missingPositionKinds,[]);
+ assert.ok(result.positionKinds.includes('work'));
+});
+
 test('retrieval suite covers the major question intents',()=>{
  const result=evaluateRetrievalSuite([
   {name:'relationship',question:'我们之间的沟通和边界要怎么调整？',cards,requiredKinds:['orientation','symbolism','relationships']},
@@ -24,6 +31,7 @@ test('retrieval suite covers the major question intents',()=>{
   {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
   {name:'possibility',question:'我们能不能复合？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite']},
   {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
+  {name:'position-semantics',question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],requiredKinds:['orientation','symbolism','work'],requiredPositionKinds:['work']},
  ]);
  assert.equal(result.ok,true);
  assert.equal(result.score,100);
