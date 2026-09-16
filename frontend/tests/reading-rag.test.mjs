@@ -223,6 +223,12 @@ test('global evidence budget keeps anchors for every card before optional chunks
  }
 });
 
+test('global evidence budget reserves position matches before generic references',()=>{
+ const evidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],maxPerCard:7,maxTotalEvidence:3,semanticScores:{'m08:modern':1},semanticWeight:20});
+ assert.equal(evidence.length,3);
+ assert.ok(evidence.some(item=>item.evidenceId==='m08:work'&&item.retrievalReasons.includes('position_match')));
+});
+
 test('semantic reranker hook changes optional ordering without displacing anchors',()=>{
  const base=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[{id:'m08',reversed:false,position:'建议'}],maxPerCard:7,maxTotalEvidence:4});
  assert.equal(base.length,4);

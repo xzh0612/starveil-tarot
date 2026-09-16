@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v3';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v4';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -285,8 +285,14 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
   if(candidate&&goalReserved.length<Math.max(0,budget-required.length)){goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
  }
+ const positionReserved=[];
+ const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
+ for(const cardId of positionCardIds){
+  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.cardId===cardId&&Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
+  if(candidate&&positionReserved.length<Math.max(0,budget-required.length-goalReserved.length)){positionReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
+ }
  const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
- const optionalBudget=Math.max(0,budget-required.length-goalReserved.length),remaining=[...optional],selected=[];
+ const optionalBudget=Math.max(0,budget-required.length-goalReserved.length-positionReserved.length),remaining=[...optional],selected=[];
  while(selected.length<optionalBudget&&remaining.length){
   const represented=new Set(selected.map(item=>item.cardId??item.evidenceId));
   const fresh=remaining.filter(item=>!represented.has(item.cardId??item.evidenceId));
@@ -295,7 +301,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   selected.push(next);
   remaining.splice(remaining.indexOf(next),1);
  }
- return [...required,...goalReserved,...selected];
+ return [...required,...goalReserved,...positionReserved,...selected];
 }
 
 export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
