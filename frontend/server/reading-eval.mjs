@@ -61,6 +61,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
  if(!/goalPlan[^\n]{0,700}(?:order|evidenceIds|逐一回应)/i.test(system))issues.push('missing_goal_plan_rule');
  if(!/goalSections[^\n]{0,700}(?:目标|goal|分段|evidenceIds)/i.test(system))issues.push('missing_goal_sections_rule');
+ if(!/首轮[^\n]{0,120}(?:直接回应|先回答) activeQuestion[^\n]{0,160}(?:goalPlan|牌位)/u.test(system))issues.push('missing_direct_answer_order_rule');
  if(!/synthesis[^\n]{0,900}(?:多牌阵|每张牌|分别|逐张)[^\n]{0,300}(?:核心|概念|证据)/i.test(system))issues.push('missing_synthesis_per_card_rule');
  if(!/<starveil_workflow>[\s\S]*?(?:activeQuestion|逐牌解读)[\s\S]*?(?:synthesis|合读)[\s\S]*?(?:自检|自查)[\s\S]*?<\/starveil_workflow>/i.test(system))issues.push('missing_prompt_workflow');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
