@@ -528,18 +528,18 @@ const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方','关系','感情','工作','事业','状态','未来','现在','复合','联系','回来','喜欢','感觉','持续','伤害','持续伤害']);
 const CLAIM_GENERIC_TERM_LIST=[...CLAIM_GENERIC_TERMS];
 const isGenericClaimTerm=term=>CLAIM_GENERIC_TERMS.has(term)||CLAIM_GENERIC_TERM_LIST.some(generic=>generic.length>term.length&&generic.includes(term));
+function questionRelevanceThemeTerms(question){
+ const text=String(question??'').trim().toLowerCase(),activeThemes=new Set(analyzeReadingQuestion(text).themes);
+ return THEMES.filter(theme=>['relationship','career','reflection'].includes(theme.name)&&activeThemes.has(theme.name)).map(theme=>({theme:theme.name,terms:[...new Set((theme.words??[]).filter(term=>term.length>=2))]}));
+}
+
 function questionRelevanceTerms(question){
- const text=String(question??'').trim().toLowerCase(),terms=[],activeThemes=new Set(analyzeReadingQuestion(text).themes);
- for(const theme of THEMES){
-  if(!['relationship','career','reflection'].includes(theme.name)||!activeThemes.has(theme.name))continue;
-  for(const term of theme.words??[])if(term.length>=2)terms.push(term);
- }
- return [...new Set(terms)].sort((a,b)=>b.length-a.length||a.localeCompare(b));
+ return [...new Set(questionRelevanceThemeTerms(question).flatMap(item=>item.terms))].sort((a,b)=>b.length-a.length||a.localeCompare(b));
 }
 
 function questionTextSupports(text,question){
- const terms=questionRelevanceTerms(question);
- return !terms.length||terms.some(term=>String(text??'').toLowerCase().includes(term));
+ const value=String(text??'').toLowerCase(),themes=questionRelevanceThemeTerms(question),terms=questionRelevanceTerms(question);
+ return !terms.length||themes.every(item=>item.terms.some(term=>value.includes(term)));
 }
 
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){

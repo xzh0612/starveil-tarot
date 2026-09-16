@@ -1139,6 +1139,17 @@ test('accepts a same-domain synonym in active question relevance',()=>{
  assert.doesNotThrow(()=>parseReadingOutput(output,{cards:[card],evidence,activeQuestion:'我该如何准备考试？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
 });
 
+test('requires every explicit topic in a mixed active question',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'这段感情和工作如何平衡？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const work=evidence.find(item=>item.kind==='work');
+ const missing=JSON.stringify({text:'这段感情可以继续用稳定、温柔而明确的方式面对恐惧。',actions:[{text:'今天记录一次稳定的行动。',reason:'稳定节奏可以帮助继续观察。',evidenceIds:[orientation.evidenceId,work.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,activeQuestion:'这段感情和工作如何平衡？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}),/没有直接回应本轮问题/);
+ const complete=JSON.stringify({text:'这段感情与工作安排都可以继续用稳定、温柔而明确的方式面对恐惧。',actions:[{text:'今天记录一次稳定的行动。',reason:'稳定节奏可以帮助继续观察。',evidenceIds:[orientation.evidenceId,work.evidenceId]}]});
+ assert.doesNotThrow(()=>parseReadingOutput(complete,{cards:[card],evidence,activeQuestion:'这段感情和工作如何平衡？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
