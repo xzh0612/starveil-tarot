@@ -527,6 +527,14 @@ test('first reading text rejects an unsupported trailing sentence',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
+test('first reading text cannot borrow support from non-reference fields',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const relationships=evidence.find(item=>item.kind==='relationships');
+ const output=JSON.stringify({text:'平静说出感受和底线。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定、温柔'}],actions:[{text:'记录一次沟通。',reason:'依据关系中的边界。',evidenceIds:[relationships.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
+});
+
 test('first reading text cannot pass on generic evidence words alone',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'说明方向并观察结果。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定'}]});

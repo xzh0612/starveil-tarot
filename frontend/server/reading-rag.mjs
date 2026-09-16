@@ -629,7 +629,9 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
-  const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)])];
+  const groundedEvidenceIds=[...new Set(isFollowUp
+   ? [...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)]
+   : [...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
