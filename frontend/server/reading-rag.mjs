@@ -472,9 +472,10 @@ function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
 
 export const GOAL_REFERENCE_TIERS=Object.freeze({advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'});
 const READING_GOALS=new Set(Object.keys(GOAL_REFERENCE_TIERS));
-function hasGoalReference(goal,refs,evidenceById){
+function hasGoalReference(goal,refs,goalSections,evidenceById){
  const tier=GOAL_REFERENCE_TIERS[goal];
- return refs.some(reference=>{const evidence=evidenceById.get(reference.evidenceId);return evidence?.tier===tier&&Array.isArray(evidence.retrievalGoals)&&evidence.retrievalGoals.includes(goal);});
+ const evidenceIds=[...refs.map(reference=>reference.evidenceId),...goalSections.filter(section=>section.goal===goal).flatMap(section=>section.evidenceIds)];
+ return evidenceIds.some(evidenceId=>{const evidence=evidenceById.get(evidenceId);return evidence?.tier===tier&&Array.isArray(evidence.retrievalGoals)&&evidence.retrievalGoals.includes(goal);});
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
@@ -529,7 +530,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -568,7 +569,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(requireGoalSections&&requested[index]!==item.goal)throw Error('目标分段顺序不符合本轮目标计划，请重试。');
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||!Array.isArray(chunk.retrievalGoals)||!chunk.retrievalGoals.includes(item.goal))throw Error('目标分段引用无效，请重试。');return chunk.evidenceId;});
    const requiredTier=GOAL_REFERENCE_TIERS[item.goal],hasAvailableRequiredTier=[...evidenceById.values()].some(chunk=>chunk?.tier===requiredTier&&Array.isArray(chunk.retrievalGoals)&&chunk.retrievalGoals.includes(item.goal));
-   if(!isFollowUp&&!needsClarification&&hasAvailableRequiredTier&&!evidenceIds.some(id=>evidenceById.get(id)?.tier===requiredTier))throw Error('目标分段缺少目标层级证据，请重试。');
+   if((!isFollowUp||requireGoalReferenceCoverage)&&!needsClarification&&hasAvailableRequiredTier&&!evidenceIds.some(id=>evidenceById.get(id)?.tier===requiredTier))throw Error('目标分段缺少目标层级证据，请重试。');
    if(!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:false,requireSentenceSupport:true}))throw Error('目标分段内容与证据不匹配，请重试。');
    seenGoals.add(item.goal);const uniqueIds=[...new Set(evidenceIds)];return {goal:item.goal,text:excerpt(item.text,4_000),evidenceIds:uniqueIds,evidence:evidenceDetails(uniqueIds,evidenceById)};
   });
@@ -647,12 +648,13 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
- if(!needsClarification){
-  const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
-  const missing=goals.filter(goal=>[...evidenceById.values()].some(item=>item?.retrievalGoals?.includes(goal)&&item.tier===GOAL_REFERENCE_TIERS[goal])&&!hasGoalReference(goal,refs,evidenceById));
-  if(missing.length)throw Error('首轮引用没有覆盖当前回答目标，请重试。');
- }
  if(requireActionTextSupport&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
  if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...actions.flatMap(item=>[item.text,item.reason]),...refs.map(item=>item.claim),data.followUp,uncertainty,data.clarification].filter(Boolean).join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
+ const enforceGoalReferenceCoverage=!isFollowUp||requireGoalReferenceCoverage;
+ if(!needsClarification&&enforceGoalReferenceCoverage&&(!isFollowUp||structuredFollowUp)){
+  const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
+  const missing=goals.filter(goal=>[...evidenceById.values()].some(item=>item?.retrievalGoals?.includes(goal)&&item.tier===GOAL_REFERENCE_TIERS[goal])&&!hasGoalReference(goal,refs,goalSections,evidenceById));
+  if(missing.length)throw Error(isFollowUp?'追问引用没有覆盖当前回答目标，请重试。':'首轮引用没有覆盖当前回答目标，请重试。');
+ }
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

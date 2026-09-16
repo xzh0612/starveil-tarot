@@ -844,6 +844,19 @@ test('structured follow-ups can ground top-level text through goal sections',()=
  assert.equal(parsed.goalSections[0].goal,'advice');
 });
 
+test('structured follow-ups require the routed goal evidence tier',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const forecast=evidence.find(item=>item.tier==='reference'&&item.retrievalGoals?.includes('forecast'));
+ const missing=JSON.stringify({text:'保持稳定节奏。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'}]});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalEvidence:['forecast'],requireGoalReferenceCoverage:true,requireReferenceClaims:true,requireReferenceSupport:true,isFollowUp:true}),/追问引用没有覆盖当前回答目标/);
+ const valid=JSON.stringify({text:'保持稳定、温柔而明确。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:forecast.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude'}]});
+ assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredGoalEvidence:['forecast'],requireGoalReferenceCoverage:true,requireReferenceClaims:true,requireReferenceSupport:true,isFollowUp:true}).references.length,2);
+ const sectionOnly=JSON.stringify({text:'Fortitude 提供一条趋势参考。',goalSections:[{goal:'forecast',text:'以 Fortitude 作为趋势参考。',evidenceIds:[forecast.evidenceId]}]});
+ assert.equal(parseReadingOutput(sectionOnly,{cards:[card],evidence,requiredGoalEvidence:['forecast'],requireGoalReferenceCoverage:true,allowedGoalSections:['forecast'],isFollowUp:true}).goalSections[0].goal,'forecast');
+});
+
 test('first readings reject plain text so the grounding contract cannot be bypassed',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  assert.throws(()=>parseReadingOutput('保持稳定练习。',{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/首轮解读必须返回结构化 JSON/);
