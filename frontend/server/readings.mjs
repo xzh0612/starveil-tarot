@@ -243,7 +243,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    const initial=await requestProvider(messages,recommend?900:readingMaxTokens(body.cards.length,hasPriorAssistant));
    if(initial.kind==='http')return reply(initial.status===429?429:502,providerErrors[initial.status]??providerFallback);
    if(typeof initial.text!=='string'||!initial.text.trim())return reply(502,{error:'DeepSeek 没有返回有效解读，请重试。',code:'provider_empty'});
-   if(recommend){try{return reply(200,{recommendations:parseRecommendations(initial.text),source:'ai',provider:'DeepSeek',model:initial.data.model??model});}catch(e){return reply(502,{error:e.message});}}
+   if(recommend){try{return reply(200,{recommendations:parseRecommendations(initial.text,body.question),source:'ai',provider:'DeepSeek',model:initial.data.model??model});}catch(e){return reply(502,{error:e.message});}}
    const {activeQuestion,retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
    const requiresBoundary=requiresProfessionalBoundary(body.question)||requiresProfessionalBoundary(activeQuestion);
    const allowClarification=hasPriorAssistant||retrievalMeta.confidence!=='focused';

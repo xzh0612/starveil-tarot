@@ -36,11 +36,17 @@ test('AI recommendation reasons must be grounded in catalog positions',()=>{
   {id:'choice',reason:'把两条选择的机会和挑战并列起来，适合比较条件与代价。'},
   {id:'career',reason:'从优势、阻碍和下一步逐层梳理职业方向。'}
  ]});
- assert.equal(parseRecommendations(valid)[0].id,'choice');
+ assert.equal(parseRecommendations(valid,'两个工作机会该如何比较？')[0].id,'choice');
 
  const generic=JSON.stringify({recommendations:[
   {id:'choice',reason:'这个牌阵很适合你，值得优先考虑。'},
   {id:'career',reason:'这个牌阵也很适合你，可以试试看。'}
  ]});
  assert.throws(()=>parseRecommendations(generic),/牌阵推荐理由/);
+
+ const offTopic=JSON.stringify({recommendations:[
+  {id:'choice',reason:'从现状与两条道路的挑战中观察代价与变化。'},
+  {id:'career',reason:'关注你的优势、阻碍和下一步。'}
+ ]});
+ assert.throws(()=>parseRecommendations(offTopic,'两个工作机会该如何比较？'),/问题不相关/);
 });
