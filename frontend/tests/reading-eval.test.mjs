@@ -21,9 +21,17 @@ test('retrieval evaluation reports topical coverage and a deterministic score',(
 test('retrieval evaluation fails when the requested goal route is missing',()=>{
  const result=evaluateRetrievalCase({question:'这张牌是什么意思？',cards:[cards[0]],requiredGoals:['forecast']});
  assert.equal(result.ok,false);
- assert.equal(result.score,80);
+ assert.equal(result.score,83);
  assert.deepEqual(result.missingGoals,['forecast']);
  assert.ok(result.issues.includes('missing_goal:forecast'));
+});
+
+test('retrieval evaluation rejects an extra goal route',()=>{
+ const result=evaluateRetrievalCase({question:'未来会怎样，同时下一步怎么办？',cards:[cards[0]],expectedGoals:['advice']});
+ assert.equal(result.ok,false);
+ assert.equal(result.goalRouteMatches,false);
+ assert.deepEqual(result.goals,['advice','forecast']);
+ assert.ok(result.issues.includes('goal_route_mismatch'));
 });
 
 test('retrieval evaluation checks spread position semantics',()=>{
@@ -35,15 +43,15 @@ test('retrieval evaluation checks spread position semantics',()=>{
 
 test('retrieval suite covers the major question intents',()=>{
  const result=evaluateRetrievalSuite([
-  {name:'relationship',question:'我们之间的沟通和边界要怎么调整？',cards,requiredKinds:['orientation','symbolism','relationships'],requiredGoals:['advice']},
-  {name:'career',question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]],requiredKinds:['orientation','symbolism','work'],requiredGoals:['advice']},
-  {name:'choice',question:'两个机会应该如何比较，哪个更适合我？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['advice','comparison']},
-  {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['forecast']},
-  {name:'possibility',question:'我们能不能复合？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['forecast']},
-  {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection'],requiredGoals:['explanation']},
-  {name:'natural-forecast',question:'他会主动联系我吗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['forecast']},
-  {name:'natural-explanation',question:'这张牌是什么意思？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['explanation']},
-  {name:'natural-comparison',question:'我是否需要主动联系？',cards:[cards[0]],requiredKinds:['orientation','symbolism','relationships'],requiredGoals:['comparison']},
+  {name:'relationship',question:'我们之间的沟通和边界要怎么调整？',cards,requiredKinds:['orientation','symbolism','relationships'],requiredGoals:['advice'],expectedGoals:['advice']},
+  {name:'career',question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]],requiredKinds:['orientation','symbolism','work'],requiredGoals:['advice'],expectedGoals:['advice']},
+  {name:'choice',question:'两个机会应该如何比较，哪个更适合我？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['advice','comparison'],expectedGoals:['advice','comparison']},
+  {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['forecast'],expectedGoals:['forecast']},
+  {name:'possibility',question:'我们能不能复合？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['forecast'],expectedGoals:['forecast']},
+  {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection'],requiredGoals:['explanation'],expectedGoals:['explanation']},
+  {name:'natural-forecast',question:'他会主动联系我吗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['forecast'],expectedGoals:['forecast']},
+  {name:'natural-explanation',question:'这张牌是什么意思？',cards:[cards[0]],requiredKinds:['orientation','symbolism'],requiredGoals:['explanation'],expectedGoals:['explanation']},
+  {name:'natural-comparison',question:'我是否需要主动联系？',cards:[cards[0]],requiredKinds:['orientation','symbolism','relationships'],requiredGoals:['comparison'],expectedGoals:['comparison']},
   {name:'position-semantics',question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],requiredKinds:['orientation','symbolism','work'],requiredPositionKinds:['work']},
  ]);
  assert.equal(result.ok,true);
