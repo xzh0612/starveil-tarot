@@ -779,7 +779,7 @@ test('mixed first-reading top-level text must cover every routed goal',()=>{
   {goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:[forecast.evidenceId]},
  ];
  const missing=JSON.stringify({text:'用稳定、温柔而明确的方式面对下一步。',goalSections:sections});
- assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true,requireGoalTextCoverage:true,requireTextSupport:true}),/首轮正文没有覆盖每个回答目标/);
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true,requireGoalTextCoverage:true,requireTextSupport:true}),/混合目标正文没有覆盖每个回答目标/);
  const covered=JSON.stringify({text:'先照顾情绪，再不被它牵着走，并以 Fortitude 的力量与勇气观察发展。',goalSections:sections});
  assert.deepEqual(parseReadingOutput(covered,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true,requireGoalTextCoverage:true,requireTextSupport:true}).goalSections.map(item=>item.goal),['advice','forecast']);
 });
@@ -891,6 +891,22 @@ test('grounding rejects unsupported conjunction and enumeration clauses',()=>{
  }
  const grounded=JSON.stringify({text:'保持稳定。',cardReadings:[{cardId:'m08',position:'建议',reading:'保持稳定、温柔而明确。',evidenceIds:[orientation.evidenceId]}]});
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireCardReadingSupport:true}).cardReadings.length,1);
+});
+
+test('mixed structured follow-ups must cover every returned goal in top-level text',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？同时我该怎么安排下一步？',cards:[card]});
+ const advice=evidence.find(item=>item.tier==='application'&&item.retrievalGoals.includes('advice'));
+ const forecast=evidence.find(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast'));
+ assert.ok(advice&&forecast);
+ const sections=[
+  {goal:'advice',text:'先照顾情绪，再把下一步落实为不被情绪牵着走的行动。',evidenceIds:[advice.evidenceId]},
+  {goal:'forecast',text:'以 Fortitude 作为趋势参考。',evidenceIds:[forecast.evidenceId]},
+ ];
+ const missing=JSON.stringify({text:'先照顾情绪，再不被它牵着走。',goalSections:sections});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,allowedGoalSections:['advice','forecast'],requireGoalTextCoverage:true,requireTextSupport:true,isFollowUp:true}),/混合目标正文没有覆盖每个回答目标/);
+ const covered=JSON.stringify({text:'先照顾情绪，再不被它牵着走，并以 Fortitude 作为趋势参考。',goalSections:sections});
+ assert.deepEqual(parseReadingOutput(covered,{cards:[card],evidence,allowedGoalSections:['advice','forecast'],requireGoalTextCoverage:true,requireTextSupport:true,isFollowUp:true}).goalSections.map(item=>item.goal),['advice','forecast']);
 });
 
 test('structured follow-ups require the routed goal evidence tier',()=>{

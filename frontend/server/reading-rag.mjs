@@ -654,7 +654,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
- if(requireGoalTextCoverage&&!needsClarification&&!goalTextCoverageOk)throw Error('首轮正文没有覆盖每个回答目标，请重试。');
+ if(requireGoalTextCoverage&&!needsClarification&&!goalTextCoverageOk)throw Error('混合目标正文没有覆盖每个回答目标，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set(isFollowUp

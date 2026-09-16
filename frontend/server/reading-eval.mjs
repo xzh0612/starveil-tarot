@@ -79,7 +79,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/(?:text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念|text 正文的每个实质句都必须与本轮引用 evidence 共享具体、非通用概念)/i.test(system))issues.push('missing_text_specific_support_rule');
  if(!/逗号、顿号和常见转折\/并列\/因果连接词分句也必须分别与所引 evidence 共享具体、非通用概念，不得在已命中的分句后追加证据之外的事实/u.test(system))issues.push('missing_clause_support_rule');
  if(!/首轮 text 的关键判断必须能在 references 或 goalSections 的 evidenceIds 中找到/i.test(system))issues.push('missing_text_reference_scope_rule');
- if(!/mixed 模式的首轮 text 还必须分别复述每个 goalSections 目标至少一个具体概念，不能只覆盖其中一个目标/i.test(system))issues.push('missing_mixed_text_goal_coverage_rule');
+ if(!/mixed 模式的 text（首轮必须，追问若返回多个 goalSections 也必须）还必须分别复述每个 goalSections 目标至少一个具体概念，不能只覆盖其中一个目标/i.test(system))issues.push('missing_mixed_text_goal_coverage_rule');
  if(!/anchor_only[^\n]{0,500}(?:证据|资料)[^\n]{0,500}(?:不足|限制|不确定)/i.test(system))issues.push('missing_coverage_boundary_rule');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
@@ -172,7 +172,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
   const requiredActionGoalEvidence=routing.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok);
   const requireGoalSections=routing.goals.length>1;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:requireGoalSections,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
@@ -211,7 +211,7 @@ export function evaluateFollowupFixture({question,cards,output,requiredKinds=[]}
  const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
  const issues=[...retrieval.issues];let parsed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,allowedGoalSections:routing.goals,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,allowedGoalSections:routing.goals,requireGoalTextCoverage:routing.goals.length>1,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
  }catch{issues.push('output_contract');}
  const uniqueIssues=[...new Set(issues)],checks=[retrieval.ok,parsed!==null];
  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
