@@ -50,6 +50,7 @@ export function evaluatePromptContract(messages=[]){
  const user=messages.find(message=>message?.role==='user')?.content??'';
  const issues=[];
  if(!/evidence|证据|引用/i.test(system))issues.push('missing_system_evidence_rule');
+ if(!/starveil_history[\s\S]{0,700}(?:不可信|不能当作当前牌义|不能替代)/i.test(system))issues.push('missing_history_trust_boundary');
  if(!/sourceAuthority[\s\S]{0,700}canonical_fixed[\s\S]{0,700}(?:不能覆盖|权威|冲突)/i.test(system))issues.push('missing_source_authority_rule');
  if(!/tier|层级|retrievalReasons/i.test(system))issues.push('missing_evidence_hierarchy');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
@@ -112,6 +113,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
+  !issues.includes('missing_history_trust_boundary'),
   !issues.includes('missing_source_authority_rule'),
   !issues.includes('missing_evidence_hierarchy'),
   !issues.includes('missing_json_contract'),
