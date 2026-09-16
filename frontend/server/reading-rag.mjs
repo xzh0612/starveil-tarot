@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v25';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v26';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -339,9 +339,9 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  return [...required,...goalReserved,...positionReserved,...selected];
 }
 
-export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null}={}){
+export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null,highStakes=null}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
- const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard)),highStakes=requiresProfessionalBoundary(question),hasSupportedDomain=themes.some(theme=>['relationship','career','reflection'].includes(theme)),explicitApplicationKinds=hasSupportedDomain?new Set(applicationKindsForThemes(themes,[])):new Set(),suppressFallbackApplication=highStakes&&!explicitApplicationKinds.size;
+ const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard)),resolvedHighStakes=highStakes===null?requiresProfessionalBoundary(question):Boolean(highStakes),hasSupportedDomain=themes.some(theme=>['relationship','career','reflection'].includes(theme)),explicitApplicationKinds=hasSupportedDomain?new Set(applicationKindsForThemes(themes,[])):new Set(),suppressFallbackApplication=resolvedHighStakes&&!explicitApplicationKinds.size;
  const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
@@ -395,13 +395,13 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
  return perCard;
 }
 
-export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,routing=null}={}){
- const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting});
+export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,routing=null,highStakes=null}={}){
+ const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting,highStakes});
  return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals});
 }
 
-export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500,routing=null}={}){
- const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting});
+export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500,routing=null,highStakes=null}={}){
+ const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting,highStakes});
  let resolvedScores=semanticScores;
  if(typeof semanticReranker==='function'){
   const timeout=Number.isFinite(semanticTimeoutMs)?Math.max(0,Math.min(10_000,semanticTimeoutMs)):1_500;

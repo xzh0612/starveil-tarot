@@ -226,7 +226,7 @@ export function buildReadingMessages(body,{evidenceOverride=null,includeRetrieva
  if(memories.length>30||memories.some(memory=>!memory||typeof memory.id!=='string'||memory.id.length<1||memory.id.length>120||typeof memory.text!=='string'||!memory.text.trim()||memory.text.length>2_000||typeof memory.enabled!=='boolean'))throw new Error('知识库格式不正确。');
  const {activeQuestion,retrievalQuestion,retrievalMeta,inheritedOriginal}=readingRetrievalFor(body.question,history);
  const requiresBoundary=requiresProfessionalBoundary(body.question,history)||requiresProfessionalBoundary(activeQuestion);
- const evidence=Array.isArray(evidenceOverride)?evidenceOverride:retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta});
+ const evidence=Array.isArray(evidenceOverride)?evidenceOverride:retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,highStakes:requiresBoundary});
  const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories});
  const evidenceMeta=summarizeReadingEvidence(evidence,cards,{themes:retrievalMeta.themes,goals:retrievalMeta.goals});
  if(evidenceMeta.missingAnchorCardIds.length)throw new Error('检索证据不完整，请重试。');
@@ -262,8 +262,9 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
   try{let bytes=0;const chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>160000){reply(413,{error:'对话内容过长。'});return;}chunks.push(chunk);}body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{return reply(400,{error:'请求内容不是有效 JSON。'});}
   let evidenceOverride=null,messages;try{messages=recommend?buildRecommendationMessages(body):buildReadingMessages(body,{includeRetrievalDiagnostics:debug});}catch(e){return reply(400,{error:e.message});}
   if(!recommend&&!debug&&typeof semanticReranker==='function'){
-   const {retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
-   evidenceOverride=await retrieveReadingEvidenceAsync({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,semanticReranker,semanticWeight,semanticTimeoutMs});
+   const {activeQuestion,retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
+   const requiresBoundary=requiresProfessionalBoundary(body.question,body.messages??[])||requiresProfessionalBoundary(activeQuestion);
+   evidenceOverride=await retrieveReadingEvidenceAsync({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,highStakes:requiresBoundary,semanticReranker,semanticWeight,semanticTimeoutMs});
    try{messages=buildReadingMessages(body,{evidenceOverride});}catch(e){return reply(400,{error:e.message});}
   }
   if(debug){
@@ -290,7 +291,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    const {activeQuestion,retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
    const requiresBoundary=requiresProfessionalBoundary(body.question,body.messages??[])||requiresProfessionalBoundary(activeQuestion);
    const allowClarification=canAskClarification(retrievalMeta,{hasPriorAssistant});
-   const cardEvidence=evidenceOverride??retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta});
+   const cardEvidence=evidenceOverride??retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,highStakes:requiresBoundary});
    const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories:body.memories??[]});
    const evidence=[...cardEvidence,...memoryEvidence];
    const evidenceMeta=summarizeReadingEvidence(cardEvidence,body.cards,{themes:retrievalMeta.themes,goals:retrievalMeta.goals});
