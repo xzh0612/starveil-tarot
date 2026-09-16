@@ -4,6 +4,8 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v1';
+
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
 // context and the user's private memory without parsing labels.
