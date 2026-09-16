@@ -499,7 +499,7 @@ function isConcreteAction(text){
  const value=String(text??'').trim();
  return value.length>=6&&ACTION_VERB_PATTERN.test(value)&&ACTION_MARKER_PATTERN.test(value);
 }
-const REALITY_BOUNDARY_PATTERN=/现实|核实|资料|专业|医生|律师|持牌|风险|证据|咨询|法规|合同|投资|财务/u;
+const REALITY_BOUNDARY_PATTERN=/现实|核实|资料|专业|医生|律师|持牌|风险|证据|咨询|法规|评估|审查|验证|确认/u;
 function hasRealityBoundary(text){
  const value=String(text??'').trim();
  return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
