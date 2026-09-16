@@ -698,6 +698,19 @@ test('grounding does not accept broad relationship words as unsupported facts',(
  assert.doesNotThrow(()=>parseReadingOutput('理解对方不意味着容忍持续伤害。',{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}));
 });
 
+test('question routing covers relationship states, core meaning and fit questions',()=>{
+ const love=analyzeReadingQuestion('他还爱不爱我？');
+ assert.deepEqual(love.goals,['forecast']);
+ const feeling=analyzeReadingQuestion('他对我有没有感觉？');
+ assert.deepEqual(feeling.goals,['forecast']);
+ const core=analyzeReadingQuestion('这段关系的核心问题是什么？');
+ assert.deepEqual(core.goals,['explanation']);
+ const fit=analyzeReadingQuestion('我适不适合换工作？');
+ assert.deepEqual(fit.goals,['comparison']);
+ const change=analyzeReadingQuestion('未来有什么变化？');
+ assert.deepEqual(change.goals,['forecast']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
