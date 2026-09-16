@@ -818,6 +818,12 @@ test('plain text provider responses stay backward compatible without inventing r
  assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
 });
 
+test('plain text follow-ups still require a concrete evidence overlap',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ assert.equal(parseReadingOutput('保持温柔而稳定的练习。',{cards:[cards[0]],evidence,isFollowUp:true,requireTextSupport:true}).text,'保持温柔而稳定的练习。');
+ assert.throws(()=>parseReadingOutput('对方已经搬去火星。',{cards:[cards[0]],evidence,isFollowUp:true,requireTextSupport:true}),/追问正文与证据不匹配/);
+});
+
 test('structured follow-ups require top-level text support from cited evidence',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'继续聊聊',cards:[card]});

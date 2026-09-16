@@ -478,7 +478,7 @@ function hasGoalReference(goal,refs,evidenceById){
 }
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
-const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个']);
+const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方']);
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
  const sentences=String(claim??'').split(/[。！？!?；;\n]+/u).map(item=>item.trim()).filter(Boolean);
@@ -534,6 +534,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
   if(requireCoverage||requireActions||requireReferences||requireSynthesis||requireUncertainty||requireRealityBoundary)throw Error('首轮解读必须返回结构化 JSON，请重试。');
+  if(isFollowUp&&requireTextSupport&&!claimSupportedByEvidence(text,{text:evidence.map(item=>item?.text??'').join('；')},{allowGeneric:false,requireSentenceSupport:true}))throw Error('追问正文与证据不匹配，请重试。');
   return {text,synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
