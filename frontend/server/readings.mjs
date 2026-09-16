@@ -225,7 +225,7 @@ export function buildReadingMessages(body,{evidenceOverride=null,includeRetrieva
  const memories=body.memories??[];
  if(memories.length>30||memories.some(memory=>!memory||typeof memory.id!=='string'||memory.id.length<1||memory.id.length>120||typeof memory.text!=='string'||!memory.text.trim()||memory.text.length>2_000||typeof memory.enabled!=='boolean'))throw new Error('知识库格式不正确。');
  const {activeQuestion,retrievalQuestion,retrievalMeta,inheritedOriginal}=readingRetrievalFor(body.question,history);
- const requiresBoundary=requiresProfessionalBoundary(body.question)||requiresProfessionalBoundary(activeQuestion);
+ const requiresBoundary=requiresProfessionalBoundary(body.question,history)||requiresProfessionalBoundary(activeQuestion);
  const evidence=Array.isArray(evidenceOverride)?evidenceOverride:retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta});
  const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories});
  const evidenceMeta=summarizeReadingEvidence(evidence,cards,{themes:retrievalMeta.themes,goals:retrievalMeta.goals});
@@ -288,7 +288,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    if(typeof initial.text!=='string'||!initial.text.trim())return reply(502,{error:'DeepSeek 没有返回有效解读，请重试。',code:'provider_empty'});
    if(recommend){try{return reply(200,{recommendations:parseRecommendations(initial.text,body.question),source:'ai',provider:'DeepSeek',model:initial.data.model??model});}catch(e){return reply(502,{error:e.message});}}
    const {activeQuestion,retrievalQuestion,retrievalMeta}=readingRetrievalFor(body.question,body.messages??[]);
-   const requiresBoundary=requiresProfessionalBoundary(body.question)||requiresProfessionalBoundary(activeQuestion);
+   const requiresBoundary=requiresProfessionalBoundary(body.question,body.messages??[])||requiresProfessionalBoundary(activeQuestion);
    const allowClarification=canAskClarification(retrievalMeta,{hasPriorAssistant});
    const cardEvidence=evidenceOverride??retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta});
    const memoryEvidence=retrieveMemoryEvidence({question:retrievalQuestion,memories:body.memories??[]});

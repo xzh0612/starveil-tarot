@@ -861,6 +861,11 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
 });
 
+test('high-stakes boundary accumulates user history but ignores assistant prose',()=>{
+ assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'user',text:'这项投资要不要买？'}]),true);
+ assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'assistant',text:'这项投资要不要买？'}]),false);
+});
+
 test('high-stakes boundary rejects a domain-only disclaimer',()=>{
  const output=JSON.stringify({text:'请谨慎。',uncertainty:'投资需要谨慎。'});
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence:[],requireRealityBoundary:true}),/高风险问题需要现实依据说明/);

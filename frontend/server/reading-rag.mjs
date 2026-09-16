@@ -14,9 +14,9 @@ export function evidenceSourceType(source){return SOURCE_TYPE_BY_SOURCE[source]|
 
 const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','法律','律师','诉讼','合同','纠纷','投资','股票','基金','理财','借贷','保险','税务'];
 
-export function requiresProfessionalBoundary(question){
- const text=String(question??'').toLowerCase();
- return PROFESSIONAL_BOUNDARY_WORDS.some(word=>text.includes(word));
+export function requiresProfessionalBoundary(question,messages=[]){
+ const texts=[String(question??''),...(Array.isArray(messages)?messages.filter(message=>message?.role==='user'&&typeof message.text==='string').map(message=>message.text):[])];
+ return texts.some(text=>{const normalized=String(text).toLowerCase();return PROFESSIONAL_BOUNDARY_WORDS.some(word=>normalized.includes(word));});
 }
 
 const THEMES=[
