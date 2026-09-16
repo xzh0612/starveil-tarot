@@ -590,6 +590,11 @@ test('personal memory cannot ground the top-level reading text',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence:memory,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
+test('plain-text follow-ups cannot use personal memory as sole body support',()=>{
+ const memory=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
+ assert.throws(()=>parseReadingOutput('先独处整理思绪。',{cards:[cards[0]],evidence:memory,requireTextSupport:true,isFollowUp:true}),/追问正文与证据不匹配/);
+});
+
 test('structured references retain fixed source provenance',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const waite=evidence.find(item=>item.kind==='waite');

@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v29';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v30';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -585,7 +585,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
   if(requireCoverage||requireActions||requireReferences||requireSynthesis||requireUncertainty||requireRealityBoundary)throw Error('首轮解读必须返回结构化 JSON，请重试。');
-  if(isFollowUp&&requireTextSupport&&!claimSupportedByEvidence(text,{text:evidence.map(item=>item?.text??'').join('；')},{allowGeneric:false,requireSentenceSupport:true}))throw Error('追问正文与证据不匹配，请重试。');
+  if(isFollowUp&&requireTextSupport&&!claimSupportedByEvidence(text,{text:evidence.filter(item=>item?.source!=='memory').map(item=>item?.text??'').join('；')},{allowGeneric:false,requireSentenceSupport:true}))throw Error('追问正文与证据不匹配，请重试。');
   return {text,synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
