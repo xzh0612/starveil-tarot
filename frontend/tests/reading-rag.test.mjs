@@ -507,6 +507,12 @@ test('first reading text must overlap the retrieved evidence',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
+test('first reading text cannot pass on generic evidence words alone',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'说明方向并观察结果。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
+});
+
 test('first-reading card explanations require available position evidence',()=>{
  const card={id:'m08',reversed:false,position:'阻碍'};
  const evidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[card]});

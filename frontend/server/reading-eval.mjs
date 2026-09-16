@@ -66,12 +66,13 @@ export function evaluatePromptContract(messages=[]){
  if(!/澄清分支[^\n]{0,300}(?:必须为空|不得同时返回)/u.test(system))issues.push('missing_clarification_exclusivity');
  if(!/action[^\n]{0,600}(?:reason|理由)[^\n]{0,300}(?:必须|非空|说明)/i.test(system))issues.push('missing_action_reason_rule');
  if(!/action[^\n]{0,900}(?:reason|理由)[^\n]{0,900}(?:证据|evidence)/i.test(system))issues.push('missing_action_reason_support_rule');
- if(!/首轮每条 action[^\n]{0,300}(?:reason|理由)[^\n]{0,300}(?:具体|非通用)[^\n]{0,500}(?:证据|evidence)/i.test(system))issues.push('missing_action_specific_reason_rule');
+ if(!/首轮每条 action 的正文和 reason 都必须(?:分别)?与(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_reason_rule');
  if(!/action[^\n]{0,900}(?:正文|内容)[^\n]{0,900}(?:证据|evidence)/i.test(system))issues.push('missing_action_text_support_rule');
- if(!/首轮每条 action[^\n]{0,300}(?:正文|内容)[^\n]{0,300}(?:具体|非通用)[^\n]{0,500}(?:证据|evidence)/i.test(system))issues.push('missing_action_specific_text_rule');
+ if(!/首轮每条 action 的正文和 reason 都必须(?:分别)?与(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_text_rule');
  if(!/goalSections、cardReadings、synthesis 的正文都必须分别复述所引 evidence 中的(?:具体、非通用|非通用)概念/i.test(system))issues.push('missing_structured_specific_support_rule');
  if(!/advice 或 comparison 目标有可用 application 证据时，每条首轮 action 至少引用一个对应目标的 application ID/u.test(system))issues.push('missing_action_goal_evidence_rule');
  if(!/text[^\n]{0,700}(?:正文|内容)[^\n]{0,700}(?:证据|evidence)/i.test(system))issues.push('missing_text_support_rule');
+ if(!/text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念/i.test(system))issues.push('missing_text_specific_support_rule');
  if(!/anchor_only[^\n]{0,500}(?:证据|资料)[^\n]{0,500}(?:不足|限制|不确定)/i.test(system))issues.push('missing_coverage_boundary_rule');
  if(!/retrievalRequired/i.test(system))issues.push('missing_anchor_metadata');
  if(!/question|cards|evidence/i.test(user)||!/question/i.test(user)||!/cards/i.test(user)||!/evidence/i.test(user))issues.push('missing_grounded_context');
@@ -119,6 +120,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_structured_specific_support_rule'),
   !issues.includes('missing_action_goal_evidence_rule'),
   !issues.includes('missing_text_support_rule'),
+  !issues.includes('missing_text_specific_support_rule'),
   !issues.includes('missing_coverage_boundary_rule'),
   !issues.includes('missing_anchor_metadata'),
   !issues.includes('missing_grounded_context'),

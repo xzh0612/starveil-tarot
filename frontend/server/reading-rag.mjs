@@ -623,7 +623,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
-  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
+  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
  if(!needsClarification){
   const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
