@@ -59,7 +59,7 @@ function compactHistory(history,{maxMessages=24,maxMessageChars=4_000,maxTotalCh
 
 function createPromptBudget(history,promptHistory,{question='',activeQuestion='',evidence=[],memoryEvidence=[]}={}){
  const source=Array.isArray(history)?history:[],selected=Array.isArray(promptHistory)?promptHistory:[],chars=items=>items.reduce((total,item)=>total+String(item?.text??'').length,0),maxMessageChars=4_000,maxTotalChars=24_000;
- return {historyInputMessages:source.length,historySelectedMessages:selected.length,historyInputChars:chars(source),historySelectedChars:chars(selected),historyOmittedMessages:Math.max(0,source.length-selected.length),historyTruncatedMessages:source.filter(item=>String(item?.text??'').length>maxMessageChars).length,historyLimits:{maxMessages:24,maxMessageChars,maxTotalChars},questionChars:String(question??'').length,activeQuestionChars:String(activeQuestion??'').length,evidenceItems:Array.isArray(evidence)?evidence.length:0,memoryItems:Array.isArray(memoryEvidence)?memoryEvidence.length:0};
+ return {historyInputMessages:source.length,historySelectedMessages:selected.length,historyInputChars:chars(source),historySelectedChars:chars(selected),historyOmittedMessages:Math.max(0,source.length-selected.length),historyTruncatedMessages:source.filter(item=>String(item?.text??'').length>maxMessageChars).length,historyLimits:{maxMessages:24,maxMessageChars,maxTotalChars},questionChars:String(question??'').length,activeQuestionChars:String(activeQuestion??'').length,evidenceItems:Array.isArray(evidence)?evidence.length:0,evidenceTextChars:chars(evidence),memoryItems:Array.isArray(memoryEvidence)?memoryEvidence.length:0,memoryTextChars:chars(memoryEvidence)};
 }
 
 function promptEvidenceItem(item){
