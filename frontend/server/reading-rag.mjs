@@ -85,8 +85,12 @@ export function analyzeReadingQuestion(question){
   const terms=activeLexiconTerms(text,goal.words),weakTerms=activeLexiconTerms(text,goal.weakWords??[]);
   return {name:goal.name,terms,weakTerms,score:terms.length*2+weakTerms.length*.5};
  });
- const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),goals=(activeGoals.length?activeGoals:goalFallback).map(item=>item.name);
- const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>[...item.terms,...item.weakTerms]))];
+ const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),
+  // Weak temporal context alone should keep the question open. It may qualify
+  // an explicit goal, but it must not manufacture a forecast route by itself.
+  fallbackGoals=goalFallback.filter(item=>item.terms.length>0),selectedGoals=activeGoals.length?activeGoals:fallbackGoals,
+  goals=selectedGoals.map(item=>item.name);
+ const matchedGoalTerms=[...new Set(selectedGoals.flatMap(item=>[...item.terms,...item.weakTerms]))];
  const goalScores=Object.fromEntries(goalScored.map(item=>[item.name,item.score]));
  return {themes,matchedTerms,strongMatchedTerms,weakMatchedTerms,weakOnly:strong.length===0&&weakMatchedTerms.length>0,themeScores,goals,matchedGoalTerms,goalScores,goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }

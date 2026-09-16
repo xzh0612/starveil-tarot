@@ -61,6 +61,9 @@ test('question routing distinguishes the requested response goal',()=>{
  assert.deepEqual(forecast.goals,['forecast']);
  const future=analyzeReadingQuestion('我之后会怎样发展？');
  assert.deepEqual(future.goals,['forecast']);
+ const temporalContextOnly=analyzeReadingQuestion('我想看看未来。');
+ assert.deepEqual(temporalContextOnly.goals,[]);
+ assert.equal(temporalContextOnly.goalConfidence,'open');
  const futureAdvice=analyzeReadingQuestion('未来我该怎么办？');
  assert.deepEqual(futureAdvice.goals,['advice']);
  const futureAdviceCard={id:'m08',reversed:false,position:'建议'};
