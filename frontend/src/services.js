@@ -13,6 +13,7 @@ const READING_ERROR_HINTS={
  text_support:'解读正文没有得到本局证据支持，原牌局仍然保留。',
  coverage_boundary:'当前应用证据不足，回答必须明确资料限制，原牌局仍然保留。',
  missing_goal_reference_coverage:'预测或比较依据没有绑定对应资料，原牌局仍然保留。',
+ action_goal_evidence:'行动建议没有绑定当前目标的应用证据，原牌局仍然保留。',
  missing_card_readings:'回答没有逐张解释牌面，原牌局仍然保留。',
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
  card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
