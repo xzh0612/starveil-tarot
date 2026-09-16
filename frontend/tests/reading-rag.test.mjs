@@ -527,6 +527,21 @@ test('forecast readings require a matching reference-tier citation when availabl
  assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredGoalEvidence:['forecast']}).references.length,2);
 });
 
+test('mixed first readings require one grounded section per routed goal',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？同时我该怎么安排下一步？',cards:[card]});
+ const valid=JSON.stringify({text:'分别看下一步与趋势。',goalSections:[
+  {goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']},
+  {goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},
+ ]});
+ const parsed=parseReadingOutput(valid,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true});
+ assert.deepEqual(parsed.goalSections.map(item=>item.goal),['advice','forecast']);
+ const missing=JSON.stringify({text:'只回答建议。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']}]});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/必须按目标分别返回目标分段/);
+ const wrongEvidence=JSON.stringify({text:'目标依据不匹配。',goalSections:[{goal:'advice',text:'以 Fortitude 的力量作为建议。',evidenceIds:['m08:waite']},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']}]});
+ assert.throws(()=>parseReadingOutput(wrongEvidence,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段引用无效/);
+});
+
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
@@ -541,7 +556,7 @@ test('calibration allows a negated boundary around an absolute prediction',()=>{
 
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
- assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
+ assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
 });
 
 test('first readings reject plain text so the grounding contract cannot be bypassed',()=>{

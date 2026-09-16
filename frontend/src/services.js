@@ -20,6 +20,10 @@ const READING_ERROR_HINTS={
  action_concreteness:'行动建议不够可执行，请稍后重试原牌局。',
  action_reason:'行动建议缺少与牌面相关的理由，原牌局仍然保留。',
  action_reason_support:'行动理由与引用的牌面证据不匹配，原牌局仍然保留。',
+ goal_section_support:'目标分段没有得到对应证据支持，原牌局仍然保留。',
+ goal_section_evidence:'目标分段引用了不属于该目标的证据，原牌局仍然保留。',
+ invalid_goal_section:'回答的目标分段格式不完整，原牌局仍然保留。',
+ missing_goal_sections:'混合问题没有分别回答全部目标，原牌局仍然保留。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
  invalid_response:'服务返回格式不完整，原牌局仍然保留。',
  provider_not_configured:'本机后端还没有配置 DeepSeek 密钥，请先完成后端配置。',
@@ -64,7 +68,7 @@ export async function parseReadingResponse(response){
 }
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
  * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?}
- * -> {text, source:'ai', needsClarification?, clarification?, goalPlan?:{mode, order, items:[{sequence, goal, emphasis, requiredEvidenceTier, evidenceIds, requiredEvidenceIds, evidenceAvailable}]}, cardReadings?:[{cardId, position, orientation, reading, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}], synthesis?:{text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}, actions?:[{text, reason, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}], references:[{evidenceId, cardId, position, claim, evidenceExcerpt, kind, tier, source, sourceType, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
+ * -> {text, source:'ai', needsClarification?, clarification?, goalPlan?:{mode, order, items:[{sequence, goal, emphasis, requiredEvidenceTier, evidenceIds, requiredEvidenceIds, evidenceAvailable}]}, goalSections?:[{goal, text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, evidenceExcerpt}]}], cardReadings?:[{cardId, position, orientation, reading, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}], synthesis?:{text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}, actions?:[{text, reason, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, evidenceExcerpt}]}], references:[{evidenceId, cardId, position, claim, evidenceExcerpt, kind, tier, source, sourceType, sourceLabel, retrievalReasons}], followUp?, uncertainty?}
  */
 export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],signal}){
  const endpoint=env.VITE_READING_ENDPOINT;
