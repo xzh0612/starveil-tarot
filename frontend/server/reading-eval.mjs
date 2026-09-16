@@ -70,6 +70,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_reason_rule');
  if(!/action[^\n]{0,900}(?:正文|内容)[^\n]{0,900}(?:证据|evidence)/i.test(system))issues.push('missing_action_text_support_rule');
  if(!/首轮每条 action 的正文和 reason (?:(?:都必须(?:分别)?与)|(?:也必须逐句与))(?:其 evidenceIds 的证据|所引 evidence)\s*共享具体、非通用概念/i.test(system))issues.push('missing_action_specific_text_rule');
+ if(!/追问返回 actions，其正文必须与 action\.evidenceIds 的证据共享具体、非通用概念，reason 若提供也必须被同一组证据支持/u.test(system))issues.push('missing_followup_action_support_rule');
  if(!/(?:goalSections、cardReadings、synthesis 的正文都必须分别复述所引 evidence 中的(?:具体、非通用|非通用)概念|只要返回 goalSections、cardReadings 或 synthesis，即使是单目标或结构化追问，(?:其中)?每个实质句都必须与所引 evidence 共享具体、非通用概念|只要返回 goalSections、cardReadings 或 synthesis，即使是单目标或结构化追问，正文也必须分别复述所引 evidence 中的(?:具体、非通用|非通用)概念)/i.test(system))issues.push('missing_structured_specific_support_rule');
  if(!/首轮 goalSections 还必须优先使用该目标的 requiredEvidenceTier/i.test(system))issues.push('missing_goal_section_tier_rule');
  if(!/结构化追问若本轮有明确 goal，也必须在 references 或对应 goalSections 中优先引用该目标的 requiredEvidenceTier/u.test(system))issues.push('missing_followup_goal_tier_rule');
@@ -122,6 +123,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_action_specific_reason_rule'),
   !issues.includes('missing_action_text_support_rule'),
   !issues.includes('missing_action_specific_text_rule'),
+  !issues.includes('missing_followup_action_support_rule'),
   !issues.includes('missing_structured_specific_support_rule'),
   !issues.includes('missing_goal_section_tier_rule'),
   !issues.includes('missing_followup_goal_tier_rule'),

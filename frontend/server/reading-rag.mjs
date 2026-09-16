@@ -620,8 +620,8 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(!evidenceIds.some(id=>['anchor','application','personal'].includes(evidenceById.get(id)?.tier)))throw Error('行动建议必须引用核心或应用证据，请重试。');
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
-   if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsReasonSupported=false;
-   if(requireActionTextSupport&&!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsTextSupported=false;
+   if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&item.reason!==undefined&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsReasonSupported=false;
+   if((requireActionTextSupport||isFollowUp)&&!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsTextSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
    if(!needsClarification&&availableActionGoals.length&&!evidenceIds.some(id=>availableActionGoals.some(goal=>evidenceById.get(id)?.tier===GOAL_REFERENCE_TIERS[goal]&&Array.isArray(evidenceById.get(id)?.retrievalGoals)&&evidenceById.get(id).retrievalGoals.includes(goal))))actionsGoalTierSupported=false;
    return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds,evidence:evidenceDetails(evidenceIds,evidenceById)};
@@ -637,7 +637,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
  if(requireActionReasons&&!needsClarification&&!actionsReasoned)throw Error('首轮行动建议必须说明与牌面相关的理由，请重试。');
- if(requireActionReasonSupport&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
+ if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
@@ -648,7 +648,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
- if(requireActionTextSupport&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
+ if((requireActionTextSupport||isFollowUp)&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
  if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...actions.flatMap(item=>[item.text,item.reason]),...refs.map(item=>item.claim),data.followUp,uncertainty,data.clarification].filter(Boolean).join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  const enforceGoalReferenceCoverage=!isFollowUp||requireGoalReferenceCoverage;
  if(!needsClarification&&enforceGoalReferenceCoverage&&(!isFollowUp||structuredFollowUp)){

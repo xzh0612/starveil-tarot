@@ -844,6 +844,16 @@ test('structured follow-ups can ground top-level text through goal sections',()=
  assert.equal(parsed.goalSections[0].goal,'advice');
 });
 
+test('structured follow-up actions must stay grounded in their evidence',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'继续聊聊',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const unsupported=JSON.stringify({text:'保持稳定、温柔而明确。',actions:[{text:'对方已经搬去火星。',reason:'依据稳定、温柔的牌面线索。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(unsupported,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}),/行动建议内容与证据不匹配/);
+ const grounded=JSON.stringify({text:'保持稳定、温柔而明确。',actions:[{text:'今天记录一次稳定、温柔而明确的沟通。',reason:'依据稳定、温柔的牌面线索。',evidenceIds:[orientation.evidenceId]}]});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}).actions.length,1);
+});
+
 test('structured follow-ups require the routed goal evidence tier',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
