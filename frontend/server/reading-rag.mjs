@@ -110,6 +110,17 @@ export function readingRetrievalFor(question,messages=[]){
  return {activeQuestion,retrievalQuestion,retrievalMeta:analyzeReadingQuestion(retrievalQuestion),inheritedOriginal};
 }
 
+// A mixed topic is not automatically ambiguous when the user has already
+// named the response goals. For example, "未来会怎样，同时下一步怎么做"
+// contains both forecast and advice goals and should receive both sections in
+// the first answer. Reserve a clarification turn for genuinely open questions
+// (or for an existing conversation where the user is refining the answer).
+export function canAskClarification(retrievalMeta,{hasPriorAssistant=false}={}){
+ if(hasPriorAssistant)return true;
+ const meta=retrievalMeta&&typeof retrievalMeta==='object'?retrievalMeta:{};
+ return meta.confidence==='open'&&meta.goalConfidence==='open';
+}
+
 function tokenList(text){
  const value=String(text??'').toLowerCase(),tokens=value.match(/[a-z0-9]+|[\u4e00-\u9fff]{2,4}/g)??[];
  // Include overlapping bigrams so short Chinese questions can match source phrases.

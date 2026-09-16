@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,evidenceSourceType} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -78,6 +78,16 @@ test('question routing distinguishes the requested response goal',()=>{
  assert.deepEqual(futureAdviceSummary.missingGoalCoverage,[]);
  const comparison=analyzeReadingQuestion('两个机会哪个利弊更合适？');
  assert.deepEqual(comparison.goals,['comparison']);
+});
+
+test('clarification is reserved for open topics without explicit goals',()=>{
+ const open=analyzeReadingQuestion('我最近想看看牌。');
+ assert.equal(canAskClarification(open),true);
+ const mixed=analyzeReadingQuestion('我之后会怎样发展？同时我该怎么安排下一步？');
+ assert.equal(mixed.confidence,'focused');
+ assert.equal(mixed.goalConfidence,'mixed');
+ assert.equal(canAskClarification(mixed),false);
+ assert.equal(canAskClarification(mixed,{hasPriorAssistant:true}),true);
 });
 
 test('question routing recognizes common possibility phrasing as forecast',()=>{
