@@ -548,7 +548,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(requireGoalSections&&requested[index]!==item.goal)throw Error('目标分段顺序不符合本轮目标计划，请重试。');
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||!Array.isArray(chunk.retrievalGoals)||!chunk.retrievalGoals.includes(item.goal))throw Error('目标分段引用无效，请重试。');return chunk.evidenceId;});
    const requiredTier=GOAL_REFERENCE_TIERS[item.goal],hasAvailableRequiredTier=[...evidenceById.values()].some(chunk=>chunk?.tier===requiredTier&&Array.isArray(chunk.retrievalGoals)&&chunk.retrievalGoals.includes(item.goal));
-   if(requireGoalSections&&!needsClarification&&hasAvailableRequiredTier&&!evidenceIds.some(id=>evidenceById.get(id)?.tier===requiredTier))throw Error('目标分段缺少目标层级证据，请重试。');
+   if(!isFollowUp&&!needsClarification&&hasAvailableRequiredTier&&!evidenceIds.some(id=>evidenceById.get(id)?.tier===requiredTier))throw Error('目标分段缺少目标层级证据，请重试。');
    if(!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:false}))throw Error('目标分段内容与证据不匹配，请重试。');
    seenGoals.add(item.goal);const uniqueIds=[...new Set(evidenceIds)];return {goal:item.goal,text:excerpt(item.text,4_000),evidenceIds:uniqueIds,evidence:evidenceDetails(uniqueIds,evidenceById)};
   });

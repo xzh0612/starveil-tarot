@@ -732,6 +732,14 @@ test('single-goal goal sections must also use specific evidence terms',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,allowedGoalSections:['advice']}),/目标分段内容与证据不匹配/);
 });
 
+test('first-reading goal sections require the routed goal evidence tier',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该怎么处理这段关系？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'先回答当前目标。',goalSections:[{goal:'advice',text:'以稳定节奏落实下一步。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,allowedGoalSections:['advice']}),/目标分段缺少目标层级证据/);
+});
+
 test('calibration rejects absolute predictive claims even when the output is structured',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'这张牌保证你们一定会复合。',cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏作为观察线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
