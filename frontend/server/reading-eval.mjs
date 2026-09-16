@@ -53,6 +53,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/evidencePlan[^\n]{0,500}(?:引用索引|anchor|application|reference)/i.test(system))issues.push('missing_evidence_plan_rule');
  if(!/evidencePlan[^\n]{0,900}positionEvidenceIds[^\n]{0,600}(?:必须|优先)/i.test(system))issues.push('missing_position_evidence_rule');
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
+ if(!/missingApplicationKindsByCard/i.test(system))issues.push('missing_application_domain_diagnostics');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
  if(!/goalPlan[^\n]{0,700}(?:order|evidenceIds|逐一回应)/i.test(system))issues.push('missing_goal_plan_rule');
@@ -80,6 +81,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/positionEvidenceIds/.test(user))issues.push('missing_position_evidence_context');
  if(!/knowledgeMeta/.test(user))issues.push('missing_knowledge_version_context');
  if(!/coverageStatus/.test(user))issues.push('missing_coverage_status_context');
+ if(!/missingApplicationKindsByCard/.test(user))issues.push('missing_application_domain_diagnostics_context');
  if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
  if(!/responsePlan/.test(user)||!/goal/.test(user)||!/emphasis/.test(user))issues.push('missing_response_plan_goal_context');
  if(!/goalPlan/.test(user)||!/goalOrder|order/.test(user))issues.push('missing_goal_plan_context');
@@ -95,6 +97,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_evidence_plan_rule'),
   !issues.includes('missing_position_evidence_rule'),
   !issues.includes('missing_coverage_status'),
+  !issues.includes('missing_application_domain_diagnostics'),
   !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
   !issues.includes('missing_goal_plan_rule'),
@@ -122,6 +125,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_position_evidence_context'),
   !issues.includes('missing_knowledge_version_context'),
   !issues.includes('missing_coverage_status_context'),
+  !issues.includes('missing_application_domain_diagnostics_context'),
   !issues.includes('missing_goal_coverage_context'),
   !issues.includes('missing_response_plan_goal_context'),
   !issues.includes('missing_goal_plan_context'),

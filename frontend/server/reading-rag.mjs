@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v4';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v5';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -411,7 +411,8 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}=
   return [cardId,{total:cardItems.length,anchorCount:cardItems.filter(item=>item.tier==='anchor').length,applicationKinds:[...new Set(cardItems.filter(item=>item.tier==='application').map(item=>item.kind))].sort(),hasSymbolism:kinds.has('symbolism'),hasOrientation:kinds.has('orientation')}];
  }));
  const missingAnchorCardIds=expected.filter(cardId=>!perCard[cardId].hasSymbolism||!perCard[cardId].hasOrientation);
- const missingApplicationCardIds=expectedApplicationKinds.length?expected.filter(cardId=>!expectedApplicationKinds.some(kind=>items.some(item=>item?.cardId===cardId&&item?.kind===kind))):[];
+ const missingApplicationKindsByCard=Object.fromEntries(expected.map(cardId=>[cardId,expectedApplicationKinds.filter(kind=>!items.some(item=>item?.cardId===cardId&&item?.kind===kind))]));
+ const missingApplicationCardIds=expected.filter(cardId=>missingApplicationKindsByCard[cardId]?.length>0);
  const goalCoverage=Object.fromEntries(routedGoals.map(goal=>{
   const matched=items.filter(item=>Array.isArray(item?.retrievalGoals)&&item.retrievalGoals.includes(goal));
   const applicationCount=matched.filter(item=>item.tier==='application').length;
@@ -429,6 +430,7 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}=
   expectedCardIds:expected,
   missingAnchorCardIds,
   expectedApplicationKinds,
+  missingApplicationKindsByCard,
   missingApplicationCardIds,
   goalCoverage,
   missingGoalCoverage,

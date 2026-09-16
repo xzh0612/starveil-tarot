@@ -213,6 +213,16 @@ test('choice-only questions reserve reflective decision context',()=>{
  assert.equal(summary.coverageStatus,'anchor_only');
 });
 
+test('mixed-theme coverage reports every missing application domain',()=>{
+ const question='我该如何处理这段关系，同时规划接下来的工作？';
+ const card=cards[0],routing=analyzeReadingQuestion(question),evidence=retrieveReadingEvidence({question,cards:[card],maxPerCard:3});
+ const summary=summarizeReadingEvidence(evidence,[card],{themes:routing.themes,goals:routing.goals});
+ assert.deepEqual(summary.expectedApplicationKinds,['relationships','work']);
+ assert.deepEqual(summary.missingApplicationKindsByCard,{m08:['work']});
+ assert.deepEqual(summary.missingApplicationCardIds,['m08']);
+ assert.equal(summary.coverageStatus,'anchor_only');
+});
+
 test('global evidence budget keeps anchors for every card before optional chunks',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards,maxPerCard:5,maxTotalEvidence:5});
  assert.equal(evidence.length,5);
