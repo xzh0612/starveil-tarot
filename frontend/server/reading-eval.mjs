@@ -51,6 +51,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
+ if(!/goalPlan[^\n]{0,700}(?:order|evidenceIds|逐一回应)/i.test(system))issues.push('missing_goal_plan_rule');
  if(!/synthesis[^\n]{0,900}(?:多牌阵|每张牌|分别|逐张)[^\n]{0,300}(?:核心|概念|证据)/i.test(system))issues.push('missing_synthesis_per_card_rule');
  if(!/<starveil_workflow>[\s\S]*?(?:activeQuestion|逐牌解读)[\s\S]*?(?:synthesis|合读)[\s\S]*?(?:自检|自查)[\s\S]*?<\/starveil_workflow>/i.test(system))issues.push('missing_prompt_workflow');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
@@ -73,6 +74,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/coverageStatus/.test(user))issues.push('missing_coverage_status_context');
  if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
  if(!/responsePlan/.test(user)||!/goal/.test(user)||!/emphasis/.test(user))issues.push('missing_response_plan_goal_context');
+ if(!/goalPlan/.test(user)||!/goalOrder|order/.test(user))issues.push('missing_goal_plan_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
@@ -86,6 +88,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_coverage_status'),
   !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
+  !issues.includes('missing_goal_plan_rule'),
   !issues.includes('missing_synthesis_per_card_rule'),
   !issues.includes('missing_prompt_workflow'),
   !issues.includes('missing_claim_support'),
@@ -108,6 +111,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_coverage_status_context'),
   !issues.includes('missing_goal_coverage_context'),
   !issues.includes('missing_response_plan_goal_context'),
+  !issues.includes('missing_goal_plan_context'),
   !issues.includes('missing_anchor_metadata_context'),
  ];
  return {ok:issues.length===0,score:scoreChecks(checks),issues};
