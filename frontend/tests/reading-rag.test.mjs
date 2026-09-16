@@ -46,6 +46,22 @@ test('weak-only follow-ups inherit the original retrieval theme',()=>{
  assert.deepEqual(result.retrievalMeta.themes,['career']);
 });
 
+test('follow-up routing separates inherited context from the current goal',()=>{
+ const explicit=readingRetrievalFor('我该如何处理这段关系？',[{role:'assistant',text:'上一轮回答'},{role:'user',text:'会有结果吗？'}]);
+ assert.equal(explicit.inheritedOriginal,true);
+ assert.equal(explicit.retrievalQuestion,'我该如何处理这段关系？\n会有结果吗？');
+ assert.deepEqual(explicit.retrievalMeta.themes,['relationship']);
+ assert.deepEqual(explicit.retrievalMeta.goals,['forecast']);
+ const contextOnly=readingRetrievalFor('我该如何处理这段关系？',[{role:'assistant',text:'上一轮回答'},{role:'user',text:'未来呢？'}]);
+ assert.equal(contextOnly.inheritedOriginal,true);
+ assert.deepEqual(contextOnly.retrievalMeta.themes,['relationship','future']);
+ assert.deepEqual(contextOnly.retrievalMeta.goals,['advice']);
+ const domainSwitch=readingRetrievalFor('我该如何处理这段关系？',[{role:'assistant',text:'上一轮回答'},{role:'user',text:'那事业呢？'}]);
+ assert.equal(domainSwitch.inheritedOriginal,false);
+ assert.deepEqual(domainSwitch.retrievalMeta.themes,['career']);
+ assert.deepEqual(domainSwitch.retrievalMeta.goals,['advice']);
+});
+
 test('question routing recognizes common synonyms across reading intents',()=>{
  const career=analyzeReadingQuestion('我想跳槽，怎么准备面试？');
  assert.deepEqual(career.themes,['career']);

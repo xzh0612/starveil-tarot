@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v20';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v21';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -113,11 +113,24 @@ export function readingQueryFor(question,messages=[]){
  return latest?latest.text.trim().slice(0,2_000):fallback;
 }
 
+const DOMAIN_THEMES=new Set(['relationship','career','reflection']);
+
+function mergeFollowupRouting(originalMeta,activeMeta,retrievalMeta){
+ const activeHasGoal=(activeMeta.goals??[]).length>0;
+ const goals=activeHasGoal?[...activeMeta.goals]:[...(originalMeta.goals?.length?originalMeta.goals:retrievalMeta.goals??[])];
+ const goalMeta=activeHasGoal?activeMeta:(originalMeta.goals?.length?originalMeta:retrievalMeta);
+ const activeHasDomain=!activeMeta.weakOnly&&(activeMeta.themes??[]).some(theme=>DOMAIN_THEMES.has(theme));
+ const themes=activeHasDomain?[...activeMeta.themes]:[...new Set([...(originalMeta.themes??[]),...(activeMeta.weakOnly?[]:activeMeta.themes??[])])];
+ return {...retrievalMeta,themes,goals,matchedGoalTerms:[...(goalMeta.matchedGoalTerms??[])],goalScores:{...(goalMeta.goalScores??{})},goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
+}
+
 export function readingRetrievalFor(question,messages=[]){
- const original=String(question??'').trim().slice(0,2_000),activeQuestion=readingQueryFor(original,messages),activeMeta=analyzeReadingQuestion(activeQuestion);
- const inheritedOriginal=Boolean(original&&activeQuestion!==original&&(activeMeta.confidence==='open'||activeMeta.weakOnly));
+ const original=String(question??'').trim().slice(0,2_000),originalMeta=analyzeReadingQuestion(original),activeQuestion=readingQueryFor(original,messages),activeMeta=analyzeReadingQuestion(activeQuestion);
+ const activeHasDomain=(activeMeta.themes??[]).some(theme=>DOMAIN_THEMES.has(theme));
+ const inheritedOriginal=Boolean(original&&activeQuestion!==original&&(activeMeta.confidence==='open'||activeMeta.weakOnly||!activeHasDomain));
  const retrievalQuestion=(inheritedOriginal?`${original}${activeMeta.weakOnly?'':`\n${activeQuestion}`}`:activeQuestion).slice(0,4_000);
- return {activeQuestion,retrievalQuestion,retrievalMeta:analyzeReadingQuestion(retrievalQuestion),inheritedOriginal};
+ const retrievalMeta=analyzeReadingQuestion(retrievalQuestion),preservePreviousGoal=Boolean(original&&activeQuestion!==original&&!activeMeta.goals.length&&originalMeta.goals.length);
+ return {activeQuestion,retrievalQuestion,retrievalMeta:(inheritedOriginal||preservePreviousGoal)?mergeFollowupRouting(originalMeta,activeMeta,retrievalMeta):retrievalMeta,inheritedOriginal};
 }
 
 // A mixed topic is not automatically ambiguous when the user has already
