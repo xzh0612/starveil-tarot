@@ -1110,6 +1110,17 @@ test('structured follow-up actions must stay grounded in their evidence',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}).actions.length,1);
 });
 
+test('structured advice follow-up actions require available application evidence',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const application=evidence.find(item=>item.kind==='relationships');
+ const output=JSON.stringify({text:'继续用稳定、温柔的方式观察现实回应。',actions:[{text:'今天记录一次稳定、温柔的沟通。',reason:'依据稳定、温柔的牌面线索。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,requiredActionGoalEvidence:['advice'],isFollowUp:true,requireTextSupport:true}),/首轮行动建议缺少当前目标的应用证据/);
+ const valid=JSON.stringify({text:'继续用稳定、温柔的方式观察现实回应。',actions:[{text:'今天记录一次稳定、温柔的沟通。',reason:'依据稳定、温柔的牌面线索。',evidenceIds:[orientation.evidenceId,application.evidenceId]}]});
+ assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredActionGoalEvidence:['advice'],isFollowUp:true,requireTextSupport:true}).actions.length,1);
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
