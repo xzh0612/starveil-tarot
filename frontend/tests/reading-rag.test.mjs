@@ -1153,6 +1153,8 @@ test('requires every explicit topic in a mixed active question',()=>{
 test('requires the top-level answer to honor an explicit response goal',()=>{
  const output=JSON.stringify({text:'把稳定节奏拆成今天可以执行的小步。'});
  assert.throws(()=>parseReadingOutput(output,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
+ const observationOnly=JSON.stringify({text:'先观察现实反馈，再保持稳定节奏。'});
+ assert.throws(()=>parseReadingOutput(observationOnly,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
  const valid=JSON.stringify({text:'趋势仍可能变化，先观察现实反馈再复盘。'});
  assert.doesNotThrow(()=>parseReadingOutput(valid,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}));
 });

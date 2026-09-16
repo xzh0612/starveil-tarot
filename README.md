@@ -40,7 +40,7 @@ npm --prefix frontend run eval:reading
 
 本轮还增加了 activeQuestion 相关性门禁：当问题明确落在关系、事业或自我主题时，顶层回答必须覆盖每个明确主题，并为每个主题复述至少一个同域词；证据充分但答非所问的泛化文本会被标记为 `question_relevance` 并进入一次有边界的修复流程。
 
-本轮还增加了 response goal 门禁：`advice`、`forecast`、`explanation`、`comparison` 和混合目标分段必须使用对应的回答模式；例如预测需要区分趋势与现实核验，解释需要说明原因或牌面线索。模式不匹配会返回 `goal_alignment` 并进入一次有边界的修复流程。
+本轮还增加了 response goal 门禁：`advice`、`forecast`、`explanation`、`comparison` 和混合目标分段必须使用对应的回答模式；例如预测必须同时出现趋势线索和现实核验边界，解释需要说明原因或牌面线索。模式不匹配会返回 `goal_alignment` 并进入一次有边界的修复流程。
 
 本轮还增加了追问质量门禁：如果模型返回 `followUp`，它必须是一个与当前问题或目标相关的具体单问句；泛泛的“还有什么想问的吗”和连续多个问题会返回 `followup_question`，并进入一次有边界的修复流程。
 

@@ -114,7 +114,7 @@ test('follow-up evaluation enforces the routed goal evidence tier',()=>{
  const rejected=evaluateFollowupFixture({question,cards:[card],output:missing});
  assert.equal(rejected.ok,false);
  assert.ok(rejected.issues.includes('output_contract'));
- const valid=JSON.stringify({text:'Fortitude 作为趋势参考，保持稳定、温柔而明确。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:forecast.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude'}]});
+ const valid=JSON.stringify({text:'Fortitude 作为趋势参考，保持稳定、温柔而明确。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:forecast.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude'}],uncertainty:'趋势仍需结合现实核验。'});
  const accepted=evaluateFollowupFixture({question,cards:[card],output:valid});
  assert.equal(accepted.ok,true);
  assert.equal(accepted.score,100);

@@ -548,17 +548,20 @@ const GOAL_OUTPUT_CUES=Object.freeze({
  explanation:['因为','原因','线索','说明','显示','反映','核心','解释','理解','阻碍','提示','代表','意味着','为何'],
  comparison:['比较','条件','代价','取舍','差异','适合','选择','一方','另一方','利弊','优缺点','权衡'],
 });
+const FORECAST_TREND_CUES=['可能','趋势','倾向','发展','未来','近期','结果','走向','变化'];
+const FORECAST_REALITY_CUES=['观察','核验','现实','事实','反馈','证据','不确定','不能确认','需要验证'];
 
-function goalOutputSupports(text,goal){
- const cues=GOAL_OUTPUT_CUES[goal]??[];
- return !cues.length||cues.some(cue=>String(text??'').toLowerCase().includes(cue));
+function goalOutputSupports(text,goal,uncertainty=''){
+ const value=String(text??'').toLowerCase(),boundary=String(uncertainty??'').toLowerCase(),cues=GOAL_OUTPUT_CUES[goal]??[];
+ if(goal==='forecast')return FORECAST_TREND_CUES.some(cue=>value.includes(cue))&&(FORECAST_REALITY_CUES.some(cue=>value.includes(cue))||FORECAST_REALITY_CUES.some(cue=>boundary.includes(cue)));
+ return !cues.length||cues.some(cue=>value.includes(cue));
 }
 
-function outputGoalsSupport(text,goalSections,goals){
+function outputGoalsSupport(text,goalSections,goals,{uncertainty=''}={}){
  const routed=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>Object.hasOwn(GOAL_OUTPUT_CUES,goal)))];
  return routed.every(goal=>{
   const section=Array.isArray(goalSections)?goalSections.find(item=>item?.goal===goal):null;
-  return goalOutputSupports(section?.text??text,goal);
+  return goalOutputSupports(section?.text??text,goal,uncertainty);
  });
 }
 
@@ -765,6 +768,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   if(missing.length)throw Error(isFollowUp?'追问引用没有覆盖当前回答目标，请重试。':'首轮引用没有覆盖当前回答目标，请重试。');
  }
  if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
- if(requireGoalAlignment&&!needsClarification&&!outputGoalsSupport(data.text,goalSections,requiredOutputGoals))throw Error('回答没有遵守本轮目标模式，请重试。');
+ if(requireGoalAlignment&&!needsClarification&&!outputGoalsSupport(data.text,goalSections,requiredOutputGoals,{uncertainty}))throw Error('回答没有遵守本轮目标模式，请重试。');
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp,uncertainty};
 }
