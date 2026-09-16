@@ -11,20 +11,23 @@ function scoreChecks(checks){
  * Deterministic retrieval regression rubric. This checks grounding coverage,
  * not whether a symbolic interpretation is objectively true.
  */
-export function evaluateRetrievalCase({question,cards,requiredKinds=[],requiredPositionKinds=[]}={}){
+export function evaluateRetrievalCase({question,cards,requiredKinds=[],requiredPositionKinds=[],requiredGoals=[]}={}){
  const evidence=retrieveReadingEvidence({question,cards});
+ const routing=analyzeReadingQuestion(question);
  const kinds=new Set(evidence.map(item=>item.kind));
  const missingKinds=[...new Set(requiredKinds)].filter(kind=>!kinds.has(kind));
  const positionKinds=new Set(evidence.flatMap(item=>Array.isArray(item.retrievalPositionKinds)?item.retrievalPositionKinds:[]));
  const missingPositionKinds=[...new Set(requiredPositionKinds)].filter(kind=>!positionKinds.has(kind));
+ const missingGoals=[...new Set(requiredGoals)].filter(goal=>!routing.goals.includes(goal));
  const missingCards=(cards??[]).filter(card=>!evidence.some(item=>item.cardId===card?.id&&item.kind==='orientation')).map(card=>card?.id).filter(Boolean);
  const issues=[
   ...missingKinds.map(kind=>`missing_evidence:${kind}`),
   ...missingPositionKinds.map(kind=>`missing_position_kind:${kind}`),
+  ...missingGoals.map(goal=>`missing_goal:${goal}`),
   ...missingCards.map(cardId=>`missing_card:${cardId}`),
  ];
- const checks=[evidence.length>0,missingKinds.length===0,missingPositionKinds.length===0,missingCards.length===0];
- return {ok:issues.length===0,score:scoreChecks(checks),issues,missingKinds,positionKinds:[...positionKinds],missingPositionKinds,missingCards,evidence};
+ const checks=[evidence.length>0,missingKinds.length===0,missingPositionKinds.length===0,missingGoals.length===0,missingCards.length===0];
+ return {ok:issues.length===0,score:scoreChecks(checks),issues,missingKinds,positionKinds:[...positionKinds],missingPositionKinds,goals:routing.goals,missingGoals,missingCards,evidence};
 }
 
 export function evaluateRetrievalSuite(cases=[]){
