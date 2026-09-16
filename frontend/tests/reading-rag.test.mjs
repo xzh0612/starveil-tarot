@@ -562,6 +562,12 @@ test('structured output can cite relevant personal memory with null card coordin
  assert.throws(()=>parseReadingOutput(JSON.stringify({text:'x',references:[{evidenceId:'memory:m1',cardId:'m08',position:'建议',claim:'先独处'}]}),{cards:[cards[0]],evidence:memory}),/引用证据无效/);
 });
 
+test('personal memory cannot ground the top-level reading text',()=>{
+ const memory=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
+ const output=JSON.stringify({text:'先独处整理思绪。',references:[{evidenceId:'memory:m1',cardId:null,position:null,claim:'先独处整理思绪'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence:memory,requireTextSupport:true}),/解读正文与证据不匹配/);
+});
+
 test('structured references retain fixed source provenance',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const waite=evidence.find(item=>item.kind==='waite');

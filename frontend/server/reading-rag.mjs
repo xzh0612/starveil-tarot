@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v26';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v27';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -494,6 +494,10 @@ function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
  return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
+function nonPersonalEvidenceIds(evidenceIds,evidenceById){
+ return evidenceIds.filter(id=>evidenceById.get(id)?.source!=='memory');
+}
+
 export const GOAL_REFERENCE_TIERS=Object.freeze({advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'});
 const READING_GOALS=new Set(Object.keys(GOAL_REFERENCE_TIERS));
 function hasGoalReference(goal,refs,goalSections,evidenceById){
@@ -612,7 +616,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   for(const goal of targets){
    const section=goalSections.find(item=>item.goal===goal);
    const sectionIds=section?.evidenceIds??[];
-   const referenceIds=refs.filter(reference=>evidenceById.get(reference.evidenceId)?.retrievalGoals?.includes(goal)).map(reference=>reference.evidenceId);
+   const referenceIds=refs.filter(reference=>evidenceById.get(reference.evidenceId)?.source!=='memory'&&evidenceById.get(reference.evidenceId)?.retrievalGoals?.includes(goal)).map(reference=>reference.evidenceId);
    const goalEvidenceIds=[...new Set([...sectionIds,...referenceIds])];
    const goalEvidence=goalEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
    if(section&&!claimSupportedByEvidence(data.text,{text:goalEvidence},{allowGeneric:false,requireSentenceSupport:false}))goalTextCoverageOk=false;
@@ -683,9 +687,9 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireGoalTextCoverage&&!needsClarification&&!goalTextCoverageOk)throw Error('混合目标正文没有覆盖每个回答目标，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
-  const groundedEvidenceIds=[...new Set(isFollowUp
+  const groundedEvidenceIds=nonPersonalEvidenceIds([...new Set(isFollowUp
    ? [...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)]
-   : [...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds)])];
+   : [...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds)])],evidenceById);
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
