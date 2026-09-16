@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
+import {evaluateFollowupFixture,evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
 import {retrieveReadingEvidence} from '../server/reading-rag.mjs';
 
 const cards=[
@@ -81,6 +81,22 @@ test('reading evaluation enforces the routed goal evidence tier',()=>{
  const result=evaluateReadingFixture({question:'我之后会怎样发展？',cards:[card],output});
  assert.equal(result.ok,false);
  assert.ok(result.issues.includes('output_contract'));
+});
+
+test('follow-up evaluation enforces the routed goal evidence tier',()=>{
+ const question='我之后会怎样发展？';
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question,cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const forecast=evidence.find(item=>item.tier==='reference'&&item.retrievalGoals?.includes('forecast'));
+ const missing=JSON.stringify({text:'保持稳定、温柔而明确。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'}]});
+ const rejected=evaluateFollowupFixture({question,cards:[card],output:missing});
+ assert.equal(rejected.ok,false);
+ assert.ok(rejected.issues.includes('output_contract'));
+ const valid=JSON.stringify({text:'保持稳定、温柔而明确。',references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:forecast.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude'}]});
+ const accepted=evaluateFollowupFixture({question,cards:[card],output:valid});
+ assert.equal(accepted.ok,true);
+ assert.equal(accepted.score,100);
 });
 
 test('reading evaluation enforces application evidence on first actions',()=>{

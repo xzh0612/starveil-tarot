@@ -191,3 +191,22 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  const checks=[retrieval.ok,parsed!==null,hasReferenceCoverage,hasActions,ACTION_WORDS.test(readingText)];
  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
 }
+
+/**
+ * Runs the same grounded parser contract for a structured follow-up. The
+ * follow-up path intentionally omits first-reading coverage requirements, but
+ * keeps goal-tier citations, claim support, calibration, and evidence limits.
+ */
+export function evaluateFollowupFixture({question,cards,output,requiredKinds=[]}={}){
+ const retrieval=evaluateRetrievalCase({question,cards,requiredKinds});
+ const routing=analyzeReadingQuestion(question);
+ const evidenceMeta=summarizeReadingEvidence(retrieval.evidence,cards,{themes:routing.themes,goals:routing.goals});
+ const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
+ const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
+ const issues=[...retrieval.issues];let parsed=null;
+ try{
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,allowedGoalSections:routing.goals,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
+ }catch{issues.push('output_contract');}
+ const uniqueIssues=[...new Set(issues)],checks=[retrieval.ok,parsed!==null];
+ return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
+}
