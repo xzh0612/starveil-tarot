@@ -97,6 +97,17 @@ test('question routing covers colloquial outcome, scenario and decision phrasing
  assert.equal(requiresProfessionalBoundary('我想问一下下个月的财运'),true);
 });
 
+test('question routing covers thought, stance, continuation and admission phrasing',()=>{
+ const thought=analyzeReadingQuestion('他的真实想法是什么？');
+ assert.deepEqual(thought.themes,['relationship']);
+ assert.deepEqual(thought.goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('她对我到底是什么态度？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('我到底应该不应该继续？').goals,['comparison']);
+ const admission=analyzeReadingQuestion('我会不会被录取？');
+ assert.deepEqual(admission.themes,['career']);
+ assert.deepEqual(admission.goals,['forecast']);
+});
+
 test('question routing distinguishes the requested response goal',()=>{
  const advice=analyzeReadingQuestion('我该怎么和对方沟通？');
  assert.deepEqual(advice.goals,['advice']);
