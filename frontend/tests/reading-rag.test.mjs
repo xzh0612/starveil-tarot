@@ -146,6 +146,9 @@ test('question routing covers natural forecast, explanation and advice phrasing'
  assert.deepEqual(explicitExplanation.goals,['explanation']);
  const nextStep=analyzeReadingQuestion('我应该先做什么？');
  assert.deepEqual(nextStep.goals,['advice']);
+ const temporalForecast=analyzeReadingQuestion('未来如何？');
+ assert.deepEqual(temporalForecast.themes,['future']);
+ assert.deepEqual(temporalForecast.goals,['forecast']);
 });
 
 test('question routing ignores negated intent phrases without suppressing real goals',()=>{

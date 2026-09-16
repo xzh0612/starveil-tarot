@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v11';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v12';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -49,11 +49,11 @@ const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecas
 // active while avoiding a broad sentiment classifier.
 const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
-function activeLexiconTerms(text,terms){
+function activeLexiconTerms(text,terms,{preferLongerIntent=false}={}){
  return terms.filter(term=>{
    // Prefer an explicit longer intent phrase over a shorter substring.
    // Without this, “怎么看” also activates the advice token “怎么”.
-   if(GOAL_LEXICON_TERMS.includes(term)&&GOAL_LEXICON_TERMS.some(candidate=>candidate.length>term.length&&candidate.includes(term)&&text.includes(candidate)))return false;
+   if(preferLongerIntent&&GOAL_LEXICON_TERMS.some(candidate=>candidate.length>term.length&&candidate.includes(term)&&text.includes(candidate)))return false;
   let offset=0;
   while(offset<=text.length){
    const index=text.indexOf(term,offset);
@@ -87,7 +87,7 @@ export function analyzeReadingQuestion(question){
  const matchedTerms=[...new Set([...strongMatchedTerms,...weakMatchedTerms])];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
  const goalScored=GOALS.map(goal=>{
-  const terms=activeLexiconTerms(text,goal.words),weakTerms=activeLexiconTerms(text,goal.weakWords??[]);
+  const terms=activeLexiconTerms(text,goal.words,{preferLongerIntent:true}),weakTerms=activeLexiconTerms(text,goal.weakWords??[],{preferLongerIntent:true});
   return {name:goal.name,terms,weakTerms,score:terms.length*2+weakTerms.length*.5};
  });
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),
