@@ -528,6 +528,22 @@ const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个','对方','关系','感情','工作','事业','状态','未来','现在','复合','联系','回来','喜欢','感觉','持续','伤害','持续伤害']);
 const CLAIM_GENERIC_TERM_LIST=[...CLAIM_GENERIC_TERMS];
 const isGenericClaimTerm=term=>CLAIM_GENERIC_TERMS.has(term)||CLAIM_GENERIC_TERM_LIST.some(generic=>generic.length>term.length&&generic.includes(term));
+function questionRelevanceTerms(question){
+ const text=String(question??'').trim().toLowerCase(),terms=[];
+ for(const theme of THEMES){
+  if(!['relationship','career','reflection'].includes(theme.name))continue;
+  for(const term of theme.words??[]){
+   if(text.includes(term)&&term.length>=2)terms.push(term);
+  }
+ }
+ return [...new Set(terms)].sort((a,b)=>b.length-a.length||a.localeCompare(b));
+}
+
+function questionTextSupports(text,question){
+ const terms=questionRelevanceTerms(question);
+ return !terms.length||terms.some(term=>String(text??'').toLowerCase().includes(term));
+}
+
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
  // A supported sentence must not smuggle an unsupported clause after
@@ -580,7 +596,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -595,6 +611,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  const needsClarification=data.needsClarification===true,clarification=excerpt(data.clarification??'',500);
  if(needsClarification&&allowClarification===false)throw Error('明确主题不允许跳过首轮解读，请重试。');
  if(needsClarification&&!isConcreteClarification(clarification))throw Error('澄清问题格式不正确，请重试。');
+ if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
  if(needsClarification&&((Array.isArray(data.goalSections)&&data.goalSections.length>0)||(Array.isArray(data.cardReadings)&&data.cardReadings.length>0)||(Array.isArray(data.actions)&&data.actions.length>0)||(Array.isArray(data.references)&&data.references.length>0)||(data.synthesis&&((typeof data.synthesis.text==='string'&&data.synthesis.text.trim())||(Array.isArray(data.synthesis.evidenceIds)&&data.synthesis.evidenceIds.length>0)))))throw Error('澄清时不能同时返回结构化解读，请重试。');
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
  const refs=[];const seenReferenceIds=new Set();

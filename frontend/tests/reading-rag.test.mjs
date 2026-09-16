@@ -1121,6 +1121,16 @@ test('structured advice follow-up actions require available application evidence
  assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredActionGoalEvidence:['advice'],isFollowUp:true,requireTextSupport:true}).actions.length,1);
 });
 
+test('rejects a grounded response that does not answer the explicit question domain',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'继续用稳定、温柔而明确的方式面对恐惧。',actions:[{text:'今天记录一次稳定的行动。',reason:'稳定节奏可以帮助继续观察。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[card],evidence,activeQuestion:'我该如何处理这段关系？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}),/没有直接回应本轮问题/);
+ const relevant=JSON.stringify({text:'这段关系可以继续用稳定、温柔而明确的方式面对恐惧。',actions:[{text:'今天记录一次稳定的行动。',reason:'稳定节奏可以帮助继续观察。',evidenceIds:[orientation.evidenceId]}]});
+ assert.doesNotThrow(()=>parseReadingOutput(relevant,{cards:[card],evidence,activeQuestion:'我该如何处理这段关系？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
