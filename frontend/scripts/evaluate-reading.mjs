@@ -23,7 +23,8 @@ const output=JSON.stringify({
  cardReadings:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
   const reading=card.id==='m08'?'结合稳定而明确的提示，观察一个可验证的角度，并给出下一步。':'比较记忆和当前事实，再观察一个可验证的角度，并给出下一步。';
-  return {cardId:card.id,position:card.position,reading,evidenceIds:[item.evidenceId]};
+  const position=evidence.find(candidate=>candidate.cardId===card.id&&candidate.retrievalReasons?.includes('position_match'));
+  return {cardId:card.id,position:card.position,reading,evidenceIds:[item.evidenceId,...(position?[position.evidenceId]:[])]};
  }),
  actions:[{text:'记录一次具体沟通中的事实与感受，并在一周后复盘。',reason:'依据牌面稳定、明确的行动线索，把抽象担忧变成可观察材料。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId,evidence.find(item=>item.kind==='relationships').evidenceId]}],
  references:cards.map(card=>{

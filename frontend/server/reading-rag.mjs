@@ -502,7 +502,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -562,7 +562,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   if(requireSynthesisAnchors&&cards.some(card=>!synthesis.evidenceIds.some(id=>evidenceById.get(id)?.cardId===card.id&&evidenceById.get(id)?.retrievalRequired===true)))throw Error('首轮综合解读必须引用每张牌的核心锚点，请重试。');
   if(requireSynthesisCardSupport&&cards.length>1&&cards.some(card=>!synthesis.evidenceIds.some(id=>evidenceById.get(id)?.cardId===card.id&&claimSupportedByEvidence(synthesis.text,evidenceById.get(id),{allowGeneric:true}))))synthesisSupportOk=false;
  }
- let cardReadings=[];let cardReadingSupportOk=true;
+ let cardReadings=[];let cardReadingSupportOk=true,cardPositionEvidenceOk=true;
  if(requireCoverage&&!needsClarification&&data.cardReadings===undefined)throw Error('首轮解读必须包含逐牌解读，请重试。');
  if(data.cardReadings!==undefined){
   if(!Array.isArray(data.cardReadings)||data.cardReadings.length>12)throw Error('逐牌解读格式不正确，请重试。');
@@ -574,6 +574,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||chunk.cardId!==item.cardId||chunk.position!==item.position)throw Error('逐牌解读引用无效。');return chunk.evidenceId;});
    if(requireCardReadingSupport&&!needsClarification&&!evidenceIds.some(id=>claimSupportedByEvidence(item.reading,evidenceById.get(id),{allowGeneric:true})))cardReadingSupportOk=false;
    if(requireCoverage&&!needsClarification&&!evidenceIds.some(id=>evidenceById.get(id)?.retrievalRequired===true))throw Error('逐牌解读必须引用该牌的核心锚点，请重试。');
+   if(requirePositionEvidence&&!needsClarification&&evidence.some(candidate=>candidate?.cardId===card.id&&candidate?.position===card.position&&candidate?.retrievalReasons?.includes('position_match'))&&!evidenceIds.some(id=>evidenceById.get(id)?.retrievalReasons?.includes('position_match')))cardPositionEvidenceOk=false;
    seen.add(item.cardId);return {cardId:item.cardId,position:item.position,orientation,reading:excerpt(item.reading,4_000),evidenceIds,evidence:evidenceDetails(evidenceIds,evidenceById)};
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
@@ -608,6 +609,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireActionReasons&&!needsClarification&&!actionsReasoned)throw Error('首轮行动建议必须说明与牌面相关的理由，请重试。');
  if(requireActionReasonSupport&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
+ if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)])];

@@ -465,6 +465,18 @@ test('first reading text must overlap the retrieved evidence',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
+test('first-reading card explanations require available position evidence',()=>{
+ const card={id:'m08',reversed:false,position:'阻碍'};
+ const evidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[card]});
+ const anchor=evidence.find(item=>item.kind==='orientation');
+ const position=evidence.find(item=>item.retrievalReasons?.includes('position_match'));
+ assert.ok(anchor&&position);
+ const missing=JSON.stringify({text:'逐牌说明。',cardReadings:[{cardId:'m08',position:'阻碍',reading:'结合稳定节奏观察一个可验证角度。',evidenceIds:[anchor.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requireCoverage:true,requirePositionEvidence:true}),/牌位语义证据/);
+ const grounded=JSON.stringify({text:'逐牌说明。',cardReadings:[{cardId:'m08',position:'阻碍',reading:'结合稳定节奏观察工作行动的阻碍。',evidenceIds:[anchor.evidenceId,position.evidenceId]}]});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireCoverage:true,requirePositionEvidence:true}).cardReadings[0].evidenceIds.includes(position.evidenceId),true);
+});
+
 test('first-reading card explanations must cite a core anchor',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const application=evidence.find(item=>item.kind==='relationships');
