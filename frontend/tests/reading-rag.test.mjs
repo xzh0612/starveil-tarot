@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -21,6 +21,17 @@ test('source authority keeps fixed card meaning above supplemental context',()=>
  const evidence=retrieveReadingEvidence({question:'我们之间的沟通要怎么调整？',cards:[cards[0]]});
  assert.equal(evidence.find(item=>item.kind==='orientation').sourceAuthority,'canonical_fixed');
  assert.equal(evidence.find(item=>item.kind==='waite').sourceAuthority,'historical_reference');
+});
+
+test('reading corpus contains complete fixed and reference material for all 78 cards',()=>{
+ const status=validateReadingCorpus();
+ assert.deepEqual(status,READING_CORPUS_STATUS);
+ assert.equal(status.ok,true);
+ assert.deepEqual({cards:status.cardCount,guides:status.guideCount,references:status.referenceCount},{cards:78,guides:78,references:78});
+ assert.deepEqual(status.missingGuides,[]);
+ assert.deepEqual(status.missingReferences,[]);
+ assert.deepEqual(status.orphanGuides,[]);
+ assert.deepEqual(status.orphanReferences,[]);
 });
 
 test('question analysis exposes transparent routing hints without inventing a theme',()=>{

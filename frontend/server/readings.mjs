@@ -1,6 +1,6 @@
 import {DECK_VERSION,cardById,spreads} from '../src/domain.js';
 import {buildRecommendationMessages,parseRecommendations} from './spread-recommendations.mjs';
-import {GOAL_REFERENCE_TIERS,READING_KNOWLEDGE_VERSION,canAskClarification,evidenceSourceAuthority,parseReadingOutput,readingRetrievalFor,retrieveMemoryEvidence,retrieveReadingEvidence,retrieveReadingEvidenceAsync,requiresProfessionalBoundary,summarizeReadingEvidence} from './reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,READING_CORPUS_STATUS,READING_KNOWLEDGE_VERSION,canAskClarification,evidenceSourceAuthority,parseReadingOutput,readingRetrievalFor,retrieveMemoryEvidence,retrieveReadingEvidence,retrieveReadingEvidenceAsync,requiresProfessionalBoundary,summarizeReadingEvidence} from './reading-rag.mjs';
 
 // Keep Prompt changes independently traceable from the fixed deck and RAG corpus.
 export const READING_PROMPT_VERSION='nyx-prompt-v29';
@@ -234,7 +234,7 @@ export function buildReadingMessages(body,{evidenceOverride=null,includeRetrieva
  const hasPriorAssistant=history.some(message=>message.role==='assistant'),promptHistory=compactHistory(history),promptBudget=createPromptBudget(history,promptHistory,{question:body.question,activeQuestion,evidence,memoryEvidence}),responsePlan=createResponsePlan(cards.length,hasPriorAssistant,promptHistory.length,{goals:retrievalMeta.goals});
  const allowClarification=canAskClarification(retrievalMeta,{hasPriorAssistant});
  const evidencePlan=createEvidencePlan(evidence,cards,retrievalMeta.goals),goalPlan=createGoalPlan(retrievalMeta.goals,evidencePlan);
- const knowledgeMeta={deckVersion:DECK_VERSION,ragVersion:READING_KNOWLEDGE_VERSION,promptVersion:READING_PROMPT_VERSION,clientDeckVersion:typeof body.deckVersion==='string'?body.deckVersion:null};
+ const knowledgeMeta={deckVersion:DECK_VERSION,ragVersion:READING_KNOWLEDGE_VERSION,promptVersion:READING_PROMPT_VERSION,corpus:{ok:READING_CORPUS_STATUS.ok,cardCount:READING_CORPUS_STATUS.cardCount,guideCount:READING_CORPUS_STATUS.guideCount,referenceCount:READING_CORPUS_STATUS.referenceCount},clientDeckVersion:typeof body.deckVersion==='string'?body.deckVersion:null};
  const context={question:body.question,activeQuestion,retrievalQuestion,queryMeta:{inheritedOriginal},spread,cards,evidence:evidence.map(promptEvidenceItem),evidenceMeta,evidencePlan,goalPlan,retrievalMeta,responsePlan,promptBudget,knowledgeMeta,clarificationMeta:{allowClarification},safetyMeta:{requiresProfessionalBoundary:requiresBoundary},memoryEvidence};
  if(includeRetrievalDiagnostics)context.retrievalDiagnostics=evidence;
  const turnReminder=`<starveil_turn>\n${safeJson({activeQuestion,turn:responsePlan.turn,goal:responsePlan.goal,directAnswer:responsePlan.directAnswer,actionGuidance:responsePlan.actionGuidance,goalOrder:goalPlan.order,cardIds:cards.map(card=>card.id),positions:cards.map(card=>card.position)})}\n</starveil_turn>\n请只按 system contract 回应当前轮次。`;

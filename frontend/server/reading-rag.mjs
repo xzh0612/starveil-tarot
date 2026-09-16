@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v28';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v29';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -17,6 +17,17 @@ export function evidenceSourceType(source){return SOURCE_TYPE_BY_SOURCE[source]|
 // and personal memory is contextual rather than card meaning.
 const SOURCE_AUTHORITY_BY_SOURCE={editorial:'canonical_fixed',waite:'historical_reference',corpora:'contextual_reference',memory:'user_context'};
 export function evidenceSourceAuthority(source){return SOURCE_AUTHORITY_BY_SOURCE[source]||'unknown';}
+
+const REQUIRED_GUIDE_FIELDS=['upright','reversed','symbolism','relationships','work','question'];
+export function validateReadingCorpus(){
+ const cardIds=Object.keys(cardById).sort(),guideIds=Object.keys(cardGuides).sort(),referenceIds=Object.keys(references).sort();
+ const missingGuides=cardIds.filter(id=>REQUIRED_GUIDE_FIELDS.some(field=>typeof cardGuides[id]?.[field]!=='string'||!cardGuides[id][field].trim()));
+ const missingReferences=cardIds.filter(id=>!references[id]||typeof references[id].waite!=='string'||!references[id].waite.trim());
+ const orphanGuides=guideIds.filter(id=>!cardById[id]),orphanReferences=referenceIds.filter(id=>!cardById[id]);
+ return Object.freeze({ok:cardIds.length===78&&guideIds.length===78&&referenceIds.length===78&&!missingGuides.length&&!missingReferences.length&&!orphanGuides.length&&!orphanReferences.length,cardCount:cardIds.length,guideCount:guideIds.length,referenceCount:referenceIds.length,requiredGuideFields:[...REQUIRED_GUIDE_FIELDS],missingGuides,missingReferences,orphanGuides,orphanReferences});
+}
+export const READING_CORPUS_STATUS=validateReadingCorpus();
+if(!READING_CORPUS_STATUS.ok)throw Error('塔罗知识库不完整，已停止生成解读。');
 
 const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','法律','律师','诉讼','官司','仲裁','合同','纠纷','投资','股票','基金','理财','财务','财运','借贷','保险','税务','失眠','睡眠','睡不好','睡不着','疼痛','手术','就医','副作用'];
 
