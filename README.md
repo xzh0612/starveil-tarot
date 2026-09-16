@@ -28,6 +28,8 @@ npm run dev -- --host 0.0.0.0 --port 4173 --strictPort
 npm run build
 ```
 
+GitHub Actions 会在每次分支推送、Pull Request 和手动触发时执行锁定依赖安装、全量测试、离线 RAG/Prompt 评估和 Sites 生产构建。工作流见 `.github/workflows/quality.yml`，不需要也不会读取 DeepSeek 密钥。
+
 RAG 与 Prompt 离线质量门：
 
 ```bash
