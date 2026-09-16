@@ -126,6 +126,15 @@ test('question routing recognizes common should-I decision forms',()=>{
  assert.deepEqual(continuationDecision.goals,['comparison']);
 });
 
+test('question routing covers binary decision and prediction phrasing',()=>{
+ const needDecision=analyzeReadingQuestion('我是否需要主动联系？');
+ assert.deepEqual(needDecision.goals,['comparison']);
+ const desireDecision=analyzeReadingQuestion('我想不想继续这段关系？');
+ assert.deepEqual(desireDecision.goals,['comparison']);
+ const otherState=analyzeReadingQuestion('对方是不是喜欢我？');
+ assert.deepEqual(otherState.goals,['forecast']);
+});
+
 test('question routing ignores negated intent phrases without suppressing real goals',()=>{
  const explanation=analyzeReadingQuestion('我不想比较选项，只想知道为什么会这样？');
  assert.deepEqual(explanation.goals,['explanation']);

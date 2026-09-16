@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v8';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v9';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -33,12 +33,12 @@ const GOALS=[
  // but do not by themselves ask for a prediction. Keep them low-weight so
  // “未来我该怎么办” routes to advice, while “未来会怎样” still routes to
  // forecast because it contains the explicit prediction phrase “会怎样”.
- {name:'forecast',words:['会不会','是否会','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','发展','走向','可能性','会怎样'],weakWords:['未来','之后','接下来','近期','今年','明年']},
+ {name:'forecast',words:['会不会','是否会','是不是','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','发展','走向','可能性','会怎样'],weakWords:['未来','之后','接下来','近期','今年','明年']},
  {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','怎么理解','如何看','如何理解','怎么解释','如何解释','怎么想','如何想','心里怎么想','对方怎么想','会怎么想','理解']},
  // Decision questions are often phrased without the words "比较" or
  // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
  // still supplies decision-oriented application evidence.
- {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍','要不要','该不该','是不是应该','是否应该','是不是要','是否要','是否值得','值不值得']},
+ {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍','要不要','想不想','是否想','是否需要','是不是需要','该不该','是不是应该','是否应该','是不是要','是否要','是否值得','值不值得']},
 ];
 const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 
