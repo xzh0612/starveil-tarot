@@ -500,6 +500,15 @@ test('structured reading prose cannot pass on generic evidence words alone',()=>
  assert.throws(()=>parseReadingOutput(synthesisOutput,{cards:[cards[0]],evidence,requireSynthesisSupport:true}),/综合解读内容与证据不匹配/);
 });
 
+test('structured prose rejects an unsupported trailing sentence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const cardOutput=JSON.stringify({text:'先观察再沟通。',cardReadings:[{cardId:'m08',position:'建议',reading:'先以稳定节奏观察。对方已经搬去火星。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(cardOutput,{cards:[cards[0]],evidence,requireCardReadingSupport:true}),/逐牌解读内容与证据不匹配/);
+ const actionOutput=JSON.stringify({text:'先观察再沟通。',actions:[{text:'今天记录一次稳定节奏的行动。对方已经搬去火星。',reason:'依据牌面稳定、明确的行动线索。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(actionOutput,{cards:[cards[0]],evidence,requireActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true}),/行动建议内容与证据不匹配/);
+});
+
 test('synthesis rejects prose with no meaningful overlap with cited evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'综合判断。',synthesis:{text:'这意味着对方一定会回来。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}});
