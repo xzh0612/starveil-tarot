@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v2';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v3';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -63,9 +63,10 @@ function activeLexiconTerms(text,terms){
 }
 
 const POSITION_HINTS=[
- {words:['关系','感受','需求','互动','挑战'],kind:'relationships',boost:6},
- {words:['事业','资源','优势','工作','行动','建议','下一步'],kind:'work',boost:6},
- {words:['过去','现在','趋势','未来'],kind:'orientation',boost:3},
+ {words:['关系','感受','需求','互动','挑战','阻碍','对方','联系','情绪'],kind:'relationships',boost:6},
+ {words:['事业','资源','优势','工作','行动','建议','下一步','阻碍','机会','路径','发展','任务'],kind:'work',boost:6},
+ {words:['过去','现在','趋势','未来','当下','近期','基础','环境','可能发展'],kind:'orientation',boost:3},
+ {words:['选择','现状','隐含因素','意识目标','自我状态','希望','担忧','核心','交叉影响'],kind:'reflection',boost:5},
 ];
 
 export function analyzeReadingQuestion(question){
@@ -205,8 +206,9 @@ function matchingSignals(chunk,{position,terms,themes,goals=[],directTerms=new S
   return false;
  });
  const matchedGoals=goals.filter(goal=>goalMatchesChunk(goal,chunk.kind));
- const matchedPosition=POSITION_HINTS.some(hint=>hint.words.some(word=>String(position).includes(word))&&chunk.kind===hint.kind);
- return {matchedTerms,matchedDirectTerms,matchedExpandedTerms,matchedThemes,matchedGoals,matchedPosition};
+ const matchedPositionKinds=[...new Set(POSITION_HINTS.filter(hint=>hint.words.some(word=>String(position).includes(word))).map(hint=>hint.kind))];
+ const matchedPosition=matchedPositionKinds.includes(chunk.kind);
+ return {matchedTerms,matchedDirectTerms,matchedExpandedTerms,matchedThemes,matchedGoals,matchedPosition,matchedPositionKinds};
 }
 
 function scoreChunk(chunk,{position,terms,themes,goals=[],corpus=[],directTerms=new Set()}){
@@ -305,7 +307,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
   const rawChunks=candidateChunks(card,question);
   const chunks=rawChunks.map((chunk,index)=>{
    const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals,directTerms:queryTerms.direct});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks,directTerms:queryTerms.direct}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedDirectTerms:signals.matchedDirectTerms,matchedExpandedTerms:signals.matchedExpandedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,index};
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks,directTerms:queryTerms.direct}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedDirectTerms:signals.matchedDirectTerms,matchedExpandedTerms:signals.matchedExpandedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,matchedPositionKinds:signals.matchedPositionKinds,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -337,6 +339,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
    retrievalDirectTerms:chunk.matchedDirectTerms,
    retrievalExpandedTerms:chunk.matchedExpandedTerms,
    retrievalThemes:chunk.matchedThemes,
+   retrievalPositionKinds:chunk.matchedPositionKinds,
    retrievalGoals:chunk.matchedGoals,
    retrievalMethod:'bm25+rules+expansion-v1',
    retrievalScore:Number(chunk.score.toFixed(3)),

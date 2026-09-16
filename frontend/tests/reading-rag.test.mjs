@@ -177,6 +177,19 @@ test('retrieval selects relationship context for relationship questions',()=>{
  assert.ok(!evidence.some(item=>item.kind==='work'));
 });
 
+test('retrieval uses spread position semantics for domain-neutral positions',()=>{
+ const workEvidence=retrieveReadingEvidence({question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}]});
+ const work=workEvidence.find(item=>item.kind==='work');
+ assert.ok(work);
+ assert.ok(work.retrievalReasons.includes('position_match'));
+ assert.ok(work.retrievalPositionKinds.includes('work'));
+ const reflectionEvidence=retrieveReadingEvidence({question:'我最近想看看牌。',cards:[{id:'m08',reversed:false,position:'自我状态'}]});
+ const reflection=reflectionEvidence.find(item=>item.kind==='reflection');
+ assert.ok(reflection);
+ assert.ok(reflection.retrievalReasons.includes('position_match'));
+ assert.ok(reflection.retrievalPositionKinds.includes('reflection'));
+});
+
 test('focused career retrieval excludes unrelated relationship application chunks',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='work'));
