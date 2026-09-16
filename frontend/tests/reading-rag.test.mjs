@@ -747,6 +747,13 @@ test('question routing covers productive colloquial intent forms',()=>{
  assert.deepEqual(returner.goals,['forecast']);
 });
 
+test('question routing keeps separate clauses in mixed goals',()=>{
+ const mixed=analyzeReadingQuestion('这段关系会怎么发展，我该怎么做？');
+ assert.deepEqual(mixed.goals,['advice','forecast']);
+ const advice=analyzeReadingQuestion('我怎么做比较好？');
+ assert.deepEqual(advice.goals,['advice']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});

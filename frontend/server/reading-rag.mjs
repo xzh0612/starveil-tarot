@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v19';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v20';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -51,9 +51,15 @@ const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
 function activeLexiconTerms(text,terms,{preferLongerIntent=false}={}){
  return terms.filter(term=>{
-   // Prefer an explicit longer intent phrase over a shorter substring.
-   // Without this, “怎么看” also activates the advice token “怎么”.
-   if(preferLongerIntent&&GOAL_LEXICON_TERMS.some(candidate=>candidate.length>term.length&&candidate.includes(term)&&text.includes(candidate)))return false;
+   // Prefer an explicit longer intent phrase over the shorter occurrence it
+   // actually contains. Do this per occurrence rather than per question:
+   // “会怎么发展，我该怎么做” must keep both forecast and advice.
+   if(preferLongerIntent){
+    const candidates=GOAL_LEXICON_TERMS.filter(candidate=>candidate.length>term.length&&candidate.includes(term));
+    const positions=[];let cursor=0;
+    while(cursor<=text.length){const index=text.indexOf(term,cursor);if(index<0)break;positions.push(index);cursor=index+Math.max(1,term.length);}
+    if(positions.length&&positions.every(index=>candidates.some(candidate=>{let candidateCursor=0;while(candidateCursor<=text.length){const candidateIndex=text.indexOf(candidate,candidateCursor);if(candidateIndex<0)return false;if(index>=candidateIndex&&index+term.length<=candidateIndex+candidate.length)return true;candidateCursor=candidateIndex+Math.max(1,candidate.length);}return false;})))return false;
+   }
   let offset=0;
   while(offset<=text.length){
    const index=text.indexOf(term,offset);

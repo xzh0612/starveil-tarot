@@ -16,6 +16,7 @@ const retrievalCases=[
  {name:'colloquial-state',question:'他对我是什么感觉？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['forecast'],expectedGoals:['forecast']},
  {name:'path-comparison',question:'留在这里还是离开？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection'],requiredGoals:['comparison'],expectedGoals:['comparison']},
  {name:'growth-forecast',question:'这段关系会怎么发展？',cards,requiredKinds:['orientation','symbolism','waite','relationships'],requiredGoals:['forecast'],expectedGoals:['forecast']},
+ {name:'mixed-growth-action',question:'这段关系会怎么发展，我该怎么做？',cards,requiredKinds:['orientation','symbolism','waite','relationships'],requiredGoals:['advice','forecast'],expectedGoals:['advice','forecast']},
  {name:'card-explanation',question:'我只是想了解这张牌',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite'],requiredGoals:['explanation'],expectedGoals:['explanation']},
  {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
  {name:'position-semantics',question:'我正在整理工作方向。',cards:[{id:'m08',reversed:false,position:'阻碍'}],requiredKinds:['orientation','symbolism','work'],requiredPositionKinds:['work']},
