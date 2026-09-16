@@ -1150,6 +1150,31 @@ test('requires every explicit topic in a mixed active question',()=>{
  assert.doesNotThrow(()=>parseReadingOutput(complete,{cards:[card],evidence,activeQuestion:'这段感情和工作如何平衡？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
 });
 
+test('requires the top-level answer to honor an explicit response goal',()=>{
+ const output=JSON.stringify({text:'把稳定节奏拆成今天可以执行的小步。'});
+ assert.throws(()=>parseReadingOutput(output,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
+ const valid=JSON.stringify({text:'趋势仍可能变化，先观察现实反馈再复盘。'});
+ assert.doesNotThrow(()=>parseReadingOutput(valid,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}));
+});
+
+test('checks each mixed goal section against its own response mode',()=>{
+ const evidence=[
+  {evidenceId:'advice:application',retrievalGoals:['advice'],tier:'application',text:'稳定节奏可以落实为今天的一步行动。'},
+  {evidenceId:'advice:wrong',retrievalGoals:['advice'],tier:'application',text:'趋势可能变化，先观察现实反馈。'},
+  {evidenceId:'forecast:reference',retrievalGoals:['forecast'],tier:'reference',text:'趋势可能变化，先观察现实反馈。'},
+ ];
+ const output=JSON.stringify({text:'先给出下一步，再说明趋势。',goalSections:[
+  {goal:'advice',text:'先把稳定节奏落实为今天的一步行动。',evidenceIds:['advice:application']},
+  {goal:'forecast',text:'趋势可能变化，先观察现实反馈。',evidenceIds:['forecast:reference']},
+ ]});
+ assert.doesNotThrow(()=>parseReadingOutput(output,{evidence,requiredOutputGoals:['advice','forecast'],requireGoalAlignment:true}));
+ const wrong=JSON.stringify({text:'先给出下一步，再说明趋势。',goalSections:[
+  {goal:'advice',text:'趋势可能变化，先观察现实反馈。',evidenceIds:['advice:wrong']},
+  {goal:'forecast',text:'趋势可能变化，先观察现实反馈。',evidenceIds:['forecast:reference']},
+ ]});
+ assert.throws(()=>parseReadingOutput(wrong,{evidence,requiredOutputGoals:['advice','forecast'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});

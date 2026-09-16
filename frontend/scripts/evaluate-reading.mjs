@@ -49,7 +49,7 @@ const report={
  prompt:evaluatePromptContract(messages),
  retrieval:evaluateRetrievalSuite(retrievalCases),
  reading:evaluateReadingFixture({question,cards,output,requiredKinds:['relationships']}),
- followUp:evaluateFollowupFixture({question:'我之后会怎样发展？',cards:[{id:'m08',reversed:false,position:'建议'}],output:JSON.stringify({text:'保持稳定、温柔而明确。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:'m08:waite',cardId:'m08',position:'建议',claim:'Fortitude'}]})}),
+ followUp:evaluateFollowupFixture({question:'我之后会怎样发展？',cards:[{id:'m08',reversed:false,position:'建议'}],output:JSON.stringify({text:'Fortitude 作为趋势参考，保持稳定、温柔而明确。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:'m08:waite',cardId:'m08',position:'建议',claim:'Fortitude'}]})}),
 };
 const compact={
  prompt:report.prompt,

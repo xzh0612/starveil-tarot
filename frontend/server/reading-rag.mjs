@@ -542,6 +542,26 @@ function questionTextSupports(text,question){
  return !terms.length||themes.every(item=>item.terms.some(term=>value.includes(term)));
 }
 
+const GOAL_OUTPUT_CUES=Object.freeze({
+ advice:['建议','下一步','行动','安排','调整','记录','练习','拆成','落实','尝试','沟通','注意','保持','做法','步骤','面对','说出','复盘','规划','准备','处理'],
+ forecast:['可能','趋势','倾向','发展','未来','近期','观察','核验','结果','走向','变化','不确定'],
+ explanation:['因为','原因','线索','说明','显示','反映','核心','解释','理解','阻碍','提示','代表','意味着','为何'],
+ comparison:['比较','条件','代价','取舍','差异','适合','选择','一方','另一方','利弊','优缺点','权衡'],
+});
+
+function goalOutputSupports(text,goal){
+ const cues=GOAL_OUTPUT_CUES[goal]??[];
+ return !cues.length||cues.some(cue=>String(text??'').toLowerCase().includes(cue));
+}
+
+function outputGoalsSupport(text,goalSections,goals){
+ const routed=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>Object.hasOwn(GOAL_OUTPUT_CUES,goal)))];
+ return routed.every(goal=>{
+  const section=Array.isArray(goalSections)?goalSections.find(item=>item?.goal===goal):null;
+  return goalOutputSupports(section?.text??text,goal);
+ });
+}
+
 function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
  // A supported sentence must not smuggle an unsupported clause after
@@ -594,7 +614,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -734,5 +754,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   if(missing.length)throw Error(isFollowUp?'追问引用没有覆盖当前回答目标，请重试。':'首轮引用没有覆盖当前回答目标，请重试。');
  }
  if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
+ if(requireGoalAlignment&&!needsClarification&&!outputGoalsSupport(data.text,goalSections,requiredOutputGoals))throw Error('回答没有遵守本轮目标模式，请重试。');
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }
