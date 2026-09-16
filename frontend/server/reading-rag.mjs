@@ -508,7 +508,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -585,7 +585,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
  }
- let actions=[];let actionsConcrete=true,actionsReasoned=true,actionsReasonSupported=true,actionsGoalTierSupported=true;
+ let actions=[];let actionsConcrete=true,actionsReasoned=true,actionsReasonSupported=true,actionsTextSupported=true,actionsGoalTierSupported=true;
  const actionGoals=[...new Set((Array.isArray(requiredActionGoalEvidence)?requiredActionGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
  const availableActionGoals=actionGoals.filter(goal=>[...evidenceById.values()].some(item=>item?.tier===GOAL_REFERENCE_TIERS[goal]&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)));
  if(data.actions!==undefined){
@@ -598,6 +598,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
    if(requireActionReasonSupport&&!needsClarification&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsReasonSupported=false;
+   if(requireActionTextSupport&&!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；')},{allowGeneric:true}))actionsTextSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
    if(!needsClarification&&availableActionGoals.length&&!evidenceIds.some(id=>availableActionGoals.some(goal=>evidenceById.get(id)?.tier===GOAL_REFERENCE_TIERS[goal]&&Array.isArray(evidenceById.get(id)?.retrievalGoals)&&evidenceById.get(id).retrievalGoals.includes(goal))))actionsGoalTierSupported=false;
    return {text:excerpt(item.text,600),reason:excerpt(item.reason??'',500),evidenceIds,evidence:evidenceDetails(evidenceIds,evidenceById)};
@@ -627,6 +628,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   const missing=goals.filter(goal=>[...evidenceById.values()].some(item=>item?.retrievalGoals?.includes(goal)&&item.tier===GOAL_REFERENCE_TIERS[goal])&&!hasGoalReference(goal,refs,evidenceById));
   if(missing.length)throw Error('首轮引用没有覆盖当前回答目标，请重试。');
  }
+ if(requireActionTextSupport&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
  if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,synthesis.text,...cardReadings.map(item=>item.reading)].join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

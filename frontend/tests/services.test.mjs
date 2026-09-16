@@ -10,6 +10,7 @@ test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('coverage_boundary'),/应用证据不足/);
  assert.match(readingErrorHint('missing_goal_reference_coverage'),/预测或比较依据/);
  assert.match(readingErrorHint('action_goal_evidence'),/当前目标的应用证据/);
+ assert.match(readingErrorHint('action_text_support'),/行动建议本身/);
  assert.match(readingErrorHint('card_reading_support'),/逐牌解释/);
  assert.match(readingErrorHint('overconfident_claim'),/绝对预测/);
  assert.match(readingErrorHint('action_concreteness'),/可执行/);

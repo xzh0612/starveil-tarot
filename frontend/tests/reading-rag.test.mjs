@@ -459,6 +459,12 @@ test('first action reasons must overlap the cited evidence',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireActions:true,requireActionReasons:true,requireActionReasonSupport:true}),/行动理由与牌面证据不匹配/);
 });
 
+test('first action text must overlap the cited evidence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'先观察再沟通。',actions:[{text:'今天购买一台相机并在一周后复盘。',reason:'依据牌面稳定、明确的行动线索。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireActions:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true}),/行动建议内容与证据不匹配/);
+});
+
 test('synthesis rejects prose with no meaningful overlap with cited evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'综合判断。',synthesis:{text:'这意味着对方一定会回来。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}});
