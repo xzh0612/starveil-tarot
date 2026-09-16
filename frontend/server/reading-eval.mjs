@@ -47,6 +47,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/goal|目标/i.test(system))issues.push('missing_goal_routing');
  if(!/retrievalMethod|retrievalScore|retrievalSemanticScore/i.test(system))issues.push('missing_ranker_metadata');
  if(!/evidenceMeta/i.test(system))issues.push('missing_evidence_diagnostics');
+ if(!/evidencePlan[^\n]{0,500}(?:引用索引|anchor|application|reference)/i.test(system))issues.push('missing_evidence_plan_rule');
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
@@ -67,6 +68,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
  if(!/sourceType|sourceLabel/.test(user)||!/retrievalRequired/.test(user))issues.push('missing_prompt_evidence_provenance');
  if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
+ if(!/evidencePlan/.test(user))issues.push('missing_evidence_plan_context');
  if(!/coverageStatus/.test(user))issues.push('missing_coverage_status_context');
  if(!/goalCoverage/.test(user)||!/missingGoalCoverage/.test(user))issues.push('missing_goal_coverage_context');
  if(!/responsePlan/.test(user)||!/goal/.test(user)||!/emphasis/.test(user))issues.push('missing_response_plan_goal_context');
@@ -79,6 +81,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_goal_routing'),
   !issues.includes('missing_ranker_metadata'),
   !issues.includes('missing_evidence_diagnostics'),
+  !issues.includes('missing_evidence_plan_rule'),
   !issues.includes('missing_coverage_status'),
   !issues.includes('missing_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
@@ -99,6 +102,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_goal_metadata'),
   !issues.includes('missing_prompt_evidence_provenance'),
   !issues.includes('missing_evidence_diagnostics_context'),
+  !issues.includes('missing_evidence_plan_context'),
   !issues.includes('missing_coverage_status_context'),
   !issues.includes('missing_goal_coverage_context'),
   !issues.includes('missing_response_plan_goal_context'),
