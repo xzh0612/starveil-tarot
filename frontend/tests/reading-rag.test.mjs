@@ -63,6 +63,13 @@ test('question routing distinguishes the requested response goal',()=>{
  assert.deepEqual(comparison.goals,['comparison']);
 });
 
+test('question routing recognizes explicit path and option comparisons',()=>{
+ const path=analyzeReadingQuestion('我该选哪条路径？');
+ assert.deepEqual(path.goals,['comparison']);
+ const option=analyzeReadingQuestion('哪种方案更适合我？');
+ assert.deepEqual(option.goals,['comparison']);
+});
+
 test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
