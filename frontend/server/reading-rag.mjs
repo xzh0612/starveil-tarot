@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v9';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v11';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -28,13 +28,13 @@ const THEMES=[
 ];
 
 const GOALS=[
- {name:'advice',words:['怎么办','如何','怎么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','建议','下一步','行动','安排','调整','改善','应不应该']},
+ {name:'advice',words:['怎么办','如何','怎么','应该','先做什么','该做什么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','建议','下一步','行动','安排','调整','改善','应不应该']},
  // Temporal context words such as “未来” or “接下来” qualify a question,
  // but do not by themselves ask for a prediction. Keep them low-weight so
  // “未来我该怎么办” routes to advice, while “未来会怎样” still routes to
  // forecast because it contains the explicit prediction phrase “会怎样”.
- {name:'forecast',words:['会不会','是否会','是不是','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','发展','走向','可能性','会怎样'],weakWords:['未来','之后','接下来','近期','今年','明年']},
- {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','怎么理解','如何看','如何理解','怎么解释','如何解释','怎么想','如何想','心里怎么想','对方怎么想','会怎么想','理解']},
+ {name:'forecast',words:['会不会','是否会','是不是','还有感觉吗','有感觉吗','喜欢我吗','还喜欢','会主动联系','会联系','会如何','未来如何','事业如何','感情如何','关系如何','工作如何','发展如何','结果如何','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','发展','走向','可能性','会怎样','怎么样'],weakWords:['未来','之后','接下来','近期','今年','明年']},
+ {name:'explanation',words:['为什么','原因','解释','解读','是什么意思','什么意思','是什么含义','含义','意义','代表','意味着','怎么看','怎么理解','如何看','如何理解','怎么解释','如何解释','怎么想','如何想','心里怎么想','对方怎么想','会怎么想','理解']},
  // Decision questions are often phrased without the words "比较" or
  // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
  // still supplies decision-oriented application evidence.
@@ -53,7 +53,7 @@ function activeLexiconTerms(text,terms){
  return terms.filter(term=>{
    // Prefer an explicit longer intent phrase over a shorter substring.
    // Without this, “怎么看” also activates the advice token “怎么”.
-   if(GOAL_LEXICON_TERMS.some(candidate=>candidate.length>term.length&&candidate.includes(term)&&text.includes(candidate)))return false;
+   if(GOAL_LEXICON_TERMS.includes(term)&&GOAL_LEXICON_TERMS.some(candidate=>candidate.length>term.length&&candidate.includes(term)&&text.includes(candidate)))return false;
   let offset=0;
   while(offset<=text.length){
    const index=text.indexOf(term,offset);

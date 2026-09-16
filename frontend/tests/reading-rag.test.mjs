@@ -135,6 +135,19 @@ test('question routing covers binary decision and prediction phrasing',()=>{
  assert.deepEqual(otherState.goals,['forecast']);
 });
 
+test('question routing covers natural forecast, explanation and advice phrasing',()=>{
+ const contactForecast=analyzeReadingQuestion('他会主动联系我吗？');
+ assert.deepEqual(contactForecast.goals,['forecast']);
+ const careerForecast=analyzeReadingQuestion('未来三个月事业如何？');
+ assert.deepEqual(careerForecast.goals,['forecast']);
+ const meaning=analyzeReadingQuestion('这张牌是什么意思？');
+ assert.deepEqual(meaning.goals,['explanation']);
+ const explicitExplanation=analyzeReadingQuestion('请解释这段关系？');
+ assert.deepEqual(explicitExplanation.goals,['explanation']);
+ const nextStep=analyzeReadingQuestion('我应该先做什么？');
+ assert.deepEqual(nextStep.goals,['advice']);
+});
+
 test('question routing ignores negated intent phrases without suppressing real goals',()=>{
  const explanation=analyzeReadingQuestion('我不想比较选项，只想知道为什么会这样？');
  assert.deepEqual(explanation.goals,['explanation']);
