@@ -468,13 +468,21 @@ function hasGoalReference(goal,refs,evidenceById){
 
 const CLAIM_STOPWORDS=new Set(['牌面','牌义','牌位','线索','证据','说明','相关','内容','信息','支持','建议','本次','判断','分析']);
 const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实','条件','方向','事情','问题','当前','具体','可能','需要','提供','一种','一个']);
-function claimSupportedByEvidence(claim,evidence,{allowGeneric=false}={}){
- const claimTerms=[...chineseNgrams(claim)].filter(term=>term.length>=2&&!CLAIM_STOPWORDS.has(term));
- if(!claimTerms.length)return false;
+function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSentenceSupport=false}={}){
  const evidenceTerms=chineseNgrams(evidence?.text??'');
- const specificTerms=allowGeneric?claimTerms:claimTerms.filter(term=>!CLAIM_GENERIC_TERMS.has(term));
- if(!specificTerms.length)return false;
- return specificTerms.some(term=>evidenceTerms.has(term));
+ const sentences=String(claim??'').split(/[。！？!?；;\n]+/u).map(item=>item.trim()).filter(Boolean);
+ if(!sentences.length)return false;
+ let meaningful=false;
+ for(const sentence of sentences){
+  const claimTerms=[...chineseNgrams(sentence)].filter(term=>term.length>=2&&!CLAIM_STOPWORDS.has(term));
+  const specificTerms=allowGeneric?claimTerms:claimTerms.filter(term=>!CLAIM_GENERIC_TERMS.has(term));
+  if(!specificTerms.length)continue;
+  meaningful=true;
+  const supported=specificTerms.some(term=>evidenceTerms.has(term));
+  if(requireSentenceSupport&&!supported)return false;
+  if(!requireSentenceSupport&&supported)return true;
+ }
+ return requireSentenceSupport?meaningful:false;
 }
 
 function isConcreteClarification(text){
@@ -623,7 +631,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...goalSections.flatMap(item=>item.evidenceIds),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds),...actions.flatMap(item=>item.evidenceIds)])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
-  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
+  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
  if(!needsClarification){
   const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];

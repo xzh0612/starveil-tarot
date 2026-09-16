@@ -512,6 +512,12 @@ test('first reading text must overlap the retrieved evidence',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
 });
 
+test('first reading text rejects an unsupported trailing sentence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'把练习拆成稳定的小步。对方已经搬去火星。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireTextSupport:true}),/解读正文与证据不匹配/);
+});
+
 test('first reading text cannot pass on generic evidence words alone',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'说明方向并观察结果。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定'}]});
