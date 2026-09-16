@@ -50,6 +50,7 @@ export function evaluatePromptContract(messages=[]){
  const user=messages.find(message=>message?.role==='user')?.content??'';
  const issues=[];
  if(!/evidence|证据|引用/i.test(system))issues.push('missing_system_evidence_rule');
+ if(!/sourceAuthority[\s\S]{0,700}canonical_fixed[\s\S]{0,700}(?:不能覆盖|权威|冲突)/i.test(system))issues.push('missing_source_authority_rule');
  if(!/tier|层级|retrievalReasons/i.test(system))issues.push('missing_evidence_hierarchy');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
@@ -96,6 +97,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/tier|retrievalReasons/.test(user))issues.push('missing_evidence_metadata');
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
  if(!/sourceType|sourceLabel/.test(user)||!/retrievalRequired/.test(user))issues.push('missing_prompt_evidence_provenance');
+ if(!/sourceAuthority/.test(user))issues.push('missing_prompt_source_authority');
  if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
  if(!/evidencePlan/.test(user))issues.push('missing_evidence_plan_context');
  if(!/positionEvidenceIds/.test(user))issues.push('missing_position_evidence_context');
@@ -110,6 +112,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
+  !issues.includes('missing_source_authority_rule'),
   !issues.includes('missing_evidence_hierarchy'),
   !issues.includes('missing_json_contract'),
   !issues.includes('missing_synthesis_contract'),
@@ -155,6 +158,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_evidence_metadata'),
   !issues.includes('missing_goal_metadata'),
   !issues.includes('missing_prompt_evidence_provenance'),
+  !issues.includes('missing_prompt_source_authority'),
   !issues.includes('missing_evidence_diagnostics_context'),
   !issues.includes('missing_evidence_plan_context'),
   !issues.includes('missing_position_evidence_context'),

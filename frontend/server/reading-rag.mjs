@@ -4,13 +4,19 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v27';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v28';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
 // context and the user's private memory without parsing labels.
 const SOURCE_TYPE_BY_SOURCE={editorial:'fixed_card_meaning',memory:'personal_memory',waite:'external_reference',corpora:'external_reference'};
 export function evidenceSourceType(source){return SOURCE_TYPE_BY_SOURCE[source]||'other';}
+// Source type identifies where a chunk came from; authority explains how it
+// may be used when two sources use different language for the same card.
+// The fixed deck remains canonical, while external material is supplemental
+// and personal memory is contextual rather than card meaning.
+const SOURCE_AUTHORITY_BY_SOURCE={editorial:'canonical_fixed',waite:'historical_reference',corpora:'contextual_reference',memory:'user_context'};
+export function evidenceSourceAuthority(source){return SOURCE_AUTHORITY_BY_SOURCE[source]||'unknown';}
 
 const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','法律','律师','诉讼','官司','仲裁','合同','纠纷','投资','股票','基金','理财','财务','财运','借贷','保险','税务','失眠','睡眠','睡不好','睡不着','疼痛','手术','就医','副作用'];
 
@@ -388,6 +394,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
    text:chunk.text,
    source:chunk.source,
    sourceType:evidenceSourceType(chunk.source),
+   sourceAuthority:evidenceSourceAuthority(chunk.source),
    sourceLabel:chunk.sourceLabel,
    url:chunk.url??null,
  }));
@@ -432,7 +439,7 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
   .filter(item=>item.strongTerms.length>0||item.shortTerms.length>=2||item.shortTerms.some(term=>!genericTerms.has(term)))
   .sort((a,b)=>b.score-a.score||a.index-b.index)
   .slice(0,limit)
-  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',url:null}));
+  .map(({memory,text,matchedTerms,score})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceAuthority:evidenceSourceAuthority('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
@@ -487,11 +494,11 @@ function validReference(item,evidenceById,cardsById){
   const card=cardsById.get(item.cardId);
   if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
  }
- return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceLabel:evidence.sourceLabel,memoryStatus:evidence.memoryStatus??null,memoryUse:evidence.memoryUse??null,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
+ return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceAuthority:evidence.sourceAuthority||evidenceSourceAuthority(evidence.source),sourceLabel:evidence.sourceLabel,memoryStatus:evidence.memoryStatus??null,memoryUse:evidence.memoryUse??null,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
 function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
- return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
+ return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceAuthority:chunk.sourceAuthority||evidenceSourceAuthority(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
 function nonPersonalEvidenceIds(evidenceIds,evidenceById){

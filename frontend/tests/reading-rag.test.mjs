@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -10,6 +10,17 @@ const cards=[
 test('goal evidence tiers use one shared immutable contract',()=>{
  assert.deepEqual(GOAL_REFERENCE_TIERS,{advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'});
  assert.equal(Object.isFrozen(GOAL_REFERENCE_TIERS),true);
+});
+
+test('source authority keeps fixed card meaning above supplemental context',()=>{
+ assert.equal(evidenceSourceAuthority('editorial'),'canonical_fixed');
+ assert.equal(evidenceSourceAuthority('waite'),'historical_reference');
+ assert.equal(evidenceSourceAuthority('corpora'),'contextual_reference');
+ assert.equal(evidenceSourceAuthority('memory'),'user_context');
+ assert.equal(evidenceSourceAuthority('unknown'),'unknown');
+ const evidence=retrieveReadingEvidence({question:'我们之间的沟通要怎么调整？',cards:[cards[0]]});
+ assert.equal(evidence.find(item=>item.kind==='orientation').sourceAuthority,'canonical_fixed');
+ assert.equal(evidence.find(item=>item.kind==='waite').sourceAuthority,'historical_reference');
 });
 
 test('question analysis exposes transparent routing hints without inventing a theme',()=>{
@@ -576,6 +587,7 @@ test('structured references retain fixed source provenance',()=>{
  assert.equal(parsed.references[0].url,waite.url);
  assert.equal(parsed.references[0].source,'waite');
  assert.equal(parsed.references[0].sourceType,'external_reference');
+ assert.equal(parsed.references[0].sourceAuthority,'historical_reference');
  assert.equal(parsed.references[0].evidenceExcerpt,waite.text);
 });
 
@@ -583,6 +595,8 @@ test('evidence source types stay stable across fixed, external, and unknown sour
  assert.equal(evidenceSourceType('editorial'),'fixed_card_meaning');
  assert.equal(evidenceSourceType('corpora'),'external_reference');
  assert.equal(evidenceSourceType('future-source'),'other');
+ assert.equal(evidenceSourceAuthority('editorial'),'canonical_fixed');
+ assert.equal(evidenceSourceAuthority('memory'),'user_context');
 });
 
 test('first-reading output must cover every selected card with grounded evidence',()=>{
