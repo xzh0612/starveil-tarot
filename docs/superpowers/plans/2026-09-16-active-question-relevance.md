@@ -49,7 +49,7 @@ Expected: FAIL because the parser does not yet accept the new option or error.
 
 - [x] **Step 3: Implement the minimal relevance check**
 
-Use explicit relationship, career, and reflection words already recognized by `analyzeReadingQuestion`; intent words such as `如何` and `会不会` are never used as topic terms. When at least one explicit domain term remains, require one of those terms to occur in `data.text`; leave questions without an explicit domain unchanged.
+Use explicit relationship, career, and reflection words already recognized by `analyzeReadingQuestion`; intent words such as `如何` and `会不会` are never used as topic terms. When a domain is active, accept any term from that domain's vocabulary so synonyms such as `考试` and `学习` remain compatible; leave questions without an explicit domain unchanged.
 
 - [x] **Step 4: Run the focused test and the RAG tests**
 

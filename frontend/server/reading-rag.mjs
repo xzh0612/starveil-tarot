@@ -529,12 +529,10 @@ const CLAIM_GENERIC_TERMS=new Set(['行动','观察','方式','结果','现实',
 const CLAIM_GENERIC_TERM_LIST=[...CLAIM_GENERIC_TERMS];
 const isGenericClaimTerm=term=>CLAIM_GENERIC_TERMS.has(term)||CLAIM_GENERIC_TERM_LIST.some(generic=>generic.length>term.length&&generic.includes(term));
 function questionRelevanceTerms(question){
- const text=String(question??'').trim().toLowerCase(),terms=[];
+ const text=String(question??'').trim().toLowerCase(),terms=[],activeThemes=new Set(analyzeReadingQuestion(text).themes);
  for(const theme of THEMES){
-  if(!['relationship','career','reflection'].includes(theme.name))continue;
-  for(const term of theme.words??[]){
-   if(text.includes(term)&&term.length>=2)terms.push(term);
-  }
+  if(!['relationship','career','reflection'].includes(theme.name)||!activeThemes.has(theme.name))continue;
+  for(const term of theme.words??[])if(term.length>=2)terms.push(term);
  }
  return [...new Set(terms)].sort((a,b)=>b.length-a.length||a.localeCompare(b));
 }

@@ -1131,6 +1131,14 @@ test('rejects a grounded response that does not answer the explicit question dom
  assert.doesNotThrow(()=>parseReadingOutput(relevant,{cards:[card],evidence,activeQuestion:'我该如何处理这段关系？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
 });
 
+test('accepts a same-domain synonym in active question relevance',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该如何准备考试？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'学习安排可以继续用稳定、温柔而明确的方式面对恐惧。',actions:[{text:'今天记录一次学习中的稳定节奏行动。',reason:'稳定节奏可以帮助继续观察。',evidenceIds:[orientation.evidenceId]}]});
+ assert.doesNotThrow(()=>parseReadingOutput(output,{cards:[card],evidence,activeQuestion:'我该如何准备考试？',requireQuestionRelevance:true,requireTextSupport:true,isFollowUp:true}));
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
