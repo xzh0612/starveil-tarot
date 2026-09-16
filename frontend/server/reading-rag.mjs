@@ -611,7 +611,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  const needsClarification=data.needsClarification===true,clarification=excerpt(data.clarification??'',500);
  if(needsClarification&&allowClarification===false)throw Error('明确主题不允许跳过首轮解读，请重试。');
  if(needsClarification&&!isConcreteClarification(clarification))throw Error('澄清问题格式不正确，请重试。');
- if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
  if(needsClarification&&((Array.isArray(data.goalSections)&&data.goalSections.length>0)||(Array.isArray(data.cardReadings)&&data.cardReadings.length>0)||(Array.isArray(data.actions)&&data.actions.length>0)||(Array.isArray(data.references)&&data.references.length>0)||(data.synthesis&&((typeof data.synthesis.text==='string'&&data.synthesis.text.trim())||(Array.isArray(data.synthesis.evidenceIds)&&data.synthesis.evidenceIds.length>0)))))throw Error('澄清时不能同时返回结构化解读，请重试。');
  if(data.references!==undefined&&!Array.isArray(data.references))throw Error('解读引用格式不正确，请重试。');
  const refs=[];const seenReferenceIds=new Set();
@@ -736,5 +735,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   const missing=goals.filter(goal=>[...evidenceById.values()].some(item=>item?.retrievalGoals?.includes(goal)&&item.tier===GOAL_REFERENCE_TIERS[goal])&&!hasGoalReference(goal,refs,goalSections,evidenceById));
   if(missing.length)throw Error(isFollowUp?'追问引用没有覆盖当前回答目标，请重试。':'首轮引用没有覆盖当前回答目标，请重试。');
  }
+ if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

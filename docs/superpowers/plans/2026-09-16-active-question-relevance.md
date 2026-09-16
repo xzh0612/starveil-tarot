@@ -30,7 +30,7 @@
 - Extend `parseReadingOutput` options with `activeQuestion` and `requireQuestionRelevance`.
 - Reject with the stable message `当前回答没有直接回应本轮问题，请重试。` when an explicit domain is present but no question term is shared by top-level `text`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```js
 test('rejects a grounded response that does not answer the explicit question domain',()=>{
@@ -41,23 +41,23 @@ test('rejects a grounded response that does not answer the explicit question dom
 });
 ```
 
-- [ ] **Step 2: Run the focused test and confirm it fails**
+- [x] **Step 2: Run the focused test and confirm it fails**
 
 Run: `node --test frontend/tests/reading-rag.test.mjs --test-name-pattern="直接回应本轮问题"`
 
 Expected: FAIL because the parser does not yet accept the new option or error.
 
-- [ ] **Step 3: Implement the minimal relevance check**
+- [x] **Step 3: Implement the minimal relevance check**
 
-Use explicit theme words already recognized by `analyzeReadingQuestion`; ignore intent words such as `如何`, `会不会`, and generic claim terms. When at least one explicit domain term remains, require one of those terms to occur in `data.text`; leave questions without an explicit domain unchanged.
+Use explicit relationship, career, and reflection words already recognized by `analyzeReadingQuestion`; intent words such as `如何` and `会不会` are never used as topic terms. When at least one explicit domain term remains, require one of those terms to occur in `data.text`; leave questions without an explicit domain unchanged.
 
-- [ ] **Step 4: Run the focused test and the RAG tests**
+- [x] **Step 4: Run the focused test and the RAG tests**
 
 Run: `node --test frontend/tests/reading-rag.test.mjs`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/server/reading-rag.mjs frontend/tests/reading-rag.test.mjs
@@ -79,15 +79,15 @@ git commit -m "feat: guard answers against off-topic text"
 - Add a Prompt rule stating that top-level `text` must directly answer an explicit active-question domain.
 - Map the stable validation message to `question_relevance` and include the same rule in the offline Prompt contract/evaluation.
 
-- [ ] **Step 1: Write the failing middleware/evaluation assertions**
+- [x] **Step 1: Write the failing middleware/evaluation assertions**
 
 Assert that the Prompt contains the relevance rule, that the repair code maps `当前回答没有直接回应本轮问题` to `question_relevance`, and that a valid relationship fixture includes the relationship term in its top-level text.
 
-- [ ] **Step 2: Implement wiring and docs**
+- [x] **Step 2: Implement wiring and docs**
 
 Keep the existing evidence and repair boundaries unchanged; only add the active-question contract and version the Prompt to `nyx-prompt-v33`.
 
-- [ ] **Step 3: Run all verification commands**
+- [x] **Step 3: Run all verification commands**
 
 ```bash
 node --test frontend/tests/*.test.mjs
@@ -99,7 +99,7 @@ git diff --check
 
 Expected: all tests pass, all four evaluation scores are 100, build succeeds, audit reports 0 vulnerabilities, and diff check is clean.
 
-- [ ] **Step 4: Commit and push**
+- [x] **Step 4: Commit and push**
 
 ```bash
 git add README.md frontend/server/README.md frontend/server/readings.mjs frontend/server/reading-eval.mjs frontend/tests/readings.test.mjs frontend/tests/reading-eval.test.mjs docs/superpowers/plans/2026-09-16-active-question-relevance.md
@@ -107,6 +107,6 @@ git commit -m "feat: wire active question relevance into reading contract"
 git push origin codex/tarot-first-version
 ```
 
-- [ ] **Step 5: Verify remote CI and synchronization**
+- [x] **Step 5: Verify remote CI and synchronization**
 
 Run the new GitHub Actions workflow with `gh run watch --exit-status`, then confirm `git status --short` is empty and `git rev-list --left-right --count HEAD...origin/codex/tarot-first-version` returns `0 0`.

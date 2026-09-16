@@ -23,7 +23,7 @@ const retrievalCases=[
 ];
 const evidence=retrieveReadingEvidence({question,cards});
 const output=JSON.stringify({
- text:'先比较记忆和当前事实，再平静说出感受和底线，并观察当下互动是否健康。',
+ text:'先在沟通中比较记忆和当前事实，再平静说出感受和边界，并观察当下互动是否健康。',
  synthesis:{text:'稳定、温柔而明确的方式与克制情绪相连，也要比较记忆和当前事实。',evidenceIds:cards.map(card=>evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation').evidenceId)},
  cardReadings:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
