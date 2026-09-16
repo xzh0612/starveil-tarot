@@ -65,6 +65,15 @@ test('question routing distinguishes the requested response goal',()=>{
  assert.deepEqual(comparison.goals,['comparison']);
 });
 
+test('question routing recognizes common possibility phrasing as forecast',()=>{
+ const relationship=analyzeReadingQuestion('我们能不能复合？');
+ assert.deepEqual(relationship.goals,['forecast']);
+ const career=analyzeReadingQuestion('这次有没有机会被录取？');
+ assert.deepEqual(career.goals,['forecast']);
+ const evidence=retrieveReadingEvidence({question:'我们能不能复合？',cards:[cards[0]]});
+ assert.ok(evidence.some(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast')));
+});
+
 test('question routing recognizes explicit path and option comparisons',()=>{
  const path=analyzeReadingQuestion('我该选哪条路径？');
  assert.deepEqual(path.goals,['comparison']);
