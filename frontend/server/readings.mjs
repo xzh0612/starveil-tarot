@@ -161,7 +161,7 @@ function repairGuidance({code,evidence=[],cards=[],requiredGoalEvidence=[]}={}){
   const focus=code==='missing_position_evidence'
   ?'牌位证据错误：首轮逐牌解读必须至少引用一条对应牌位语义 evidenceId。'
   :code==='missing_goal_reference_coverage'
-  ?'目标引用错误：结构化回答中，每个有可用 requiredEvidenceTier 的目标都要在 references 中至少引用一个对应 ID。'
+  ?'目标引用错误：结构化回答中，每个有可用 requiredEvidenceTier 的目标都要在 references 或对应 goalSections 中至少引用一个对应 ID。'
   :code==='goal_section_tier'
    ?'目标分段层级错误：首轮每个 goalSections 必须引用该目标 requiredEvidenceTier 的 evidenceId；结构化追问的 goalSections 也必须引用对应层级；advice/comparison 用 application，forecast 用 reference，explanation 用 anchor。纯文本追问可沿用本轮相关 evidence。'
   :code==='action_goal_evidence'
