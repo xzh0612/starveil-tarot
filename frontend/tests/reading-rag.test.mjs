@@ -583,6 +583,7 @@ test('anchor-only retrieval requires an explicit evidence limitation',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]}).filter(item=>item.tier==='anchor');
  const vague=JSON.stringify({text:'先观察。',uncertainty:'牌面不能确认结果。'});
  assert.throws(()=>parseReadingOutput(vague,{cards:[cards[0]],evidence,requireUncertainty:true,requireCoverageBoundary:true}),/证据覆盖不足/);
+ assert.throws(()=>parseReadingOutput(vague,{cards:[cards[0]],evidence,requireUncertainty:true,requireCoverageBoundary:true,isFollowUp:true}),/证据覆盖不足/);
  const grounded=JSON.stringify({text:'先观察。',uncertainty:'当前只有核心牌义，关系应用证据不足，需要结合现实资料。'});
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true,requireCoverageBoundary:true}).uncertainty,'当前只有核心牌义，关系应用证据不足，需要结合现实资料。');
 });
