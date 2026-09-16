@@ -23,6 +23,7 @@ const READING_ERROR_HINTS={
  goal_section_support:'目标分段没有得到对应证据支持，原牌局仍然保留。',
  goal_section_evidence:'目标分段引用了不属于该目标的证据，原牌局仍然保留。',
  goal_section_tier:'目标分段没有使用该目标要求的证据层级，原牌局仍然保留。',
+ goal_section_route:'目标分段包含了本轮没有提出的目标，原牌局仍然保留。',
  invalid_goal_section:'回答的目标分段格式不完整，原牌局仍然保留。',
  missing_goal_sections:'混合问题没有分别回答全部目标，原牌局仍然保留。',
  missing_actions:'回答没有给出可验证的下一步，原牌局仍然保留。',
