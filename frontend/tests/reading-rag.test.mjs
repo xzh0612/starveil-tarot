@@ -313,6 +313,15 @@ test('focused career retrieval excludes unrelated relationship application chunk
  assert.ok(!evidence.some(item=>item.kind==='relationships'));
 });
 
+test('high-stakes questions without a supported domain do not borrow application prose',()=>{
+ const cards=[{id:'m08',reversed:false,position:'建议'}];
+ const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards});
+ assert.equal(evidence.some(item=>item.tier==='application'),false);
+ const summary=summarizeReadingEvidence(evidence,cards,analyzeReadingQuestion('这项投资要不要买？'));
+ assert.equal(summary.coverageStatus,'anchor_only');
+ assert.deepEqual(summary.missingApplicationKindsByCard,{m08:['reflection']});
+});
+
 test('mixed questions retain one application chunk for each explicit domain',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系，同时规划接下来的工作？',cards:[cards[0]],maxPerCard:5});
  assert.ok(evidence.some(item=>item.kind==='relationships'));

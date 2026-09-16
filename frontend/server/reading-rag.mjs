@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v24';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v25';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -341,7 +341,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
 
 export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
- const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard));
+ const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard)),highStakes=requiresProfessionalBoundary(question),hasSupportedDomain=themes.some(theme=>['relationship','career','reflection'].includes(theme)),explicitApplicationKinds=hasSupportedDomain?new Set(applicationKindsForThemes(themes,[])):new Set(),suppressFallbackApplication=highStakes&&!explicitApplicationKinds.size;
  const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
@@ -361,8 +361,8 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
   // If a question has a named non-application theme (for example future),
   // leave the application layer empty instead of inventing a work/relationship
   // domain. Open questions retain the broad fallback context.
-  const allowedApplications=new Set(applicationKinds);
-  const candidates=themes.length
+  const allowedApplications=new Set(suppressFallbackApplication?[]:applicationKinds);
+  const candidates=themes.length||suppressFallbackApplication
    ?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind))
    :sorted;
   const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);
