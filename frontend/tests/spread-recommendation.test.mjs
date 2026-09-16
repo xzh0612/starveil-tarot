@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {spreads} from '../src/domain.js';
 import {recommendLocalSpreads} from '../src/spread-recommendation.js';
+import {parseRecommendations} from '../server/spread-recommendations.mjs';
 
 test('local recommendations prioritize relationship questions with a useful reason',()=>{
  const result=recommendLocalSpreads('我和她还有机会继续发展吗？');
@@ -28,4 +29,18 @@ test('local recommendations use a broad reflective spread for an open question',
 test('empty or whitespace questions return no recommendations',()=>{
  assert.deepEqual(recommendLocalSpreads('   '),[]);
  assert.deepEqual(recommendLocalSpreads(''),[]);
+});
+
+test('AI recommendation reasons must be grounded in catalog positions',()=>{
+ const valid=JSON.stringify({recommendations:[
+  {id:'choice',reason:'把两条选择的机会和挑战并列起来，适合比较条件与代价。'},
+  {id:'career',reason:'从优势、阻碍和下一步逐层梳理职业方向。'}
+ ]});
+ assert.equal(parseRecommendations(valid)[0].id,'choice');
+
+ const generic=JSON.stringify({recommendations:[
+  {id:'choice',reason:'这个牌阵很适合你，值得优先考虑。'},
+  {id:'career',reason:'这个牌阵也很适合你，可以试试看。'}
+ ]});
+ assert.throws(()=>parseRecommendations(generic),/牌阵推荐理由/);
 });
