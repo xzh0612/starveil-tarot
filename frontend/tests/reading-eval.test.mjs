@@ -53,6 +53,23 @@ test('reading evaluation accepts grounded first output with an actionable next s
  assert.deepEqual(result.issues,[]);
 });
 
+test('reading evaluation enforces the routed goal evidence tier',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({
+  text:'先观察趋势，再结合现实变化复盘。',
+  synthesis:{text:'牌面提示以稳定节奏观察趋势。',evidenceIds:[orientation.evidenceId]},
+  cardReadings:[{cardId:'m08',position:'建议',reading:'结合稳定节奏观察趋势。',evidenceIds:[orientation.evidenceId]}],
+  actions:[{text:'本周记录一次现实变化并复盘。',reason:'把趋势线索转成可观察记录。',evidenceIds:[orientation.evidenceId]}],
+  references:[{evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'}],
+  uncertainty:'牌面不能确认未来结果。',
+ });
+ const result=evaluateReadingFixture({question:'我之后会怎样发展？',cards:[card],output});
+ assert.equal(result.ok,false);
+ assert.ok(result.issues.includes('output_contract'));
+});
+
 test('reading evaluation accepts an explicit clarification branch',()=>{
  const output=JSON.stringify({text:'我想先确认你真正想探索的方向。',needsClarification:true,clarification:'这次更想看关系、事业，还是一个具体决定？'});
  const result=evaluateReadingFixture({question:'我最近想看看牌。',cards:[cards[0]],output});
