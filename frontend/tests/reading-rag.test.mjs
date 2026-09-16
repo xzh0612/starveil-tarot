@@ -61,6 +61,13 @@ test('question routing distinguishes the requested response goal',()=>{
  assert.deepEqual(forecast.goals,['forecast']);
  const future=analyzeReadingQuestion('我之后会怎样发展？');
  assert.deepEqual(future.goals,['forecast']);
+ const futureAdvice=analyzeReadingQuestion('未来我该怎么办？');
+ assert.deepEqual(futureAdvice.goals,['advice']);
+ const futureAdviceCard={id:'m08',reversed:false,position:'建议'};
+ const futureAdviceEvidence=retrieveReadingEvidence({question:'未来我该怎么办？',cards:[futureAdviceCard]});
+ assert.ok(futureAdviceEvidence.some(item=>item.kind==='reflection'&&item.retrievalGoals.includes('advice')));
+ const futureAdviceSummary=summarizeReadingEvidence(futureAdviceEvidence,[futureAdviceCard],{themes:futureAdvice.themes,goals:futureAdvice.goals});
+ assert.deepEqual(futureAdviceSummary.missingGoalCoverage,[]);
  const comparison=analyzeReadingQuestion('两个机会哪个利弊更合适？');
  assert.deepEqual(comparison.goals,['comparison']);
 });
@@ -614,21 +621,23 @@ test('forecast readings require a matching reference-tier citation when availabl
 test('mixed first readings require one grounded section per routed goal',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？同时我该怎么安排下一步？',cards:[card]});
+ const adviceApplication=evidence.find(item=>item.tier==='application'&&item.retrievalGoals.includes('advice'));
+ assert.ok(adviceApplication);
  const valid=JSON.stringify({text:'分别看下一步与趋势。',goalSections:[
-  {goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']},
+  {goal:'advice',text:'先照顾情绪，再把下一步落实为不被情绪牵着走的行动。',evidenceIds:[adviceApplication.evidenceId]},
   {goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},
  ]});
  const parsed=parseReadingOutput(valid,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true});
  assert.deepEqual(parsed.goalSections.map(item=>item.goal),['advice','forecast']);
- const wrongOrder=JSON.stringify({text:'先讲趋势，再讲建议。',goalSections:[{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']}]});
+ const wrongOrder=JSON.stringify({text:'先讲趋势，再讲建议。',goalSections:[{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},{goal:'advice',text:'先照顾情绪，再把下一步落实为不被情绪牵着走的行动。',evidenceIds:[adviceApplication.evidenceId]}]});
  assert.throws(()=>parseReadingOutput(wrongOrder,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段顺序不符合/);
- const missing=JSON.stringify({text:'只回答建议。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']}]});
+ const missing=JSON.stringify({text:'只回答建议。',goalSections:[{goal:'advice',text:'先照顾情绪，再把下一步落实为不被情绪牵着走的行动。',evidenceIds:[adviceApplication.evidenceId]}]});
  assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/必须按目标分别返回目标分段/);
  const wrongEvidence=JSON.stringify({text:'目标依据不匹配。',goalSections:[{goal:'advice',text:'以 Fortitude 的力量作为建议。',evidenceIds:['m08:waite']},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']}]});
  assert.throws(()=>parseReadingOutput(wrongEvidence,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段引用无效/);
  const wrongTier=JSON.stringify({text:'预测分段缺少参考层级。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']},{goal:'forecast',text:'以稳定线索作为趋势参考。',evidenceIds:['m08:orientation']}]});
  assert.throws(()=>parseReadingOutput(wrongTier,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段缺少目标层级证据/);
- const unrequested=JSON.stringify({text:'加入未请求目标。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},{goal:'comparison',text:'比较条件与代价。',evidenceIds:['m08:modern']}]});
+ const unrequested=JSON.stringify({text:'加入未请求目标。',goalSections:[{goal:'advice',text:'先照顾情绪，再把下一步落实为不被情绪牵着走的行动。',evidenceIds:[adviceApplication.evidenceId]},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},{goal:'comparison',text:'比较条件与代价。',evidenceIds:['m08:modern']}]});
  assert.throws(()=>parseReadingOutput(unrequested,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段目标未被本轮路由/);
 });
 

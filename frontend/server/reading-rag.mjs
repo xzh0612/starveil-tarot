@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v1';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v2';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -29,7 +29,11 @@ const THEMES=[
 
 const GOALS=[
  {name:'advice',words:['怎么办','如何','怎么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','建议','下一步','行动','安排','调整','改善','应不应该']},
- {name:'forecast',words:['会不会','是否会','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','未来','之后','接下来','近期','今年','明年','发展','走向','可能性','会怎样']},
+ // Temporal context words such as “未来” or “接下来” qualify a question,
+ // but do not by themselves ask for a prediction. Keep them low-weight so
+ // “未来我该怎么办” routes to advice, while “未来会怎样” still routes to
+ // forecast because it contains the explicit prediction phrase “会怎样”.
+ {name:'forecast',words:['会不会','是否会','能否','能不能','有没有可能','有没有机会','是否有机会','有机会吗','何时','什么时候','几率','结果','趋势','发展','走向','可能性','会怎样'],weakWords:['未来','之后','接下来','近期','今年','明年']},
  {name:'explanation',words:['为什么','原因','意义','代表','意味着','怎么看','理解']},
  // Decision questions are often phrased without the words "比较" or
  // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
@@ -77,9 +81,12 @@ export function analyzeReadingQuestion(question){
  const weakMatchedTerms=[...new Set(active.flatMap(item=>item.weakTerms))];
  const matchedTerms=[...new Set([...strongMatchedTerms,...weakMatchedTerms])];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
- const goalScored=GOALS.map(goal=>{const terms=activeLexiconTerms(text,goal.words);return {name:goal.name,terms,score:terms.length*2};});
+ const goalScored=GOALS.map(goal=>{
+  const terms=activeLexiconTerms(text,goal.words),weakTerms=activeLexiconTerms(text,goal.weakWords??[]);
+  return {name:goal.name,terms,weakTerms,score:terms.length*2+weakTerms.length*.5};
+ });
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),goals=(activeGoals.length?activeGoals:goalFallback).map(item=>item.name);
- const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>item.terms))];
+ const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>[...item.terms,...item.weakTerms]))];
  const goalScores=Object.fromEntries(goalScored.map(item=>[item.name,item.score]));
  return {themes,matchedTerms,strongMatchedTerms,weakMatchedTerms,weakOnly:strong.length===0&&weakMatchedTerms.length>0,themeScores,goals,matchedGoalTerms,goalScores,goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }
@@ -227,24 +234,25 @@ function retrievalReasons(chunk,signals){
  return reasons;
 }
 
-function applicationKindsForThemes(themes){
+function applicationKindsForThemes(themes,goals=[]){
  const kinds=[];
  for(const theme of themes){
   if(theme==='relationship')kinds.push('relationships');
   if(theme==='career')kinds.push('work');
   if(theme==='reflection')kinds.push('reflection');
  }
- // A choice-only question still needs an application layer. In the absence
- // of an explicit relationship or career domain, use the reflective guide as
- // the safest decision-making context for every card.
- if(themes.includes('choice')&&!kinds.length)kinds.push('reflection');
+ // A choice or action-oriented question still needs an application layer. In
+ // the absence of an explicit relationship, career, or reflection domain,
+ // use the reflective guide as the safest context instead of inventing a
+ // work/relationship interpretation from a temporal word such as “未来”.
+ if(!kinds.length&&(themes.includes('choice')||goals.some(goal=>['advice','comparison'].includes(goal))))kinds.push('reflection');
  return [...new Set(kinds)];
 }
 
 function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence){
  if(Number.isFinite(maxTotalEvidence))return Math.floor(maxTotalEvidence);
  const count=Array.isArray(cards)?cards.length:0,routing=analyzeReadingQuestion(question);
- const applicationCount=Math.min(3,Math.max(1,applicationKindsForThemes(routing.themes).length,routing.goals.includes('forecast')?1:0));
+ const applicationCount=Math.min(3,Math.max(1,applicationKindsForThemes(routing.themes,routing.goals).length,routing.goals.includes('forecast')?1:0));
  // Reserve two anchors plus one application/reference layer per card. Keep a
  // bounded floor for small spreads and a hard ceiling for prompt size.
  return Math.min(96,Math.max(48,count*(2+applicationCount)));
@@ -299,7 +307,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
   // Mixed questions need one application chunk per explicit domain before
   // lower-priority reference chunks fill the remaining budget.
-  const applicationKinds=applicationKindsForThemes(themes);
+ const applicationKinds=applicationKindsForThemes(themes,goals);
   // Keep application evidence inside the domains named by the question even
   // when more than one theme is active. Anchor and reference chunks remain
   // eligible, while unrelated application prose cannot crowd out the topic.
@@ -381,7 +389,7 @@ export function retrieveMemoryEvidence({question,memories,max=6}={}){
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
  const items=Array.isArray(evidence)?evidence:[],expected=[...new Set((Array.isArray(cards)?cards:[]).map(card=>card?.id).filter(Boolean))];
- const expectedApplicationKinds=applicationKindsForThemes(Array.isArray(themes)?themes:[]);
+ const expectedApplicationKinds=applicationKindsForThemes(Array.isArray(themes)?themes:[],Array.isArray(goals)?goals:[]);
  const routedGoals=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>['advice','forecast','explanation','comparison'].includes(goal)))];
  const selectedCardIds=[...new Set(items.map(item=>item?.cardId).filter(Boolean))];
  const countsBy=(values)=>Object.fromEntries([...new Set(values)].map(value=>[value,values.filter(item=>item===value).length]));
