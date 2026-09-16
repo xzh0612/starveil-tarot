@@ -666,6 +666,15 @@ test('structured follow-ups require top-level text support from cited evidence',
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireReferenceClaims:true,requireReferenceSupport:true,isFollowUp:true}).text,'继续用稳定、温柔的方式观察现实回应。');
 });
 
+test('structured follow-ups can ground top-level text through goal sections',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该如何处理这段关系？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const output=JSON.stringify({text:'继续用稳定、温柔的方式观察下一步。',goalSections:[{goal:'advice',text:'把稳定、温柔的方式落实为下一步。',evidenceIds:[orientation.evidenceId]}]});
+ const parsed=parseReadingOutput(output,{cards:[card],evidence,allowedGoalSections:['advice'],isFollowUp:true});
+ assert.equal(parsed.goalSections[0].goal,'advice');
+});
+
 test('first readings reject plain text so the grounding contract cannot be bypassed',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  assert.throws(()=>parseReadingOutput('保持稳定练习。',{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true}),/首轮解读必须返回结构化 JSON/);
