@@ -117,6 +117,15 @@ test('question routing recognizes explanation phrases about thoughts and card me
  assert.deepEqual(unchangedAdvice.goals,['advice']);
 });
 
+test('question routing recognizes common should-I decision forms',()=>{
+ const relationshipDecision=analyzeReadingQuestion('我是不是应该联系他？');
+ assert.deepEqual(relationshipDecision.goals,['comparison']);
+ const careerDecision=analyzeReadingQuestion('我是否应该换工作？');
+ assert.deepEqual(careerDecision.goals,['comparison']);
+ const continuationDecision=analyzeReadingQuestion('我是不是要继续这段关系？');
+ assert.deepEqual(continuationDecision.goals,['comparison']);
+});
+
 test('question routing ignores negated intent phrases without suppressing real goals',()=>{
  const explanation=analyzeReadingQuestion('我不想比较选项，只想知道为什么会这样？');
  assert.deepEqual(explanation.goals,['explanation']);

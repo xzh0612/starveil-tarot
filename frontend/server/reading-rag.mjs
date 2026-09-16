@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v7';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v8';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -38,7 +38,7 @@ const GOALS=[
  // Decision questions are often phrased without the words "比较" or
  // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
  // still supplies decision-oriented application evidence.
- {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍','要不要','该不该','是否值得','值不值得']},
+ {name:'comparison',words:['比较','区别','哪个','哪条','哪种','选哪','利弊','优缺点','取舍','要不要','该不该','是不是应该','是否应该','是不是要','是否要','是否值得','值不值得']},
 ];
 const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 
