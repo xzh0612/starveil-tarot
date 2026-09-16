@@ -782,6 +782,16 @@ test('calibration rejects absolute predictive claims even when the output is str
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCardReadingSupport:true,requireCalibratedLanguage:true}),/绝对断言/);
 });
 
+test('calibration rejects absolute claims in actions and goal sections',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const actionOutput=JSON.stringify({text:'保持稳定节奏。',actions:[{text:'今天记录一次稳定行动。',reason:'这保证对方一定会回来。',evidenceIds:[orientation.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(actionOutput,{cards:[cards[0]],evidence,requireCalibratedLanguage:true}),/绝对断言/);
+ const advice=evidence.find(item=>item.tier==='application'&&item.retrievalGoals?.includes('advice'))??orientation;
+ const goalOutput=JSON.stringify({text:'保持稳定节奏。',goalSections:[{goal:'advice',text:'平静一定会解决问题。',evidenceIds:[advice.evidenceId]}]});
+ assert.throws(()=>parseReadingOutput(goalOutput,{cards:[cards[0]],evidence,allowedGoalSections:['advice'],requireCalibratedLanguage:true}),/绝对断言/);
+});
+
 test('calibration allows a negated boundary around an absolute prediction',()=>{
  const output=JSON.stringify({text:'牌面不能保证一定会复合，仍需观察现实沟通。'});
  const parsed=parseReadingOutput(output,{requireCalibratedLanguage:true});

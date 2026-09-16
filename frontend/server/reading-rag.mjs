@@ -641,6 +641,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   if(missing.length)throw Error('首轮引用没有覆盖当前回答目标，请重试。');
  }
  if(requireActionTextSupport&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
- if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,synthesis.text,...cardReadings.map(item=>item.reading)].join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
+ if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...actions.flatMap(item=>[item.text,item.reason]),...refs.map(item=>item.claim),data.followUp,uncertainty,data.clarification].filter(Boolean).join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp:excerpt(data.followUp??'',500),uncertainty};
 }

@@ -62,7 +62,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/<starveil_workflow>[\s\S]*?(?:activeQuestion|逐牌解读)[\s\S]*?(?:synthesis|合读)[\s\S]*?(?:自检|自查)[\s\S]*?<\/starveil_workflow>/i.test(system))issues.push('missing_prompt_workflow');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
  if(!/(?:逐句都能被该证据支持的简短 claim|claim[^\n]{0,180}(?:逐句|每句)[^\n]{0,180}(?:证据|evidence))/i.test(system))issues.push('missing_claim_sentence_support_rule');
- if(!/保证|必然|绝对|断言/i.test(system))issues.push('missing_calibration_rule');
+ if(!/(?:保证|必然|绝对|断言)[^\n]{0,500}(?:goalSections|actions|references|用户可见)/i.test(system))issues.push('missing_calibration_rule');
  if(!/synthesis[^\n]{0,600}(?:核心锚点|retrievalRequired)/i.test(system))issues.push('missing_synthesis_anchor_rule');
  if(!/澄清分支[^\n]{0,300}(?:必须为空|不得同时返回)/u.test(system))issues.push('missing_clarification_exclusivity');
  if(!/action[^\n]{0,600}(?:reason|理由)[^\n]{0,300}(?:必须|非空|说明)/i.test(system))issues.push('missing_action_reason_rule');
