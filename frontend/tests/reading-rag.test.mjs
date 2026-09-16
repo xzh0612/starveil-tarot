@@ -726,6 +726,27 @@ test('question routing covers colloquial state and path questions',()=>{
  assert.deepEqual(card.goals,['explanation']);
 });
 
+test('question routing covers productive colloquial intent forms',()=>{
+ const thought=analyzeReadingQuestion('他在想什么？');
+ assert.deepEqual(thought.goals,['explanation']);
+ const missing=analyzeReadingQuestion('他有没有想我？');
+ assert.deepEqual(missing.goals,['forecast']);
+ const option=analyzeReadingQuestion('选择哪一个更好？');
+ assert.deepEqual(option.goals,['comparison']);
+ const career=analyzeReadingQuestion('换不换工作？');
+ assert.deepEqual(career.goals,['comparison']);
+ const message=analyzeReadingQuestion('这张牌想告诉我什么？');
+ assert.deepEqual(message.goals,['explanation']);
+ const caution=analyzeReadingQuestion('我需要注意什么？');
+ assert.deepEqual(caution.goals,['advice']);
+ const how=analyzeReadingQuestion('我怎么做比较好？');
+ assert.deepEqual(how.goals,['advice']);
+ const job=analyzeReadingQuestion('我今年能找到工作吗？');
+ assert.deepEqual(job.goals,['forecast']);
+ const returner=analyzeReadingQuestion('他会回来找我吗？');
+ assert.deepEqual(returner.goals,['forecast']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
