@@ -22,6 +22,7 @@ test('retrieval suite covers the major question intents',()=>{
   {name:'career',question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]],requiredKinds:['orientation','symbolism','work']},
   {name:'choice',question:'两个机会应该如何比较，哪个更适合我？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
   {name:'future',question:'接下来三个月的发展趋势是什么？',cards:[cards[0]],requiredKinds:['orientation','symbolism']},
+  {name:'possibility',question:'我们能不能复合？',cards:[cards[0]],requiredKinds:['orientation','symbolism','waite']},
   {name:'reflection',question:'我为什么总是感到迷茫和内耗？',cards:[cards[0]],requiredKinds:['orientation','symbolism','reflection']},
  ]);
  assert.equal(result.ok,true);
