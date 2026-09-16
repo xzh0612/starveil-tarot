@@ -869,7 +869,7 @@ test('grounding rejects unsupported conjunction and enumeration clauses',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[card]});
  const orientation=evidence.find(item=>item.kind==='orientation');
- for(const text of ['保持稳定然而对方已经搬去火星。','保持稳定、对方已经搬去火星。','保持稳定并且对方已经搬去火星。']){
+ for(const text of ['保持稳定然而对方已经搬去火星。','保持稳定、对方已经搬去火星。','保持稳定并且对方已经搬去火星。','保持稳定而对方已经搬去火星。','保持稳定且对方已经搬去火星。','保持稳定并对方已经搬去火星。','保持稳定以及对方已经搬去火星。','保持稳定也对方已经搬去火星。','保持稳定所以对方已经搬去火星。','保持稳定因此对方已经搬去火星。','保持稳定因为对方已经搬去火星。']){
   const unsupported=JSON.stringify({text:'保持稳定。',cardReadings:[{cardId:'m08',position:'建议',reading:text,evidenceIds:[orientation.evidenceId]}]});
   assert.throws(()=>parseReadingOutput(unsupported,{cards:[card],evidence,requireCardReadingSupport:true}),/逐牌解读内容与证据不匹配/);
  }

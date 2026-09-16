@@ -484,7 +484,7 @@ function claimSupportedByEvidence(claim,evidence,{allowGeneric=false,requireSent
  const evidenceTerms=chineseNgrams(evidence?.text??'');
  // A supported sentence must not smuggle an unsupported clause after
  // punctuation, enumeration commas, or an explicit contrast/joiner.
- const sentences=String(claim??'').split(/(?:[。！？!?；;，,、\n]+|然而|但是|不过|同时|并且|而且|只是|但|却)/u).map(item=>item.trim()).filter(Boolean);
+ const sentences=String(claim??'').split(/(?:[。！？!?；;，,、\n]+|然而|但是|不过|同时|并且|而且|只是|然后|随后|因此|所以|以及|因为|并|而|且|还|也|但|却)/u).map(item=>item.trim()).filter(Boolean);
  if(!sentences.length)return false;
  let meaningful=false;
  for(const sentence of sentences){
