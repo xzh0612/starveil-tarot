@@ -26,8 +26,12 @@ const output=JSON.stringify({
  actions:[{text:'记录一次具体沟通中的事实与感受，并在一周后复盘。',reason:'依据牌面稳定、明确的行动线索，把抽象担忧变成可观察材料。',evidenceIds:[evidence.find(item=>item.kind==='orientation').evidenceId]}],
  references:cards.map(card=>{
   const item=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='orientation');
-  return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};
- }),
+  const application=evidence.find(candidate=>candidate.cardId===card.id&&candidate.kind==='relationships');
+  return [
+   {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)},
+   ...(application?[{evidenceId:application.evidenceId,cardId:card.id,position:card.position,claim:application.text.slice(0,4)}]:[]),
+  ];
+ }).flat(),
  followUp:'你希望先讨论哪一次沟通？',
  uncertainty:'牌面不能确认对方的真实想法。',
 });

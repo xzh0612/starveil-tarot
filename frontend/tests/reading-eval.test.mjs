@@ -42,8 +42,12 @@ test('reading evaluation accepts grounded first output with an actionable next s
   }),
   references:cards.map(card=>{
    const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');
-   return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};
-  }),
+   const application=evidence.find(e=>e.cardId===card.id&&e.kind==='relationships');
+   return [
+    {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)},
+    ...(application?[{evidenceId:application.evidenceId,cardId:card.id,position:card.position,claim:application.text.slice(0,4)}]:[]),
+   ];
+  }).flat(),
   followUp:'你希望先讨论哪一次沟通？',
   uncertainty:'牌面不能确认对方的真实想法。',
  });
