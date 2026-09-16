@@ -865,6 +865,18 @@ test('grounding rejects an unsupported comma clause after a supported clause',()
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,isFollowUp:true,requireTextSupport:true}).actions.length,1);
 });
 
+test('grounding rejects unsupported conjunction and enumeration clauses',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ for(const text of ['保持稳定然而对方已经搬去火星。','保持稳定、对方已经搬去火星。','保持稳定并且对方已经搬去火星。']){
+  const unsupported=JSON.stringify({text:'保持稳定。',cardReadings:[{cardId:'m08',position:'建议',reading:text,evidenceIds:[orientation.evidenceId]}]});
+  assert.throws(()=>parseReadingOutput(unsupported,{cards:[card],evidence,requireCardReadingSupport:true}),/逐牌解读内容与证据不匹配/);
+ }
+ const grounded=JSON.stringify({text:'保持稳定。',cardReadings:[{cardId:'m08',position:'建议',reading:'保持稳定、温柔而明确。',evidenceIds:[orientation.evidenceId]}]});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireCardReadingSupport:true}).cardReadings.length,1);
+});
+
 test('structured follow-ups require the routed goal evidence tier',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
