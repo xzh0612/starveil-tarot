@@ -487,7 +487,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -593,10 +593,11 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireActionReasons&&!needsClarification&&!actionsReasoned)throw Error('首轮行动建议必须说明与牌面相关的理由，请重试。');
  if(requireActionReasonSupport&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
- if(requireTextSupport&&!needsClarification){
+ const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
+ if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=[...new Set([...refs.map(item=>item.evidenceId),...synthesis.evidenceIds,...cardReadings.flatMap(item=>item.evidenceIds)])];
   const groundedText=groundedEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
-  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:true}))throw Error('解读正文与证据不匹配，请重试。');
+  if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
  if(!needsClarification){
   const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];

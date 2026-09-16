@@ -129,6 +129,7 @@ function repairCode(error){
   [/解读包含无法由牌面确认的绝对断言/u,'overconfident_claim'],
   [/行动建议引用无效/u,'invalid_action_evidence'],
   [/目标分段内容与证据不匹配/u,'goal_section_support'],
+  [/追问正文与证据不匹配/u,'followup_text_support'],
   [/目标分段引用无效/u,'goal_section_evidence'],
   [/目标分段缺少目标层级证据/u,'goal_section_tier'],
   [/目标分段目标未被本轮路由/u,'goal_section_route'],
@@ -154,13 +155,15 @@ function repairGuidance({code,evidence=[],cards=[],requiredGoalEvidence=[]}={}){
   const ids=items.filter(item=>item?.cardId===card.id&&item?.retrievalRequired===true).map(item=>item.evidenceId).slice(0,4);
   return `${safeJson(card.id)} ${safeJson(card.position)}: ${safeJson(ids)}`;
  });
- const focus=code==='missing_goal_reference_coverage'
+  const focus=code==='missing_goal_reference_coverage'
   ?'目标引用错误：每个有可用 requiredEvidenceTier 的目标都要在 references 中至少引用一个对应 ID。'
   :code==='action_goal_evidence'
    ?'行动证据错误：每条首轮 action 至少引用一个 advice/comparison 对应的 application ID。'
   :code==='missing_card_anchor'||code==='missing_reference_anchor'
    ?'核心锚点错误：逐牌解读、综合解读和 references 都要优先使用对应牌的 retrievalRequired=true ID。'
-   :'只修复本次校验错误，保留原问题、牌局、牌位、正逆位和已有有效证据。';
+   :code==='followup_text_support'
+    ?'追问正文必须先回答最新问题，并复述本轮已引用证据中的具体概念；不要写证据之外的事实。'
+    :'只修复本次校验错误，保留原问题、牌局、牌位、正逆位和已有有效证据。';
  return ['修复清单（只能使用以下已检索 evidenceId，不得创造新 ID）：',`目标层级：${goalLines.length?goalLines.join('；'):'本轮没有可用目标层级证据。'}`,`每张牌核心锚点：${cardLines.length?cardLines.join('；'):'无。'}`,focus,'每个 claim 必须复述所引证据中的具体短语。'].join('\n');
 }
 
@@ -255,7 +258,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    const requiresCoverageBoundary=!hasPriorAssistant&&(evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0);
    const requiredGoalEvidence=!hasPriorAssistant?retrievalMeta.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok):[];
    const requiredActionGoalEvidence=!hasPriorAssistant?retrievalMeta.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok):[];
-   const requireGoalSections=!hasPriorAssistant&&retrievalMeta.goals.length>1,parseOptions={cards:body.cards,evidence,requiredGoalEvidence,requiredActionGoalEvidence,allowedGoalSections:retrievalMeta.goals,requiredGoalSections:requireGoalSections?retrievalMeta.goals:[],requireGoalSections,requireCoverage:!hasPriorAssistant,requireActions:!hasPriorAssistant,requireReferences:!hasPriorAssistant,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:!hasPriorAssistant,requireActionReasons:!hasPriorAssistant,requireActionReasonSupport:!hasPriorAssistant,requireTextSupport:!hasPriorAssistant,requireSynthesis:!hasPriorAssistant,requireSynthesisSupport:true,requireSynthesisCardSupport:!hasPriorAssistant,requireSynthesisAnchors:!hasPriorAssistant,requireUncertainty:!hasPriorAssistant,requireRealityBoundary:requiresBoundary,requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification};
+   const requireGoalSections=!hasPriorAssistant&&retrievalMeta.goals.length>1,parseOptions={cards:body.cards,evidence,requiredGoalEvidence,requiredActionGoalEvidence,allowedGoalSections:retrievalMeta.goals,requiredGoalSections:requireGoalSections?retrievalMeta.goals:[],requireGoalSections,requireCoverage:!hasPriorAssistant,requireActions:!hasPriorAssistant,requireReferences:!hasPriorAssistant,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:!hasPriorAssistant,requireActionReasons:!hasPriorAssistant,requireActionReasonSupport:!hasPriorAssistant,requireTextSupport:!hasPriorAssistant,requireSynthesis:!hasPriorAssistant,requireSynthesisSupport:true,requireSynthesisCardSupport:!hasPriorAssistant,requireSynthesisAnchors:!hasPriorAssistant,requireUncertainty:!hasPriorAssistant,requireRealityBoundary:requiresBoundary,requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification,isFollowUp:hasPriorAssistant};
    let answer,provider=initial;
    try{answer=parseReadingOutput(initial.text,parseOptions);}catch(firstError){
     const code=repairCode(firstError),guidance=repairGuidance({code,evidence,cards:body.cards,requiredGoalEvidence});
