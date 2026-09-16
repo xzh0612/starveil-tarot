@@ -108,6 +108,15 @@ test('question routing prefers longer explanation phrases over generic advice wo
  assert.deepEqual(advice.goals,['advice']);
 });
 
+test('question routing recognizes explanation phrases about thoughts and card meaning',()=>{
+ const otherThoughts=analyzeReadingQuestion('我想知道对方心里怎么想');
+ assert.deepEqual(otherThoughts.goals,['explanation']);
+ const cardMeaning=analyzeReadingQuestion('这张牌怎么解释？');
+ assert.deepEqual(cardMeaning.goals,['explanation']);
+ const unchangedAdvice=analyzeReadingQuestion('我下一步怎么做？');
+ assert.deepEqual(unchangedAdvice.goals,['advice']);
+});
+
 test('question routing ignores negated intent phrases without suppressing real goals',()=>{
  const explanation=analyzeReadingQuestion('我不想比较选项，只想知道为什么会这样？');
  assert.deepEqual(explanation.goals,['explanation']);
