@@ -128,6 +128,7 @@ function repairCode(error){
   [/目标分段引用无效/u,'goal_section_evidence'],
   [/目标分段缺少目标层级证据/u,'goal_section_tier'],
   [/目标分段目标未被本轮路由/u,'goal_section_route'],
+  [/目标分段顺序不符合本轮目标计划/u,'goal_section_order'],
   [/目标分段格式不正确/u,'invalid_goal_section'],
   [/首轮解读必须按目标分别返回目标分段/u,'missing_goal_sections'],
   [/行动建议格式不正确/u,'invalid_action'],

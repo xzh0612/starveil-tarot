@@ -569,6 +569,8 @@ test('mixed first readings require one grounded section per routed goal',()=>{
  ]});
  const parsed=parseReadingOutput(valid,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true});
  assert.deepEqual(parsed.goalSections.map(item=>item.goal),['advice','forecast']);
+ const wrongOrder=JSON.stringify({text:'先讲趋势，再讲建议。',goalSections:[{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']},{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']}]});
+ assert.throws(()=>parseReadingOutput(wrongOrder,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/目标分段顺序不符合/);
  const missing=JSON.stringify({text:'只回答建议。',goalSections:[{goal:'advice',text:'把稳定、温柔而明确的方式落实为下一步。',evidenceIds:['m08:orientation']}]});
  assert.throws(()=>parseReadingOutput(missing,{cards:[card],evidence,requiredGoalSections:['advice','forecast'],requireGoalSections:true}),/必须按目标分别返回目标分段/);
  const wrongEvidence=JSON.stringify({text:'目标依据不匹配。',goalSections:[{goal:'advice',text:'以 Fortitude 的力量作为建议。',evidenceIds:['m08:waite']},{goal:'forecast',text:'以 Fortitude 的力量与勇气作为趋势参考。',evidenceIds:['m08:waite']}]});

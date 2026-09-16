@@ -495,10 +495,11 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  let goalSections=[];
  if(data.goalSections!==undefined){
   if(!Array.isArray(data.goalSections)||data.goalSections.length>4)throw Error('目标分段格式不正确，请重试。');
-  const requestedGoals=new Set((Array.isArray(requiredGoalSections)?requiredGoalSections:[]).filter(goal=>READING_GOALS.has(goal))),seenGoals=new Set();
-  goalSections=data.goalSections.map(item=>{
+  const requested=[...new Set((Array.isArray(requiredGoalSections)?requiredGoalSections:[]).filter(goal=>READING_GOALS.has(goal)))],requestedGoals=new Set(requested),seenGoals=new Set();
+  goalSections=data.goalSections.map((item,index)=>{
    if(!item||typeof item!=='object'||!READING_GOALS.has(item.goal)||seenGoals.has(item.goal)||typeof item.text!=='string'||!item.text.trim()||item.text.length>4_000||!Array.isArray(item.evidenceIds)||item.evidenceIds.length<1||item.evidenceIds.length>8||item.evidenceIds.some(id=>typeof id!=='string'))throw Error('目标分段格式不正确，请重试。');
    if(requireGoalSections&&!requestedGoals.has(item.goal))throw Error('目标分段目标未被本轮路由，请重试。');
+   if(requireGoalSections&&requested[index]!==item.goal)throw Error('目标分段顺序不符合本轮目标计划，请重试。');
    const evidenceIds=item.evidenceIds.map(id=>{const chunk=evidenceById.get(id);if(!chunk||!Array.isArray(chunk.retrievalGoals)||!chunk.retrievalGoals.includes(item.goal))throw Error('目标分段引用无效，请重试。');return chunk.evidenceId;});
    const requiredTier=GOAL_REFERENCE_TIERS[item.goal],hasAvailableRequiredTier=[...evidenceById.values()].some(chunk=>chunk?.tier===requiredTier&&Array.isArray(chunk.retrievalGoals)&&chunk.retrievalGoals.includes(item.goal));
    if(requireGoalSections&&!needsClarification&&hasAvailableRequiredTier&&!evidenceIds.some(id=>evidenceById.get(id)?.tier===requiredTier))throw Error('目标分段缺少目标层级证据，请重试。');
