@@ -38,6 +38,26 @@ const GOALS=[
 ];
 const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 
+// Intent lexicon matches must respect a small set of Chinese negation
+// patterns. Without this guard, phrases such as “不想比较” or “不是想问会不会”
+// become active goals even though the user explicitly ruled them out. The
+// bounded four-character tail keeps ordinary phrases such as “不知道要不要”
+// active while avoiding a broad sentiment classifier.
+const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
+function activeLexiconTerms(text,terms){
+ return terms.filter(term=>{
+  let offset=0;
+  while(offset<=text.length){
+   const index=text.indexOf(term,offset);
+   if(index<0)return false;
+   const prefix=text.slice(Math.max(0,index-8),index);
+   if(!NEGATED_INTENT_PREFIX.test(prefix))return true;
+   offset=index+Math.max(1,term.length);
+  }
+  return false;
+ });
+}
+
 const POSITION_HINTS=[
  {words:['关系','感受','需求','互动','挑战'],kind:'relationships',boost:6},
  {words:['事业','资源','优势','工作','行动','建议','下一步'],kind:'work',boost:6},
@@ -47,8 +67,8 @@ const POSITION_HINTS=[
 export function analyzeReadingQuestion(question){
  const text=String(question??'').trim().toLowerCase();
  const scored=THEMES.map(theme=>{
-  const strongTerms=theme.words.filter(word=>text.includes(word));
-  const weakTerms=(theme.weakWords??[]).filter(word=>text.includes(word));
+  const strongTerms=activeLexiconTerms(text,theme.words);
+  const weakTerms=activeLexiconTerms(text,theme.weakWords??[]);
   return {name:theme.name,strongTerms,weakTerms,score:strongTerms.length*2+weakTerms.length*.5};
  });
  const strong=scored.filter(item=>item.score>=2),active=strong.length?strong:scored.filter(item=>item.score>0);
@@ -57,7 +77,7 @@ export function analyzeReadingQuestion(question){
  const weakMatchedTerms=[...new Set(active.flatMap(item=>item.weakTerms))];
  const matchedTerms=[...new Set([...strongMatchedTerms,...weakMatchedTerms])];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
- const goalScored=GOALS.map(goal=>{const terms=goal.words.filter(word=>text.includes(word));return {name:goal.name,terms,score:terms.length*2};});
+ const goalScored=GOALS.map(goal=>{const terms=activeLexiconTerms(text,goal.words);return {name:goal.name,terms,score:terms.length*2};});
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),goals=(activeGoals.length?activeGoals:goalFallback).map(item=>item.name);
  const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>item.terms))];
  const goalScores=Object.fromEntries(goalScored.map(item=>[item.name,item.score]));

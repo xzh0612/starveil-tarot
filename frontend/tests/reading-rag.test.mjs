@@ -74,6 +74,15 @@ test('question routing recognizes common possibility phrasing as forecast',()=>{
  assert.ok(evidence.some(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast')));
 });
 
+test('question routing ignores negated intent phrases without suppressing real goals',()=>{
+ const explanation=analyzeReadingQuestion('我不想比较选项，只想知道为什么会这样？');
+ assert.deepEqual(explanation.goals,['explanation']);
+ const advice=analyzeReadingQuestion('我不是想问会不会复合，我想知道怎么处理？');
+ assert.deepEqual(advice.goals,['advice']);
+ const decision=analyzeReadingQuestion('我不知道要不要主动联系他。');
+ assert.deepEqual(decision.goals,['comparison']);
+});
+
 test('question routing recognizes explicit path and option comparisons',()=>{
  const path=analyzeReadingQuestion('我该选哪条路径？');
  assert.deepEqual(path.goals,['comparison']);
