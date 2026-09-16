@@ -21,6 +21,7 @@ const READING_ERROR_HINTS={
  action_concreteness:'行动建议不够可执行，请稍后重试原牌局。',
  action_reason:'行动建议缺少与牌面相关的理由，原牌局仍然保留。',
  action_reason_support:'行动理由与引用的牌面证据不匹配，原牌局仍然保留。',
+ followup_text_support:'追问正文没有得到本轮证据支持，原牌局仍然保留。',
  goal_section_support:'目标分段没有得到对应证据支持，原牌局仍然保留。',
  goal_section_evidence:'目标分段引用了不属于该目标的证据，原牌局仍然保留。',
  goal_section_tier:'目标分段没有使用该目标要求的证据层级，原牌局仍然保留。',
