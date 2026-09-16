@@ -544,7 +544,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireReferences&&!needsClarification&&(refs.length<cards.length||cards.some(card=>!refs.some(reference=>reference.cardId===card.id))))throw Error('首轮解读引用没有覆盖全部牌面，请重试。');
  if(requireReferences&&!needsClarification&&cards.some(card=>!refs.some(reference=>reference.cardId===card.id&&reference.tier==='anchor')))throw Error('首轮引用必须包含每张牌的核心锚点，请重试。');
  if(requireReferenceClaims&&!needsClarification&&refs.some(reference=>!reference.claim))throw Error('引用说明不能为空，请重试。');
- if(requireReferenceSupport&&!needsClarification&&refs.some(reference=>!claimSupportedByEvidence(reference.claim,evidenceById.get(reference.evidenceId))))throw Error('引用说明与证据不匹配，请重试。');
+ if(requireReferenceSupport&&!needsClarification&&refs.some(reference=>!claimSupportedByEvidence(reference.claim,evidenceById.get(reference.evidenceId),{allowGeneric:false,requireSentenceSupport:true})))throw Error('引用说明与证据不匹配，请重试。');
  let goalSections=[];
  if(data.goalSections!==undefined){
   if(!Array.isArray(data.goalSections)||data.goalSections.length>4)throw Error('目标分段格式不正确，请重试。');

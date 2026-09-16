@@ -515,6 +515,12 @@ test('synthesis rejects prose with no meaningful overlap with cited evidence',()
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireSynthesisSupport:true}),/综合解读内容与证据不匹配/);
 });
 
+test('reference claims reject an unsupported trailing sentence',()=>{
+ const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
+ const output=JSON.stringify({text:'先观察再沟通。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定、温柔。对方已经搬去火星。'}]});
+ assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireReferenceClaims:true,requireReferenceSupport:true}),/引用说明与证据不匹配/);
+});
+
 test('first reading text must overlap the retrieved evidence',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const output=JSON.stringify({text:'对方已经中奖并马上搬去火星。',references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定'}]});

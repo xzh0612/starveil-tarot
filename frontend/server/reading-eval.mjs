@@ -61,6 +61,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/synthesis[^\n]{0,900}(?:多牌阵|每张牌|分别|逐张)[^\n]{0,300}(?:核心|概念|证据)/i.test(system))issues.push('missing_synthesis_per_card_rule');
  if(!/<starveil_workflow>[\s\S]*?(?:activeQuestion|逐牌解读)[\s\S]*?(?:synthesis|合读)[\s\S]*?(?:自检|自查)[\s\S]*?<\/starveil_workflow>/i.test(system))issues.push('missing_prompt_workflow');
  if(!/claim|引用说明/i.test(system))issues.push('missing_claim_support');
+ if(!/(?:逐句都能被该证据支持的简短 claim|claim[^\n]{0,180}(?:逐句|每句)[^\n]{0,180}(?:证据|evidence))/i.test(system))issues.push('missing_claim_sentence_support_rule');
  if(!/保证|必然|绝对|断言/i.test(system))issues.push('missing_calibration_rule');
  if(!/synthesis[^\n]{0,600}(?:核心锚点|retrievalRequired)/i.test(system))issues.push('missing_synthesis_anchor_rule');
  if(!/澄清分支[^\n]{0,300}(?:必须为空|不得同时返回)/u.test(system))issues.push('missing_clarification_exclusivity');
@@ -111,6 +112,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_synthesis_per_card_rule'),
   !issues.includes('missing_prompt_workflow'),
   !issues.includes('missing_claim_support'),
+  !issues.includes('missing_claim_sentence_support_rule'),
   !issues.includes('missing_calibration_rule'),
   !issues.includes('missing_synthesis_anchor_rule'),
   !issues.includes('missing_clarification_exclusivity'),
