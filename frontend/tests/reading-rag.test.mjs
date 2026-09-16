@@ -711,6 +711,21 @@ test('question routing covers relationship states, core meaning and fit question
  assert.deepEqual(change.goals,['forecast']);
 });
 
+test('question routing covers colloquial state and path questions',()=>{
+ const love=analyzeReadingQuestion('他爱我吗？');
+ assert.deepEqual(love.goals,['forecast']);
+ const interest=analyzeReadingQuestion('他对我有好感吗？');
+ assert.deepEqual(interest.goals,['forecast']);
+ const feeling=analyzeReadingQuestion('他对我是什么感觉？');
+ assert.deepEqual(feeling.goals,['forecast']);
+ const path=analyzeReadingQuestion('留在这里还是离开？');
+ assert.deepEqual(path.goals,['comparison']);
+ const growth=analyzeReadingQuestion('这段关系会怎么发展？');
+ assert.deepEqual(growth.goals,['forecast']);
+ const card=analyzeReadingQuestion('我只是想了解这张牌');
+ assert.deepEqual(card.goals,['explanation']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
