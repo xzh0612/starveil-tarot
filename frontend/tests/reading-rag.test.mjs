@@ -77,6 +77,26 @@ test('question routing recognizes common synonyms across reading intents',()=>{
  assert.deepEqual(how.goals,['advice']);
 });
 
+test('question routing covers colloquial outcome, scenario and decision phrasing',()=>{
+ const relationship=analyzeReadingQuestion('我和她还有戏吗？');
+ assert.deepEqual(relationship.themes,['relationship']);
+ assert.deepEqual(relationship.goals,['forecast']);
+ const career=analyzeReadingQuestion('这份 offer 值不值得接？');
+ assert.deepEqual(career.themes,['career']);
+ assert.deepEqual(career.goals,['comparison']);
+ const sleep=analyzeReadingQuestion('我最近总是睡不好，该怎么办？');
+ assert.deepEqual(sleep.themes,['reflection']);
+ assert.deepEqual(sleep.goals,['advice']);
+ assert.equal(requiresProfessionalBoundary('我最近总是睡不好，该怎么办？'),true);
+ assert.deepEqual(analyzeReadingQuestion('这个官司最后能赢吗？').goals,['forecast']);
+ assert.equal(requiresProfessionalBoundary('这个官司最后能赢吗？'),true);
+ assert.deepEqual(analyzeReadingQuestion('这张牌放在阻碍位说明什么？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('我该先联系他还是等他？').goals,['comparison']);
+ assert.deepEqual(analyzeReadingQuestion('未来三个月工作会怎么走？').goals,['forecast']);
+ assert.deepEqual(analyzeReadingQuestion('我想问一下下个月的财运').goals,['forecast']);
+ assert.equal(requiresProfessionalBoundary('我想问一下下个月的财运'),true);
+});
+
 test('question routing distinguishes the requested response goal',()=>{
  const advice=analyzeReadingQuestion('我该怎么和对方沟通？');
  assert.deepEqual(advice.goals,['advice']);
