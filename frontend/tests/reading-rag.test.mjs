@@ -1175,6 +1175,15 @@ test('checks each mixed goal section against its own response mode',()=>{
  assert.throws(()=>parseReadingOutput(wrong,{evidence,requiredOutputGoals:['advice','forecast'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
 });
 
+test('requires an optional follow-up to be one concrete question',()=>{
+ const vague=JSON.stringify({text:'把稳定节奏拆成可执行的小步。',followUp:'还有什么想问的吗？'});
+ assert.throws(()=>parseReadingOutput(vague,{requireFollowUpQuestion:true}),/追问问题格式不正确/);
+ const multiple=JSON.stringify({text:'把稳定节奏拆成可执行的小步。',followUp:'你想先看关系吗？还是要继续问事业？'});
+ assert.throws(()=>parseReadingOutput(multiple,{requireFollowUpQuestion:true}),/追问问题格式不正确/);
+ const focused=JSON.stringify({text:'把稳定节奏拆成可执行的小步。',followUp:'你最容易在哪个时段中断？'});
+ assert.doesNotThrow(()=>parseReadingOutput(focused,{requireFollowUpQuestion:true}));
+});
+
 test('grounding rejects an unsupported comma clause after a supported clause',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[card]});
