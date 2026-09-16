@@ -29,6 +29,18 @@ test('question routing prefers explicit career terms over weak relationship pron
  assert.equal(pronoun.confidence,'focused');
 });
 
+test('weak-only follow-ups inherit the original retrieval theme',()=>{
+ const weak=analyzeReadingQuestion('他呢？');
+ assert.equal(weak.weakOnly,true);
+ assert.deepEqual(weak.strongMatchedTerms,[]);
+ assert.deepEqual(weak.weakMatchedTerms,['他']);
+ const result=readingRetrievalFor('我该如何规划这次转行？',[{role:'assistant',text:'上一轮回答'},{role:'user',text:'他呢？'}]);
+ assert.equal(result.activeQuestion,'他呢？');
+ assert.equal(result.inheritedOriginal,true);
+ assert.equal(result.retrievalQuestion,'我该如何规划这次转行？');
+ assert.deepEqual(result.retrievalMeta.themes,['career']);
+});
+
 test('question routing recognizes common synonyms across reading intents',()=>{
  const career=analyzeReadingQuestion('我想跳槽，怎么准备面试？');
  assert.deepEqual(career.themes,['career']);

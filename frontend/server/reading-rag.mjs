@@ -50,13 +50,15 @@ export function analyzeReadingQuestion(question){
  });
  const strong=scored.filter(item=>item.score>=2),active=strong.length?strong:scored.filter(item=>item.score>0);
  const themes=active.map(item=>item.name);
- const matchedTerms=[...new Set(active.flatMap(item=>[...item.strongTerms,...item.weakTerms]))];
+ const strongMatchedTerms=[...new Set(active.flatMap(item=>item.strongTerms))];
+ const weakMatchedTerms=[...new Set(active.flatMap(item=>item.weakTerms))];
+ const matchedTerms=[...new Set([...strongMatchedTerms,...weakMatchedTerms])];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
  const goalScored=GOALS.map(goal=>{const terms=goal.words.filter(word=>text.includes(word));return {name:goal.name,terms,score:terms.length*2};});
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),goals=(activeGoals.length?activeGoals:goalFallback).map(item=>item.name);
  const matchedGoalTerms=[...new Set((activeGoals.length?activeGoals:goalFallback).flatMap(item=>item.terms))];
  const goalScores=Object.fromEntries(goalScored.map(item=>[item.name,item.score]));
- return {themes,matchedTerms,themeScores,goals,matchedGoalTerms,goalScores,goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
+ return {themes,matchedTerms,strongMatchedTerms,weakMatchedTerms,weakOnly:strong.length===0&&weakMatchedTerms.length>0,themeScores,goals,matchedGoalTerms,goalScores,goalConfidence:goals.length===0?'open':goals.length===1?'focused':'mixed',ambiguous:themes.length!==1,confidence:themes.length===0?'open':themes.length===1?'focused':'mixed'};
 }
 
 export function readingQueryFor(question,messages=[]){
@@ -68,8 +70,8 @@ export function readingQueryFor(question,messages=[]){
 
 export function readingRetrievalFor(question,messages=[]){
  const original=String(question??'').trim().slice(0,2_000),activeQuestion=readingQueryFor(original,messages),activeMeta=analyzeReadingQuestion(activeQuestion);
- const inheritedOriginal=Boolean(original&&activeQuestion!==original&&activeMeta.confidence==='open');
- const retrievalQuestion=(inheritedOriginal?`${original}\n${activeQuestion}`:activeQuestion).slice(0,4_000);
+ const inheritedOriginal=Boolean(original&&activeQuestion!==original&&(activeMeta.confidence==='open'||activeMeta.weakOnly));
+ const retrievalQuestion=(inheritedOriginal?`${original}${activeMeta.weakOnly?'':`\n${activeQuestion}`}`:activeQuestion).slice(0,4_000);
  return {activeQuestion,retrievalQuestion,retrievalMeta:analyzeReadingQuestion(retrievalQuestion),inheritedOriginal};
 }
 
