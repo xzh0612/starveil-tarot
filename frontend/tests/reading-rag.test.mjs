@@ -204,6 +204,17 @@ test('default evidence budget reserves one required tier per routed goal',()=>{
  assert.equal(tight.length,6);
 });
 
+test('goal evidence reservation chooses the highest scored matching chunk',()=>{
+ const evidence=[
+  {evidenceId:'anchor',tier:'anchor',retrievalRequired:true,retrievalScore:10,retrievalMethod:'test'},
+  {evidenceId:'low',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:1,retrievalMethod:'test'},
+  {evidenceId:'high',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:9,retrievalMethod:'test'},
+  {evidenceId:'filler',tier:'reference',retrievalRequired:false,retrievalGoals:[],retrievalScore:100,retrievalMethod:'test'},
+ ];
+ const selected=rerankReadingEvidence(evidence,{requiredGoalEvidence:['forecast'],maxTotalEvidence:2});
+ assert.deepEqual(selected.map(item=>item.evidenceId),['anchor','high']);
+});
+
 test('default evidence budget expands for large mixed spreads',()=>{
  const cardsForSpread=Array.from({length:12},(_,index)=>({id:`m${String(index).padStart(2,'0')}`,reversed:index%2===1,position:`位置 ${index+1}`}));
  const question='我该如何处理这段关系，同时规划接下来的工作，也想调整自己的状态？';

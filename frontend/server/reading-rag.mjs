@@ -254,7 +254,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  const reservedIds=new Set(required.map(item=>item.evidenceId)),goalReserved=[];
  for(const goal of [...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])]){
   const tier=GOAL_REQUIRED_TIERS[goal];
-  const candidate=ranked.find(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal));
+  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
   if(candidate&&goalReserved.length<Math.max(0,budget-required.length)){goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
  }
  const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
