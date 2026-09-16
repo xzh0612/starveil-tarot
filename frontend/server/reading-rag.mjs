@@ -227,15 +227,6 @@ function retrievalReasons(chunk,signals){
  return reasons;
 }
 
-function focusedApplicationKinds(themes){
- if(themes.length!==1)return null;
- if(themes[0]==='relationship')return new Set(['relationships']);
- if(themes[0]==='career')return new Set(['work']);
- if(themes[0]==='reflection')return new Set(['reflection']);
- if(themes[0]==='choice')return new Set(['reflection']);
- return new Set();
-}
-
 function applicationKindsForThemes(themes){
  const kinds=[];
  for(const theme of themes){
@@ -306,11 +297,19 @@ export function collectReadingEvidence({question,cards,maxPerCard=5}={}){
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
-  const focusedKinds=focusedApplicationKinds(themes);
-  const candidates=focusedKinds?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||focusedKinds.has(chunk.kind)):sorted;
   // Mixed questions need one application chunk per explicit domain before
   // lower-priority reference chunks fill the remaining budget.
   const applicationKinds=applicationKindsForThemes(themes);
+  // Keep application evidence inside the domains named by the question even
+  // when more than one theme is active. Anchor and reference chunks remain
+  // eligible, while unrelated application prose cannot crowd out the topic.
+  // If a question has a named non-application theme (for example future),
+  // leave the application layer empty instead of inventing a work/relationship
+  // domain. Open questions retain the broad fallback context.
+  const allowedApplications=new Set(applicationKinds);
+  const candidates=themes.length
+   ?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind))
+   :sorted;
   const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);
   const chosen=[...required,...thematic,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
   return chosen.map(chunk=>({

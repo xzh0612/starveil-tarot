@@ -99,6 +99,16 @@ test('question routing treats yes-or-no decisions as comparison goals',()=>{
  assert.ok(evidence.some(item=>item.kind==='relationships'&&item.retrievalGoals.includes('comparison')));
 });
 
+test('mixed theme retrieval excludes unrelated application domains',()=>{
+ const relationshipChoice=retrieveReadingEvidence({question:'我不知道要不要主动联系他。',cards:[cards[0]]});
+ assert.ok(relationshipChoice.some(item=>item.kind==='relationships'));
+ assert.ok(!relationshipChoice.some(item=>item.kind==='work'));
+ assert.ok(!relationshipChoice.some(item=>item.kind==='reflection'));
+ const reflectiveForecast=retrieveReadingEvidence({question:'我现在很迷茫，未来会怎样？',cards:[cards[0]]});
+ assert.ok(reflectiveForecast.some(item=>item.kind==='reflection'));
+ assert.ok(!reflectiveForecast.some(item=>item.kind==='work'));
+});
+
 test('active reading query follows the latest real user message',()=>{
  const history=[{role:'assistant',text:'之前的回答'},{role:'user',text:'我的工作压力很大，下一步怎么安排？'}];
  assert.equal(readingQueryFor('原始关系问题',history),'我的工作压力很大，下一步怎么安排？');
