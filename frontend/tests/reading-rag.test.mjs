@@ -465,6 +465,18 @@ test('goal evidence reservation chooses the highest scored matching chunk',()=>{
  assert.deepEqual(selected.map(item=>item.evidenceId),['anchor','high']);
 });
 
+test('per-card goal reservation keeps required-tier evidence across a tight spread',()=>{
+ const evidence=[
+  {evidenceId:'a:anchor',cardId:'a',tier:'anchor',retrievalRequired:true,retrievalScore:10,retrievalMethod:'test'},
+  {evidenceId:'b:anchor',cardId:'b',tier:'anchor',retrievalRequired:true,retrievalScore:10,retrievalMethod:'test'},
+  {evidenceId:'a:reference',cardId:'a',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:2,retrievalMethod:'test'},
+  {evidenceId:'b:reference',cardId:'b',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:1,retrievalMethod:'test'},
+  {evidenceId:'filler',cardId:'a',tier:'reference',retrievalRequired:false,retrievalGoals:[],retrievalScore:100,retrievalMethod:'test'},
+ ];
+ const selected=rerankReadingEvidence(evidence,{requiredGoalEvidence:['forecast'],maxTotalEvidence:4,reserveGoalEvidencePerCard:true});
+ assert.deepEqual(selected.map(item=>item.evidenceId),['a:anchor','b:anchor','a:reference','b:reference']);
+});
+
 test('default evidence budget expands for large mixed spreads',()=>{
  const cardsForSpread=Array.from({length:12},(_,index)=>({id:`m${String(index).padStart(2,'0')}`,reversed:index%2===1,position:`位置 ${index+1}`}));
  const question='我该如何处理这段关系，同时规划接下来的工作，也想调整自己的状态？';

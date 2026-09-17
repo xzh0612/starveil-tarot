@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v31';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v32';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -322,7 +322,7 @@ function resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,routing=nu
  return Math.min(96,Math.max(48,count*(2+applicationCount)));
 }
 
-export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8,requiredGoalEvidence=[]}={}){
+export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEvidence=48,semanticWeight=8,requiredGoalEvidence=[],reserveGoalEvidencePerCard=false}={}){
  if(!Array.isArray(evidence))return [];
  const getScore=item=>{
   const raw=semanticScores instanceof Map?semanticScores.get(item.evidenceId):semanticScores?.[item.evidenceId];
@@ -337,12 +337,18 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  const required=ranked.filter(item=>item.retrievalRequired===true);
  const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
  const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
- const reservedIds=new Set(required.map(item=>item.evidenceId)),goalReserved=[];
- for(const goal of [...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])]){
+ const reservedIds=new Set(required.map(item=>item.evidenceId)),goalReserved=[],goalList=[...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])],goalBudget=Math.max(0,budget-required.length);
+ const reserveGoal=(goal,cardId=null)=>{
+  if(goalReserved.length>=goalBudget)return false;
   const tier=GOAL_REQUIRED_TIERS[goal];
-  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
-  if(candidate&&goalReserved.length<Math.max(0,budget-required.length)){goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
- }
+  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)&&(cardId===null||item.cardId===cardId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
+  if(!candidate)return false;
+  goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);return true;
+ };
+ if(reserveGoalEvidencePerCard){
+  const cardIds=[...new Set(ranked.map(item=>item.cardId).filter(Boolean))];
+  for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++)for(const goal of goalList)reserveGoal(goal,cardIds[round]);
+ }else for(const goal of goalList)reserveGoal(goal);
  const positionReserved=[];
  const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
  for(const cardId of positionCardIds){
@@ -421,7 +427,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
 
 export function retrieveReadingEvidence({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,routing=null,highStakes=null}={}){
  const resolvedRouting=routing??analyzeReadingQuestion(question),evidence=collectReadingEvidence({question,cards,maxPerCard,routing:resolvedRouting,highStakes});
- return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals});
+ return rerankReadingEvidence(evidence,{semanticScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals,reserveGoalEvidencePerCard:maxTotalEvidence===null});
 }
 
 export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,maxTotalEvidence=null,semanticScores={},semanticWeight=8,semanticReranker=null,semanticTimeoutMs=1_500,routing=null,highStakes=null}={}){
@@ -436,7 +442,7 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
   clearTimeout(timer);
   if(result instanceof Map||(result&&typeof result==='object'))resolvedScores=result;
  }
- return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals});
+ return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals,reserveGoalEvidencePerCard:maxTotalEvidence===null});
 }
 
 export function retrieveMemoryEvidence({question,memories,max=6}={}){
