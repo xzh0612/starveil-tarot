@@ -1177,6 +1177,13 @@ test('requires the top-level answer to honor an explicit response goal',()=>{
  assert.doesNotThrow(()=>parseReadingOutput(valid,{requiredOutputGoals:['forecast'],requireGoalAlignment:true}));
 });
 
+test('comparison answers must name a side and a trade-off',()=>{
+ const vague=JSON.stringify({text:'比较并做决定。'});
+ assert.throws(()=>parseReadingOutput(vague,{requiredOutputGoals:['comparison'],requireGoalAlignment:true}),/回答没有遵守本轮目标模式/);
+ const grounded=JSON.stringify({text:'比较主动联系与等待的条件和代价，再根据现实反馈选择。'});
+ assert.doesNotThrow(()=>parseReadingOutput(grounded,{requiredOutputGoals:['comparison'],requireGoalAlignment:true}));
+});
+
 test('checks each mixed goal section against its own response mode',()=>{
  const evidence=[
   {evidenceId:'advice:application',retrievalGoals:['advice'],tier:'application',text:'稳定节奏可以落实为今天的一步行动。'},

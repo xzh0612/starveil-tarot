@@ -550,10 +550,13 @@ const GOAL_OUTPUT_CUES=Object.freeze({
 });
 const FORECAST_TREND_CUES=['可能','趋势','倾向','发展','未来','近期','结果','走向','变化'];
 const FORECAST_REALITY_CUES=['观察','核验','现实','事实','反馈','证据','不确定','不能确认','需要验证'];
+const COMPARISON_SIDE_CUES=['比较','选择','选项','方案','一方','另一方','还是','两个','哪个','哪一个','哪种','是否'];
+const COMPARISON_TRADEOFF_CUES=['条件','代价','取舍','差异','适合','利弊','优点','缺点','权衡','成本','风险','机会'];
 
 function goalOutputSupports(text,goal,uncertainty=''){
  const value=String(text??'').toLowerCase(),boundary=String(uncertainty??'').toLowerCase(),cues=GOAL_OUTPUT_CUES[goal]??[];
  if(goal==='forecast')return FORECAST_TREND_CUES.some(cue=>value.includes(cue))&&(FORECAST_REALITY_CUES.some(cue=>value.includes(cue))||FORECAST_REALITY_CUES.some(cue=>boundary.includes(cue)));
+ if(goal==='comparison')return COMPARISON_SIDE_CUES.some(cue=>value.includes(cue))&&COMPARISON_TRADEOFF_CUES.some(cue=>value.includes(cue));
  return !cues.length||cues.some(cue=>value.includes(cue));
 }
 

@@ -90,6 +90,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/(?:text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念|text 正文的每个实质句都必须与本轮引用 evidence 共享具体、非通用概念)/i.test(system))issues.push('missing_text_specific_support_rule');
  if(!/activeQuestion 明确包含关系、事业或自我主题时，顶层 text 还必须直接回应每个明确主题，并为每个主题复述至少一个主题词/u.test(system))issues.push('missing_question_relevance_rule');
  if(!/advice 要落到下一步行动，forecast 要区分趋势与现实核验，explanation 要说明原因或牌面线索，comparison 要并列条件、代价或取舍/u.test(system))issues.push('missing_goal_alignment_rule');
+ if(!/comparison 还必须点出至少一侧或一个选项，不能只写“比较一下”/u.test(system))issues.push('missing_comparison_side_rule');
  if(!/followUp[，,\s\S]{0,220}(?:一个|单问句)[，,\s\S]{0,220}(?:一个问号|泛问|多个问题)/u.test(system))issues.push('missing_followup_question_rule');
  if(!/逗号、顿号和常见转折\/并列\/因果连接词分句也必须分别与所引 evidence 共享具体、非通用概念，不得在已命中的分句后追加证据之外的事实/u.test(system))issues.push('missing_clause_support_rule');
  if(!/首轮 text 的关键判断必须能在 references 或 goalSections 的 evidenceIds 中找到/i.test(system))issues.push('missing_text_reference_scope_rule');
@@ -154,8 +155,9 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_action_goal_evidence_rule'),
   !issues.includes('missing_text_support_rule'),
   !issues.includes('missing_text_specific_support_rule'),
- !issues.includes('missing_question_relevance_rule'),
- !issues.includes('missing_goal_alignment_rule'),
+  !issues.includes('missing_question_relevance_rule'),
+  !issues.includes('missing_goal_alignment_rule'),
+  !issues.includes('missing_comparison_side_rule'),
   !issues.includes('missing_followup_question_rule'),
   !issues.includes('missing_clause_support_rule'),
   !issues.includes('missing_text_reference_scope_rule'),
