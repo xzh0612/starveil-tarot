@@ -510,6 +510,21 @@ test('evidence summary exposes missing goal support',()=>{
  assert.equal(anchors.goalCoverage.forecast.referenceCount,0);
 });
 
+test('evidence summary identifies goal gaps on individual cards',()=>{
+ const cardsForGoal=[
+  {id:'m08',reversed:false,position:'建议'},
+  {id:'c06',reversed:true,position:'关系挑战'},
+  {id:'w01',reversed:false,position:'过去'},
+ ];
+ const question='我之后会怎样发展？';
+ const routing=analyzeReadingQuestion(question);
+ const evidence=retrieveReadingEvidence({question,cards:cardsForGoal,maxTotalEvidence:8});
+ const summary=summarizeReadingEvidence(evidence,cardsForGoal,routing);
+ assert.equal(summary.goalCoverage.forecast.ok,true);
+ assert.ok(Object.values(summary.missingGoalCoverageByCard).some(goals=>goals.includes('forecast')));
+ assert.deepEqual(summary.coverageBoundaryGoals,['forecast']);
+});
+
 test('memory retrieval is opt-in and ranks user-confirmed context by the question',()=>{
  const evidence=retrieveMemoryEvidence({question:'做重要决定前我该如何安排自己？',memories:[
   {id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true},

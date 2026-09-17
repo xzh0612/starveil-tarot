@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v30';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v31';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -463,6 +463,14 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}=
  const items=Array.isArray(evidence)?evidence:[],expected=[...new Set((Array.isArray(cards)?cards:[]).map(card=>card?.id).filter(Boolean))];
  const expectedApplicationKinds=applicationKindsForThemes(Array.isArray(themes)?themes:[],Array.isArray(goals)?goals:[]);
  const routedGoals=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>['advice','forecast','explanation','comparison'].includes(goal)))];
+ const summarizeGoal=(goal,sourceItems)=>{
+  const matched=sourceItems.filter(item=>Array.isArray(item?.retrievalGoals)&&item.retrievalGoals.includes(goal));
+  const applicationCount=matched.filter(item=>item.tier==='application').length;
+  const referenceCount=matched.filter(item=>item.tier==='reference').length;
+  const anchorCount=matched.filter(item=>item.tier==='anchor').length;
+  const ok=goal==='advice'||goal==='comparison'?applicationCount>0:goal==='forecast'?referenceCount>0:anchorCount>0;
+  return {matchedCount:matched.length,applicationCount,referenceCount,anchorCount,ok};
+ };
  const selectedCardIds=[...new Set(items.map(item=>item?.cardId).filter(Boolean))];
  const countsBy=(values)=>Object.fromEntries([...new Set(values)].map(value=>[value,values.filter(item=>item===value).length]));
  const perCard=Object.fromEntries(expected.map(cardId=>{
@@ -472,15 +480,11 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}=
  const missingAnchorCardIds=expected.filter(cardId=>!perCard[cardId].hasSymbolism||!perCard[cardId].hasOrientation);
  const missingApplicationKindsByCard=Object.fromEntries(expected.map(cardId=>[cardId,expectedApplicationKinds.filter(kind=>!items.some(item=>item?.cardId===cardId&&item?.kind===kind))]));
  const missingApplicationCardIds=expected.filter(cardId=>missingApplicationKindsByCard[cardId]?.length>0);
- const goalCoverage=Object.fromEntries(routedGoals.map(goal=>{
-  const matched=items.filter(item=>Array.isArray(item?.retrievalGoals)&&item.retrievalGoals.includes(goal));
-  const applicationCount=matched.filter(item=>item.tier==='application').length;
-  const referenceCount=matched.filter(item=>item.tier==='reference').length;
-  const anchorCount=matched.filter(item=>item.tier==='anchor').length;
-  const ok=goal==='advice'||goal==='comparison'?applicationCount>0:goal==='forecast'?referenceCount>0:anchorCount>0;
-  return [goal,{matchedCount:matched.length,applicationCount,referenceCount,anchorCount,ok}];
- }));
+ const goalCoverage=Object.fromEntries(routedGoals.map(goal=>[goal,summarizeGoal(goal,items)]));
+ const goalCoverageByCard=Object.fromEntries(expected.map(cardId=>[cardId,Object.fromEntries(routedGoals.map(goal=>[goal,summarizeGoal(goal,items.filter(item=>item?.cardId===cardId))]))]));
+ const missingGoalCoverageByCard=Object.fromEntries(expected.map(cardId=>[cardId,routedGoals.filter(goal=>goalCoverageByCard[cardId]?.[goal]&&!goalCoverageByCard[cardId][goal].ok)]).filter(([,missing])=>missing.length));
  const missingGoalCoverage=routedGoals.filter(goal=>goalCoverage[goal]&&!goalCoverage[goal].ok);
+ const coverageBoundaryGoals=[...new Set([...missingGoalCoverage,...Object.values(missingGoalCoverageByCard).flat()])];
  return {
   total:items.length,
   requiredCount:items.filter(item=>item?.retrievalRequired===true).length,
@@ -492,7 +496,10 @@ export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}=
   missingApplicationKindsByCard,
   missingApplicationCardIds,
   goalCoverage,
+  goalCoverageByCard,
   missingGoalCoverage,
+  missingGoalCoverageByCard,
+  coverageBoundaryGoals,
   coverageStatus:missingAnchorCardIds.length?'incomplete':missingApplicationCardIds.length?'anchor_only':'complete',
   tiers:countsBy(items.map(item=>item?.tier).filter(Boolean)),
   kinds:countsBy(items.map(item=>item?.kind).filter(Boolean)),

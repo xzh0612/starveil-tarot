@@ -64,6 +64,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/coverageStatus/i.test(system))issues.push('missing_coverage_status');
  if(!/missingApplicationKindsByCard/i.test(system))issues.push('missing_application_domain_diagnostics');
  if(!/goalCoverage/i.test(system)||!/missingGoalCoverage/i.test(system))issues.push('missing_goal_coverage_rule');
+ if(!/goalCoverageByCard[\s\S]{0,500}missingGoalCoverageByCard[\s\S]{0,500}coverageBoundaryGoals/i.test(system))issues.push('missing_per_card_goal_coverage_rule');
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
  if(!/responsePlan[^\n]{0,700}directAnswer/i.test(system))issues.push('missing_direct_answer_plan_rule');
  if(!/responsePlan[^\n]{0,1000}actionGuidance/i.test(system))issues.push('missing_action_guidance_plan_rule');
@@ -135,7 +136,8 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_position_evidence_rule'),
   !issues.includes('missing_coverage_status'),
   !issues.includes('missing_application_domain_diagnostics'),
-  !issues.includes('missing_goal_coverage_rule'),
+ !issues.includes('missing_goal_coverage_rule'),
+  !issues.includes('missing_per_card_goal_coverage_rule'),
   !issues.includes('missing_response_plan_goal_rule'),
   !issues.includes('missing_direct_answer_plan_rule'),
   !issues.includes('missing_action_guidance_plan_rule'),
@@ -206,11 +208,11 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
  try{
   const routing=analyzeReadingQuestion(question);
   const evidenceMeta=summarizeReadingEvidence(retrieval.evidence,cards,{themes:routing.themes,goals:routing.goals});
-  const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
+  const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.coverageBoundaryGoals.length>0;
   const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
   const requiredActionGoalEvidence=routing.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok);
   const requireGoalSections=routing.goals.length>1;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.missingGoalCoverage,requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
@@ -246,10 +248,10 @@ export function evaluateFollowupFixture({question,cards,output,requiredKinds=[]}
  const routing=analyzeReadingQuestion(question);
  const evidenceMeta=summarizeReadingEvidence(retrieval.evidence,cards,{themes:routing.themes,goals:routing.goals});
  const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
- const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
+  const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.coverageBoundaryGoals.length>0;
  const issues=[...retrieval.issues];let parsed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requireGoalTextCoverage:routing.goals.length>0,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.missingGoalCoverage,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requireGoalTextCoverage:routing.goals.length>0,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
  }catch{issues.push('output_contract');}
  const uniqueIssues=[...new Set(issues)],checks=[retrieval.ok,parsed!==null];
  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};
