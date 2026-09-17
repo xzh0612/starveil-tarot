@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,requiresPerspectiveBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -935,6 +935,17 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
  assert.throws(()=>parseReadingOutput(noBoundary,{cards:[cards[0]],evidence,requireUncertainty:true,requireRealityBoundary:true}),/高风险问题需要现实依据说明/);
  const grounded=JSON.stringify({text:'牌面只能作为反思线索。',uncertainty:'投资决定请依据风险承受能力、产品资料和持牌专业意见。'});
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
+});
+
+test('mind-reading questions require an uncertainty boundary about observable reality',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'他的真实想法是什么？',cards:[card]});
+ assert.equal(requiresPerspectiveBoundary('他的真实想法是什么？'),true);
+ assert.equal(requiresPerspectiveBoundary('我该如何处理这段关系？'),false);
+ const vague=JSON.stringify({text:'牌面提示他内心仍然在意。',uncertainty:'牌面只能提供趋势线索。'});
+ assert.throws(()=>parseReadingOutput(vague,{cards:[card],evidence,requirePerspectiveBoundary:true}),/他人内心/);
+ const grounded=JSON.stringify({text:'牌面只能作为理解互动的线索。',uncertainty:'牌面不能确认对方的真实想法，需要通过沟通和现实互动核验。'});
+ assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requirePerspectiveBoundary:true}).uncertainty,'牌面不能确认对方的真实想法，需要通过沟通和现实互动核验。');
 });
 
 test('high-stakes boundary accumulates user history but ignores assistant prose',()=>{

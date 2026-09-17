@@ -1,4 +1,4 @@
-import {analyzeReadingQuestion,canAskClarification,parseReadingOutput,requiresProfessionalBoundary,retrieveReadingEvidence,summarizeReadingEvidence} from './reading-rag.mjs';
+import {analyzeReadingQuestion,canAskClarification,parseReadingOutput,requiresPerspectiveBoundary,requiresProfessionalBoundary,retrieveReadingEvidence,summarizeReadingEvidence} from './reading-rag.mjs';
 
 const ACTION_WORDS=/建议|可以|先|尝试|记录|核实|安排|沟通|复盘|拆分|设定|观察|练习|下一步/u;
 
@@ -51,6 +51,7 @@ export function evaluatePromptContract(messages=[]){
  const issues=[];
  if(!/evidence|证据|引用/i.test(system))issues.push('missing_system_evidence_rule');
  if(!/starveil_history[\s\S]{0,700}(?:不可信|不能当作当前牌义|不能替代)/i.test(system))issues.push('missing_history_trust_boundary');
+ if(!/safetyMeta[\s\S]{0,900}requiresPerspectiveBoundary[\s\S]{0,900}(?:他人|内心|沟通|现实互动)/i.test(system))issues.push('missing_perspective_boundary_rule');
  if(!/sourceAuthority[\s\S]{0,700}canonical_fixed[\s\S]{0,700}(?:不能覆盖|权威|冲突)/i.test(system))issues.push('missing_source_authority_rule');
  if(!/tier|层级|retrievalReasons/i.test(system))issues.push('missing_evidence_hierarchy');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
@@ -104,6 +105,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/goal|目标/i.test(user))issues.push('missing_goal_metadata');
  if(!/sourceType|sourceLabel/.test(user)||!/retrievalRequired/.test(user))issues.push('missing_prompt_evidence_provenance');
  if(!/sourceAuthority/.test(user))issues.push('missing_prompt_source_authority');
+ if(!/safetyMeta/.test(user)||!/requiresPerspectiveBoundary/.test(user))issues.push('missing_perspective_boundary_context');
  if(!/evidenceMeta/.test(user))issues.push('missing_evidence_diagnostics_context');
  if(!/evidencePlan/.test(user))issues.push('missing_evidence_plan_context');
  if(!/positionEvidenceIds/.test(user))issues.push('missing_position_evidence_context');
@@ -119,6 +121,7 @@ export function evaluatePromptContract(messages=[]){
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
   !issues.includes('missing_history_trust_boundary'),
+  !issues.includes('missing_perspective_boundary_rule'),
   !issues.includes('missing_source_authority_rule'),
   !issues.includes('missing_evidence_hierarchy'),
   !issues.includes('missing_json_contract'),
@@ -171,6 +174,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_goal_metadata'),
   !issues.includes('missing_prompt_evidence_provenance'),
   !issues.includes('missing_prompt_source_authority'),
+  !issues.includes('missing_perspective_boundary_context'),
   !issues.includes('missing_evidence_diagnostics_context'),
   !issues.includes('missing_evidence_plan_context'),
   !issues.includes('missing_position_evidence_context'),
@@ -203,7 +207,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
   const requiredActionGoalEvidence=routing.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok);
   const requireGoalSections=routing.goals.length>1;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
@@ -242,7 +246,7 @@ export function evaluateFollowupFixture({question,cards,output,requiredKinds=[]}
  const requiresCoverageBoundary=evidenceMeta.coverageStatus==='anchor_only'||evidenceMeta.missingGoalCoverage.length>0;
  const issues=[...retrieval.issues];let parsed=null;
  try{
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requireGoalTextCoverage:routing.goals.length>0,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requireGoalTextCoverage:routing.goals.length>0,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireSynthesisSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,requireCalibratedLanguage:true,allowClarification:true,isFollowUp:true});
  }catch{issues.push('output_contract');}
  const uniqueIssues=[...new Set(issues)],checks=[retrieval.ok,parsed!==null];
  return {ok:uniqueIssues.length===0,score:scoreChecks(checks),issues:uniqueIssues,parsed,retrieval};

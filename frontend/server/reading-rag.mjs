@@ -36,6 +36,12 @@ export function requiresProfessionalBoundary(question,messages=[]){
  return texts.some(text=>{const normalized=String(text).toLowerCase();return PROFESSIONAL_BOUNDARY_WORDS.some(word=>normalized.includes(word));});
 }
 
+const PERSPECTIVE_BOUNDARY_WORDS=['真实想法','真实感受','真实态度','心里怎么想','心里在想','对方怎么想','他怎么想','她怎么想','爱不爱我','喜欢我吗','在不在乎','有没有想我','对我是什么感觉'];
+export function requiresPerspectiveBoundary(question,messages=[]){
+ const texts=[String(question??''),...(Array.isArray(messages)?messages.filter(message=>message?.role==='user'&&typeof message.text==='string').map(message=>message.text):[])];
+ return texts.some(text=>{const normalized=String(text).toLowerCase();return PERSPECTIVE_BOUNDARY_WORDS.some(word=>normalized.includes(word));});
+}
+
 const THEMES=[
  {name:'relationship',words:['关系','感情','恋爱','爱情','伴侣','对象','前任','暧昧','复合','婚姻','分手','喜欢','相处','沟通','边界','冷战','联系','聊天','告白','家庭','朋友'],weakWords:['他','她','我们']},
  {name:'career',words:['工作','事业','职业','学习','备考','复习','考研','考试','创业','项目','领导','同事','收入','财务','转行','跳槽','辞职','换岗','职场','就业','求职','面试','绩效','薪资','薪水','待遇','升职','技能','论文','升学','录取','上岸','学校','院校','offer','岗位','职位','公司','入职']},
@@ -615,6 +621,11 @@ function hasRealityBoundary(text){
  const value=String(text??'').trim();
  return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
 }
+const PERSPECTIVE_BOUNDARY_PATTERN=/不能确认|无法知道|无法验证|不能读取|牌面不能判断|需要通过沟通|现实互动|直接询问|行为反馈|观察行动|不能代替沟通|只能作为反思/u;
+function hasPerspectiveBoundary(text){
+ const value=String(text??'').trim();
+ return value.length>=12&&PERSPECTIVE_BOUNDARY_PATTERN.test(value);
+}
 const COVERAGE_BOUNDARY_PATTERN=/证据|资料|信息|应用|覆盖|不足|有限|缺少|仅有核心|只能依据核心/u;
 function hasCoverageBoundary(text){
  const value=String(text??'').trim();
@@ -629,7 +640,7 @@ function hasAbsoluteClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -751,8 +762,9 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  const followUp=excerpt(data.followUp??'',500);
  if(requireFollowUpQuestion&&!needsClarification&&followUp&&!isFocusedFollowUp(followUp))throw Error('追问问题格式不正确，请重试。');
  const uncertainty=excerpt(data.uncertainty??'',500);
- if((requireUncertainty||requireRealityBoundary)&&!needsClarification&&!uncertainty)throw Error(requireRealityBoundary?'高风险问题需要现实依据说明，请重试。':'首轮解读必须包含不确定性说明，请重试。');
+ if((requireUncertainty||requireRealityBoundary||requirePerspectiveBoundary)&&!needsClarification&&!uncertainty)throw Error(requirePerspectiveBoundary?'涉及他人内心的问题需要明确不可验证边界，请重试。':requireRealityBoundary?'高风险问题需要现实依据说明，请重试。':'首轮解读必须包含不确定性说明，请重试。');
  if(requireRealityBoundary&&!needsClarification&&!hasRealityBoundary(uncertainty))throw Error('高风险问题需要现实依据说明，请重试。');
+ if(requirePerspectiveBoundary&&!needsClarification&&!hasPerspectiveBoundary(uncertainty))throw Error('涉及他人内心的问题需要明确不可验证边界，请重试。');
  if(requireCoverageBoundary&&!needsClarification&&!hasCoverageBoundary(uncertainty))throw Error('证据覆盖不足时必须说明应用资料限制，请重试。');
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
