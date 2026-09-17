@@ -990,6 +990,13 @@ test('high-stakes questions require an explicit reality-based boundary',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireUncertainty:true}).uncertainty,'投资决定请依据风险承受能力、产品资料和持牌专业意见。');
 });
 
+test('professional boundary recognizes common financial, legal and clinical phrasings',()=>{
+ assert.equal(requiresProfessionalBoundary('这套房贷现在该不该申请？'),true);
+ assert.equal(requiresProfessionalBoundary('这份检查报告代表什么？'),true);
+ assert.equal(requiresProfessionalBoundary('离婚协议要怎么处理？'),true);
+ assert.equal(requiresProfessionalBoundary('我想看看这段关系怎么沟通。'),false);
+});
+
 test('mind-reading questions require an uncertainty boundary about observable reality',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'他的真实想法是什么？',cards:[card]});
