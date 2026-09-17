@@ -15,6 +15,7 @@ test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('action_text_support'),/行动建议本身/);
  assert.match(readingErrorHint('card_reading_support'),/逐牌解释/);
  assert.match(readingErrorHint('overconfident_claim'),/绝对预测/);
+ assert.match(readingErrorHint('timing_claim'),/观察窗口|现实核验/);
  assert.match(readingErrorHint('action_concreteness'),/可执行/);
  assert.match(readingErrorHint('action_reason'),/牌面相关的理由/);
  assert.match(readingErrorHint('action_reason_support'),/证据不匹配/);

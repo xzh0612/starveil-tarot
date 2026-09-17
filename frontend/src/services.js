@@ -21,6 +21,7 @@ const READING_ERROR_HINTS={
  missing_card_anchor:'某张牌的逐牌解释缺少核心牌义依据，原牌局仍然保留。',
  card_reading_support:'某张牌的逐牌解释没有得到对应证据支持，原牌局仍然保留。',
  overconfident_claim:'回答包含牌面无法确认的绝对预测，原牌局仍然保留。',
+ timing_claim:'回答把时间写成了牌面确定的预测，请改用观察窗口或现实核验，原牌局仍然保留。',
  action_concreteness:'行动建议不够可执行，请稍后重试原牌局。',
  action_reason:'行动建议缺少与牌面相关的理由，原牌局仍然保留。',
  action_reason_support:'行动理由与引用的牌面证据不匹配，原牌局仍然保留。',

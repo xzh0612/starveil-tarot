@@ -633,10 +633,18 @@ function hasCoverageBoundary(text){
 }
 const ABSOLUTE_CLAIM_PATTERN=/(?:百分之百|绝对|必然|肯定|一定|注定|保证)(?:.{0,4})(?:会|能|可以|不会|不能|复合|回来|联系|发生|实现|结婚|录取|升职|盈利|获利|解决|治愈|痊愈|安全|准确)/u;
 const NEGATED_ABSOLUTE_PATTERN=/(?:不能|无法|不会|不代表|并不|不是|不保证|不意味着|不说明|不要|别|不应|不等于).{0,8}$/u;
+const DETERMINISTIC_TIMING_PATTERN=/(?:今天|明天|后天|三天后|几天后|数天后|一周后|几周后|几个月后|下周|下个月|本周|本周内|本月|月底|今年|明年|未来\d{1,3}天|未来一周|未来一个月|\d{1,3}天后|\d{1,3}天内|\d{1,2}周后|\d{1,2}个月后|\d{1,2}月|\d{4}年\d{1,2}月\d{1,2}日|\d{1,2}月\d{1,2}日).{0,16}(?:会|将|一定|必然|肯定|发生|出现|联系|复合|回来|录取|升职|成功|结婚|分手|找到|通过)/u;
+const NEGATED_TIMING_PATTERN=/(?:不能确认|无法确认|不确定|不能保证|不保证|不一定|未必|可能不会|也许不会|或许不会|不代表|不意味着)/u;
 function hasAbsoluteClaim(text){
  return String(text??'').split(/[。！？!?；;\n]+/u).some(segment=>{
   const match=segment.match(ABSOLUTE_CLAIM_PATTERN);if(!match)return false;
   return !NEGATED_ABSOLUTE_PATTERN.test(segment.slice(0,match.index));
+ });
+}
+function hasDeterministicTimingClaim(text){
+ return String(text??'').split(/[。！？!?；;\n]+/u).some(segment=>{
+  if(NEGATED_TIMING_PATTERN.test(segment))return false;
+  return DETERMINISTIC_TIMING_PATTERN.test(segment);
  });
 }
 
@@ -646,6 +654,8 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(!text.startsWith('{')){
   if(requireCoverage||requireActions||requireReferences||requireSynthesis||requireUncertainty||requireRealityBoundary)throw Error('首轮解读必须返回结构化 JSON，请重试。');
   if(isFollowUp&&requireTextSupport&&!claimSupportedByEvidence(text,{text:evidence.filter(item=>item?.source!=='memory').map(item=>item?.text??'').join('；')},{allowGeneric:false,requireSentenceSupport:true}))throw Error('追问正文与证据不匹配，请重试。');
+  if(requireCalibratedLanguage&&hasAbsoluteClaim(text))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
+  if(requireCalibratedLanguage&&hasDeterministicTimingClaim(text))throw Error('解读不能给出确定时间，请重试。');
   return {text,synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''};
  }
  let data;try{data=JSON.parse(text);}catch{throw Error('解读格式不正确，请重试。');}
@@ -783,7 +793,9 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   if(!claimSupportedByEvidence(data.text,{text:groundedText},{allowGeneric:false,requireSentenceSupport:true}))throw Error(structuredFollowUp?'追问正文与证据不匹配，请重试。':'解读正文与证据不匹配，请重试。');
  }
  if((requireActionTextSupport||isFollowUp)&&!needsClarification&&!actionsTextSupported)throw Error('行动建议内容与证据不匹配，请重试。');
- if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...actions.flatMap(item=>[item.text,item.reason]),...refs.map(item=>item.claim),data.followUp,uncertainty,data.clarification].filter(Boolean).join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
+ const calibratedText=[data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...refs.map(item=>item.claim),data.followUp,uncertainty,data.clarification].filter(Boolean).join('\n');
+ if(requireCalibratedLanguage&&!needsClarification&&hasAbsoluteClaim([calibratedText,...actions.flatMap(item=>[item.text,item.reason])].filter(Boolean).join('\n')))throw Error('解读包含无法由牌面确认的绝对断言，请重试。');
+ if(requireCalibratedLanguage&&!needsClarification&&hasDeterministicTimingClaim(calibratedText))throw Error('解读不能给出确定时间，请重试。');
  const enforceGoalReferenceCoverage=!isFollowUp||requireGoalReferenceCoverage;
  if(!needsClarification&&enforceGoalReferenceCoverage&&(!isFollowUp||structuredFollowUp)){
   const goals=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];

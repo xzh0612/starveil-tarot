@@ -1098,6 +1098,15 @@ test('calibration allows a negated boundary around an absolute prediction',()=>{
  assert.equal(parsed.text,'牌面不能保证一定会复合，仍需观察现实沟通。');
 });
 
+test('calibration rejects deterministic timing claims but allows timed actions',()=>{
+ const timedPrediction=JSON.stringify({text:'三天后他会主动联系你。',uncertainty:'牌面不能确认具体日期。'});
+ assert.throws(()=>parseReadingOutput(timedPrediction,{requireCalibratedLanguage:true}),/确定时间/);
+ const boundedTiming=JSON.stringify({text:'牌面不能保证三天后会发生这件事。',uncertainty:'仍需观察现实反馈。'});
+ assert.doesNotThrow(()=>parseReadingOutput(boundedTiming,{requireCalibratedLanguage:true}));
+ const timedAction=JSON.stringify({text:'把稳定节奏作为观察线索。',actions:[{text:'未来三天记录一次现实反馈。',reason:'用稳定节奏核对现实互动。',evidenceIds:['m08:orientation']}]});
+ assert.doesNotThrow(()=>parseReadingOutput(timedAction,{cards:[{id:'m08',position:'建议'}],evidence:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',tier:'anchor',text:'用稳定节奏观察现实反馈。'}],requireCalibratedLanguage:true}));
+});
+
 test('plain text provider responses stay backward compatible without inventing references',()=>{
  const parsed=parseReadingOutput('保持稳定练习。',{cards,evidence:[]});
  assert.deepEqual(parsed,{text:'保持稳定练习。',synthesis:{text:'',evidenceIds:[]},goalSections:[],references:[],cardReadings:[],actions:[],needsClarification:false,clarification:'',followUp:'',uncertainty:''});
@@ -1107,6 +1116,7 @@ test('plain text follow-ups still require a concrete evidence overlap',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  assert.equal(parseReadingOutput('保持温柔而稳定的练习。',{cards:[cards[0]],evidence,isFollowUp:true,requireTextSupport:true}).text,'保持温柔而稳定的练习。');
  assert.throws(()=>parseReadingOutput('对方已经搬去火星。',{cards:[cards[0]],evidence,isFollowUp:true,requireTextSupport:true}),/追问正文与证据不匹配/);
+ assert.throws(()=>parseReadingOutput('稳定节奏会在三天后出现。',{cards:[cards[0]],evidence,isFollowUp:true,requireTextSupport:true,requireCalibratedLanguage:true}),/确定时间/);
 });
 
 test('structured follow-ups require top-level text support from cited evidence',()=>{

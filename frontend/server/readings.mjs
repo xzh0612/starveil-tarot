@@ -151,6 +151,7 @@ function repairCode(error){
   [/解读正文与证据不匹配/u,'text_support'],
   [/证据覆盖不足时必须说明应用资料限制/u,'coverage_boundary'],
   [/(?:首轮|追问)引用没有覆盖当前回答目标/u,'missing_goal_reference_coverage'],
+  [/解读不能给出确定时间/u,'timing_claim'],
   [/解读包含无法由牌面确认的绝对断言/u,'overconfident_claim'],
  [/行动建议引用无效/u,'invalid_action_evidence'],
   [/当前回答没有直接回应本轮问题/u,'question_relevance'],
@@ -204,6 +205,8 @@ function repairGuidance({code,evidence=[],cards=[],requiredGoalEvidence=[]}={}){
   ?'目标正文错误：text 必须复述每个有可用 requiredEvidenceTier 的目标证据中的一个具体概念；预测要使用 reference，建议或比较要使用 application，解释要使用 anchor。'
   :code==='perspective_boundary'
    ?'他人内心边界错误：牌面不能验证对方的真实想法或感受；uncertainty 必须明确写出不可验证边界，并把核验方式落到沟通、现实互动或可观察行为。'
+  :code==='timing_claim'
+   ?'时间断言错误：不要把牌面写成今天、三天后、下周或某个日期必然发生的事件；改为趋势、观察窗口和现实核验。行动建议可以给出记录或核验的时间范围，但不能把它写成预测结果。'
   :code==='text_support'
    ?'顶层正文错误：text 的每个实质句或逗号分句都必须直接回应当前问题，并复述本次引用 evidence 中的具体、非通用概念；不要在已命中的分句后追加证据之外的事实。'
   :code==='question_relevance'
