@@ -985,6 +985,24 @@ test('forecast readings require a matching reference-tier citation when availabl
  assert.equal(parseReadingOutput(valid,{cards:[card],evidence,requiredGoalEvidence:['forecast']}).references.length,2);
 });
 
+test('forecast top-level text must use the routed reference concept',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const forecastReference=evidence.find(item=>item.tier==='reference'&&item.retrievalGoals.includes('forecast'));
+ assert.ok(orientation&&forecastReference);
+ const detached=JSON.stringify({text:'未来先观察现实反馈，保持平静。',references:[
+  {evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定、温柔而明确'},
+  {evidenceId:forecastReference.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude 的力量与勇气'},
+ ]});
+ assert.throws(()=>parseReadingOutput(detached,{cards:[card],evidence,requiredGoalEvidence:['forecast'],requireGoalReferenceCoverage:true,requireReferenceClaims:true,requireReferenceSupport:true,requireGoalTextCoverage:true}),/回答正文没有覆盖当前目标证据/);
+ const grounded=JSON.stringify({text:'未来可以以 Fortitude 的力量与勇气作为趋势参考，再观察现实反馈。',references:[
+  {evidenceId:orientation.evidenceId,cardId:'m08',position:'建议',claim:'稳定、温柔而明确'},
+  {evidenceId:forecastReference.evidenceId,cardId:'m08',position:'建议',claim:'Fortitude 的力量与勇气'},
+ ]});
+ assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[card],evidence,requiredGoalEvidence:['forecast'],requireGoalReferenceCoverage:true,requireReferenceClaims:true,requireReferenceSupport:true,requireGoalTextCoverage:true}));
+});
+
 test('mixed first readings require one grounded section per routed goal',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？同时我该怎么安排下一步？',cards:[card]});

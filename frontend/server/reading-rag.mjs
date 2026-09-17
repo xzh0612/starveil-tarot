@@ -674,18 +674,26 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   const required=[...new Set((Array.isArray(requiredGoalSections)?requiredGoalSections:[]).filter(goal=>READING_GOALS.has(goal)))];
   if(required.some(goal=>!goalSections.some(item=>item.goal===goal)))throw Error('首轮解读必须按目标分别返回目标分段，请重试。');
  }
- let goalTextCoverageOk=true;
- if(requireGoalTextCoverage&&!needsClarification&&goalSections.length>1){
-  const targets=[...new Set((Array.isArray(requiredGoalSections)&&requiredGoalSections.length?requiredGoalSections:goalSections.map(item=>item.goal)).filter(goal=>READING_GOALS.has(goal)))];
+ const goalTextCoverageError=()=>{
+  const requested=[...new Set((Array.isArray(requiredGoalSections)&&requiredGoalSections.length?requiredGoalSections:goalSections.map(item=>item.goal)).filter(goal=>READING_GOALS.has(goal)))];
+  const available=[...new Set((Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[]).filter(goal=>READING_GOALS.has(goal)))];
+  const targets=[...new Set((available.length?available:requested).filter(goal=>READING_GOALS.has(goal)))];
+  let covered=true;
   for(const goal of targets){
-   const section=goalSections.find(item=>item.goal===goal);
+   const requiredTier=GOAL_REFERENCE_TIERS[goal];
+   const hasAvailableTier=[...evidenceById.values()].some(item=>item?.tier===requiredTier&&item?.retrievalGoals?.includes(goal));
+   if(!hasAvailableTier)continue;
+   const section=goalSections.find(item=>item?.goal===goal);
    const sectionIds=section?.evidenceIds??[];
    const referenceIds=refs.filter(reference=>evidenceById.get(reference.evidenceId)?.source!=='memory'&&evidenceById.get(reference.evidenceId)?.retrievalGoals?.includes(goal)).map(reference=>reference.evidenceId);
-   const goalEvidenceIds=[...new Set([...sectionIds,...referenceIds])];
+   const goalEvidenceIds=[...new Set([...sectionIds,...referenceIds])].filter(id=>evidenceById.get(id)?.tier===requiredTier);
    const goalEvidence=goalEvidenceIds.map(id=>evidenceById.get(id)?.text??'').join('；');
-   if(section&&!claimSupportedByEvidence(data.text,{text:goalEvidence},{allowGeneric:false,requireSentenceSupport:false}))goalTextCoverageOk=false;
+   if(!goalEvidence||!claimSupportedByEvidence(data.text,{text:goalEvidence},{allowGeneric:false,requireSentenceSupport:false}))covered=false;
   }
- }
+  if(covered)return '';
+  const routedGoals=available.length?available:requested;
+  return [...new Set(routedGoals.filter(goal=>READING_GOALS.has(goal)))].length>1?'混合目标正文没有覆盖每个回答目标，请重试。':'回答正文没有覆盖当前目标证据，请重试。';
+ };
  let synthesis={text:'',evidenceIds:[]};let synthesisSupportOk=true;
  if(data.synthesis!==undefined){
   if(!data.synthesis||typeof data.synthesis!=='object'||typeof data.synthesis.text!=='string'||!data.synthesis.text.trim()||data.synthesis.text.length>4_000||!Array.isArray(data.synthesis.evidenceIds)||data.synthesis.evidenceIds.length<1||data.synthesis.evidenceIds.length>12||data.synthesis.evidenceIds.some(id=>typeof id!=='string'))throw Error('综合解读格式不正确，请重试。');
@@ -750,7 +758,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');
- if(requireGoalTextCoverage&&!needsClarification&&!goalTextCoverageOk)throw Error('混合目标正文没有覆盖每个回答目标，请重试。');
+ if(requireGoalTextCoverage&&!needsClarification&&goalSections.length>1){const goalTextError=goalTextCoverageError();if(goalTextError)throw Error(goalTextError);}
  const structuredFollowUp=isFollowUp&&!needsClarification&&(refs.length>0||goalSections.length>0||cardReadings.length>0||synthesis.evidenceIds.length>0||actions.length>0);
  if((requireTextSupport||structuredFollowUp)&&!needsClarification){
   const groundedEvidenceIds=nonPersonalEvidenceIds([...new Set(isFollowUp
@@ -769,5 +777,6 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  }
  if(requireQuestionRelevance&&!needsClarification&&!questionTextSupports(data.text,activeQuestion))throw Error('当前回答没有直接回应本轮问题，请重试。');
  if(requireGoalAlignment&&!needsClarification&&!outputGoalsSupport(data.text,goalSections,requiredOutputGoals,{uncertainty}))throw Error('回答没有遵守本轮目标模式，请重试。');
+ if(requireGoalTextCoverage&&!needsClarification&&goalSections.length<=1){const goalTextError=goalTextCoverageError();if(goalTextError)throw Error(goalTextError);}
  return {text:data.text.trim(),synthesis,goalSections,references:refs,cardReadings,actions,needsClarification,clarification,followUp,uncertainty};
 }
