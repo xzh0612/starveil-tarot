@@ -490,6 +490,19 @@ test('position evidence stays ahead of per-card goal evidence when the budget is
  assert.deepEqual(selected.map(item=>item.evidenceId),['a:anchor','b:anchor','a:position','b:position']);
 });
 
+test('mixed goal reservation rotates across cards before stacking goal layers',()=>{
+ const evidence=[
+  {evidenceId:'a:anchor',cardId:'a',tier:'anchor',retrievalRequired:true,retrievalScore:10,retrievalMethod:'test'},
+  {evidenceId:'b:anchor',cardId:'b',tier:'anchor',retrievalRequired:true,retrievalScore:10,retrievalMethod:'test'},
+  {evidenceId:'a:advice',cardId:'a',tier:'application',retrievalRequired:false,retrievalGoals:['advice'],retrievalScore:4,retrievalMethod:'test'},
+  {evidenceId:'b:advice',cardId:'b',tier:'application',retrievalRequired:false,retrievalGoals:['advice'],retrievalScore:3,retrievalMethod:'test'},
+  {evidenceId:'a:forecast',cardId:'a',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:9,retrievalMethod:'test'},
+  {evidenceId:'b:forecast',cardId:'b',tier:'reference',retrievalRequired:false,retrievalGoals:['forecast'],retrievalScore:8,retrievalMethod:'test'},
+ ];
+ const selected=rerankReadingEvidence(evidence,{requiredGoalEvidence:['advice','forecast'],maxTotalEvidence:4,reserveGoalEvidencePerCard:true});
+ assert.deepEqual(selected.map(item=>item.evidenceId),['a:anchor','b:anchor','a:advice','b:forecast']);
+});
+
 test('default evidence budget expands for large mixed spreads',()=>{
  const cardsForSpread=Array.from({length:12},(_,index)=>({id:`m${String(index).padStart(2,'0')}`,reversed:index%2===1,position:`位置 ${index+1}`}));
  const question='我该如何处理这段关系，同时规划接下来的工作，也想调整自己的状态？';

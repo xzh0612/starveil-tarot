@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v33';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v34';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -353,6 +353,13 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  };
  if(reserveGoalEvidencePerCard){
   const cardIds=[...new Set(ranked.map(item=>item.cardId).filter(Boolean))];
+  // Give every card one chance before stacking multiple goal layers on the
+  // first card. This keeps mixed-goal spreads readable when the budget only
+  // leaves room for a subset of the per-card goal evidence.
+  for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++){
+   const goal=goalList[round%Math.max(1,goalList.length)];
+   if(goal)reserveGoal(goal,cardIds[round]);
+  }
   for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++)for(const goal of goalList)reserveGoal(goal,cardIds[round]);
  }else for(const goal of goalList)reserveGoal(goal);
  const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
