@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v35';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v36';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -337,31 +337,45 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  const required=ranked.filter(item=>item.retrievalRequired===true);
  const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
  const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
- const reservedIds=new Set(required.map(item=>item.evidenceId)),positionReserved=[];
- const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
- for(const cardId of positionCardIds){
-  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.cardId===cardId&&Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
-  if(candidate&&positionReserved.length<Math.max(0,budget-required.length)){positionReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
- }
- const goalReserved=[],goalList=[...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])],goalBudget=Math.max(0,budget-required.length-positionReserved.length);
- const reserveGoal=(goal,cardId=null)=>{
-  if(goalReserved.length>=goalBudget)return false;
+ const reservedIds=new Set(required.map(item=>item.evidenceId)),positionReserved=[],goalReserved=[],goalList=[...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])];
+ const reserveGoal=(goal,limit,cardId=null)=>{
+  if(goalReserved.length>=limit)return false;
   const tier=GOAL_REQUIRED_TIERS[goal];
   const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.tier===tier&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)&&(cardId===null||item.cardId===cardId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
   if(!candidate)return false;
   goalReserved.push(candidate);reservedIds.add(candidate.evidenceId);return true;
  };
- if(reserveGoalEvidencePerCard){
+ const reserveGoals=(limit,perCard)=>{
+  if(!limit||!goalList.length)return;
   const cardIds=[...new Set(ranked.map(item=>item.cardId).filter(Boolean))];
-  // Give every card one chance before stacking multiple goal layers on the
-  // first card. This keeps mixed-goal spreads readable when the budget only
-  // leaves room for a subset of the per-card goal evidence.
-  for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++){
-   const goal=goalList[round%Math.max(1,goalList.length)];
-   if(goal)reserveGoal(goal,cardIds[round]);
+  if(perCard){
+   // Give every card one chance before stacking multiple goal layers on the
+   // first card. This keeps mixed-goal spreads readable when the budget only
+   // leaves room for a subset of the per-card goal evidence.
+   for(let round=0;round<cardIds.length&&goalReserved.length<limit;round++){
+    const goal=goalList[round%goalList.length];
+    reserveGoal(goal,limit,cardIds[round]);
+   }
+   for(let round=0;round<cardIds.length&&goalReserved.length<limit;round++)for(const goal of goalList)reserveGoal(goal,limit,cardIds[round]);
+  }else for(const goal of goalList)reserveGoal(goal,limit);
+ };
+ const reservePositions=limit=>{
+  const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
+  for(const cardId of positionCardIds){
+   const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.cardId===cardId&&Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
+   if(candidate&&positionReserved.length<limit){positionReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
   }
-  for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++)for(const goal of goalList)reserveGoal(goal,cardIds[round]);
- }else for(const goal of goalList)reserveGoal(goal);
+ };
+ if(reserveGoalEvidencePerCard){
+  reservePositions(Math.max(0,budget-required.length));
+  reserveGoals(Math.max(0,budget-required.length-positionReserved.length),true);
+ }else{
+  // An explicit budget is usually a deliberate tight prompt budget. Preserve
+  // at least one routed goal layer before optional positional context so a
+  // forecast/comparison answer still has the evidence tier it promises.
+  reserveGoals(Math.max(0,budget-required.length),false);
+  reservePositions(Math.max(0,budget-required.length-goalReserved.length));
+ }
  const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
  const optionalBudget=Math.max(0,budget-required.length-goalReserved.length-positionReserved.length),remaining=[...optional],selected=[];
  while(selected.length<optionalBudget&&remaining.length){
@@ -398,8 +412,14 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
   // leave the application layer empty instead of inventing a work/relationship
   // domain. Open questions retain the broad fallback context.
   const allowedApplications=new Set(suppressFallbackApplication?[]:applicationKinds);
+  // A forecast-only question has no application domain of its own, so a
+  // spread position such as “建议” can safely contribute its application
+  // context. Once advice/comparison already requested an application layer,
+  // keep that explicit layer isolated instead of adding a second inferred
+  // domain from the position label.
+  const allowPositionApplication=!suppressFallbackApplication&&!hasSupportedDomain&&!applicationKinds.length;
   const candidates=themes.length||suppressFallbackApplication
-   ?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind))
+   ?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind)||(allowPositionApplication&&chunk.retrievalReasons?.includes('position_match')))
    :sorted;
   const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);
   const chosen=[...required,...thematic,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);

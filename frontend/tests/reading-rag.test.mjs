@@ -329,6 +329,14 @@ test('retrieval uses spread position semantics for domain-neutral positions',()=
  assert.ok(reflection.retrievalPositionKinds.includes('reflection'));
 });
 
+test('future-only retrieval preserves application evidence selected by the spread position',()=>{
+ const evidence=retrieveReadingEvidence({question:'未来会怎样？',cards:[{id:'m08',reversed:false,position:'建议'}]});
+ const work=evidence.find(item=>item.kind==='work');
+ assert.ok(work);
+ assert.ok(work.retrievalReasons.includes('position_match'));
+ assert.ok(work.retrievalPositionKinds.includes('work'));
+});
+
 test('focused career retrieval excludes unrelated relationship application chunks',()=>{
  const evidence=retrieveReadingEvidence({question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='work'));
