@@ -984,6 +984,15 @@ test('missing forecast evidence requires the same uncertainty boundary',()=>{
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true}).uncertainty,'当前缺少预测参考资料，牌面只能提供有限的趋势线索。');
 });
 
+test('coverage boundary names the missing goal layer instead of only saying information is limited',()=>{
+ const card={id:'m08',reversed:false,position:'建议'};
+ const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]}).filter(item=>item.tier==='anchor');
+ const generic=JSON.stringify({text:'先观察趋势。',uncertainty:'当前资料有限，需要谨慎核实。'});
+ assert.throws(()=>parseReadingOutput(generic,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true,coverageBoundaryGoals:['forecast']}),/证据覆盖不足/);
+ const grounded=JSON.stringify({text:'先观察趋势。',uncertainty:'当前缺少预测参考资料，牌面只能提供有限的趋势线索。'});
+ assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[card],evidence,requireUncertainty:true,requireCoverageBoundary:true,coverageBoundaryGoals:['forecast']}));
+});
+
 test('forecast readings require a matching reference-tier citation when available',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'我之后会怎样发展？',cards:[card]});

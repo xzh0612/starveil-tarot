@@ -627,9 +627,17 @@ function hasPerspectiveBoundary(text){
  return value.length>=12&&PERSPECTIVE_BOUNDARY_PATTERN.test(value);
 }
 const COVERAGE_BOUNDARY_PATTERN=/证据|资料|信息|应用|覆盖|不足|有限|缺少|仅有核心|只能依据核心/u;
-function hasCoverageBoundary(text){
+const COVERAGE_GOAL_BOUNDARY_PATTERNS=Object.freeze({
+ advice:/建议|行动|应用|下一步|可观察/u,
+ forecast:/预测|趋势|参考资料/u,
+ explanation:/解释|原因|线索|核心牌义/u,
+ comparison:/比较|选项|取舍|条件|代价/u,
+});
+function hasCoverageBoundary(text,{goals=[]}={}){
  const value=String(text??'').trim();
- return value.length>=8&&COVERAGE_BOUNDARY_PATTERN.test(value);
+ if(value.length<8||!COVERAGE_BOUNDARY_PATTERN.test(value))return false;
+ const required=[...new Set((Array.isArray(goals)?goals:[]).filter(goal=>COVERAGE_GOAL_BOUNDARY_PATTERNS[goal]))];
+ return required.every(goal=>COVERAGE_GOAL_BOUNDARY_PATTERNS[goal].test(value));
 }
 const ABSOLUTE_CLAIM_PATTERN=/(?:百分之百|绝对|必然|肯定|一定|注定|保证)(?:.{0,4})(?:会|能|可以|不会|不能|复合|回来|联系|发生|实现|结婚|录取|升职|盈利|获利|解决|治愈|痊愈|安全|准确)/u;
 const NEGATED_ABSOLUTE_PATTERN=/(?:不能|无法|不会|不代表|并不|不是|不保证|不意味着|不说明|不要|别|不应|不等于).{0,8}$/u;
@@ -648,7 +656,7 @@ function hasDeterministicTimingClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,coverageBoundaryGoals=[],requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -775,7 +783,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if((requireUncertainty||requireRealityBoundary||requirePerspectiveBoundary)&&!needsClarification&&!uncertainty)throw Error(requirePerspectiveBoundary?'涉及他人内心的问题需要明确不可验证边界，请重试。':requireRealityBoundary?'高风险问题需要现实依据说明，请重试。':'首轮解读必须包含不确定性说明，请重试。');
  if(requireRealityBoundary&&!needsClarification&&!hasRealityBoundary(uncertainty))throw Error('高风险问题需要现实依据说明，请重试。');
  if(requirePerspectiveBoundary&&!needsClarification&&!hasPerspectiveBoundary(uncertainty))throw Error('涉及他人内心的问题需要明确不可验证边界，请重试。');
- if(requireCoverageBoundary&&!needsClarification&&!hasCoverageBoundary(uncertainty))throw Error('证据覆盖不足时必须说明应用资料限制，请重试。');
+ if(requireCoverageBoundary&&!needsClarification&&!hasCoverageBoundary(uncertainty,{goals:coverageBoundaryGoals}))throw Error('证据覆盖不足时必须说明应用资料限制，请重试。');
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
