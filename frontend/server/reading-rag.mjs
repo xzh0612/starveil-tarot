@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v32';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v33';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -337,7 +337,13 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
  const required=ranked.filter(item=>item.retrievalRequired===true);
  const requested=Number.isFinite(maxTotalEvidence)?Math.floor(maxTotalEvidence):48;
  const budget=Math.max(required.length,Math.min(96,Math.max(1,requested)));
- const reservedIds=new Set(required.map(item=>item.evidenceId)),goalReserved=[],goalList=[...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])],goalBudget=Math.max(0,budget-required.length);
+ const reservedIds=new Set(required.map(item=>item.evidenceId)),positionReserved=[];
+ const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
+ for(const cardId of positionCardIds){
+  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.cardId===cardId&&Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
+  if(candidate&&positionReserved.length<Math.max(0,budget-required.length)){positionReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
+ }
+ const goalReserved=[],goalList=[...new Set(Array.isArray(requiredGoalEvidence)?requiredGoalEvidence:[])],goalBudget=Math.max(0,budget-required.length-positionReserved.length);
  const reserveGoal=(goal,cardId=null)=>{
   if(goalReserved.length>=goalBudget)return false;
   const tier=GOAL_REQUIRED_TIERS[goal];
@@ -349,12 +355,6 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   const cardIds=[...new Set(ranked.map(item=>item.cardId).filter(Boolean))];
   for(let round=0;round<cardIds.length&&goalReserved.length<goalBudget;round++)for(const goal of goalList)reserveGoal(goal,cardIds[round]);
  }else for(const goal of goalList)reserveGoal(goal);
- const positionReserved=[];
- const positionCardIds=[...new Set(ranked.filter(item=>Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).map(item=>item.cardId).filter(Boolean))];
- for(const cardId of positionCardIds){
-  const candidate=ranked.filter(item=>!reservedIds.has(item.evidenceId)&&item.cardId===cardId&&Array.isArray(item.retrievalReasons)&&item.retrievalReasons.includes('position_match')).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId))[0];
-  if(candidate&&positionReserved.length<Math.max(0,budget-required.length-goalReserved.length)){positionReserved.push(candidate);reservedIds.add(candidate.evidenceId);}
- }
  const optional=ranked.filter(item=>!reservedIds.has(item.evidenceId)).sort((a,b)=>b.retrievalScore-a.retrievalScore||a.evidenceId.localeCompare(b.evidenceId));
  const optionalBudget=Math.max(0,budget-required.length-goalReserved.length-positionReserved.length),remaining=[...optional],selected=[];
  while(selected.length<optionalBudget&&remaining.length){
@@ -365,7 +365,7 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
   selected.push(next);
   remaining.splice(remaining.indexOf(next),1);
  }
- return [...required,...goalReserved,...positionReserved,...selected];
+ return [...required,...positionReserved,...goalReserved,...selected];
 }
 
 export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null,highStakes=null}={}){
