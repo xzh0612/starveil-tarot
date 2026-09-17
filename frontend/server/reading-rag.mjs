@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v36';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v37';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -410,17 +410,20 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
   // eligible, while unrelated application prose cannot crowd out the topic.
   // If a question has a named non-application theme (for example future),
   // leave the application layer empty instead of inventing a work/relationship
-  // domain. Open questions retain the broad fallback context.
+  // domain. An open question may use an application chunk only when the
+  // position itself names a domain-specific role such as “自我状态” or
+  // “关系挑战”; a generic “建议” position is not enough to invent a domain.
   const allowedApplications=new Set(suppressFallbackApplication?[]:applicationKinds);
   // A forecast-only question has no application domain of its own, so a
   // spread position such as “建议” can safely contribute its application
   // context. Once advice/comparison already requested an application layer,
   // keep that explicit layer isolated instead of adding a second inferred
   // domain from the position label.
-  const allowPositionApplication=!suppressFallbackApplication&&!hasSupportedDomain&&!applicationKinds.length;
-  const candidates=themes.length||suppressFallbackApplication
-   ?sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind)||(allowPositionApplication&&chunk.retrievalReasons?.includes('position_match')))
-   :sorted;
+  const positionKinds=new Set(POSITION_HINTS.filter(hint=>hint.words.some(word=>String(card.position).includes(word))).map(hint=>hint.kind));
+  const allowPositionApplication=!suppressFallbackApplication&&!hasSupportedDomain&&!applicationKinds.length&&(
+   goals.length>0||positionKinds.has('relationships')||positionKinds.has('reflection')
+  );
+  const candidates=sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind)||(allowPositionApplication&&chunk.retrievalReasons?.includes('position_match')));
   const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);
   const chosen=[...required,...thematic,...candidates].filter((chunk,index,list)=>list.findIndex(other=>other.kind===chunk.kind)===index).slice(0,limit);
   return chosen.map(chunk=>({

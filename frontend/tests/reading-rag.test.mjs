@@ -297,7 +297,7 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
 });
 
 test('retrieval exposes response-goal signals for application evidence',()=>{
- const evidence=retrieveReadingEvidence({question:'我该怎么平静说出感受？',cards:[cards[0]]});
+ const evidence=retrieveReadingEvidence({question:'我该怎么在这段关系里和对方平静说出感受？',cards:[cards[0]]});
  const application=evidence.find(item=>item.kind==='relationships');
  assert.ok(application.retrievalGoals.includes('advice'));
  assert.ok(application.retrievalReasons.includes('goal_match'));
@@ -341,6 +341,18 @@ test('focused career retrieval excludes unrelated relationship application chunk
  const evidence=retrieveReadingEvidence({question:'我该如何规划这次转行和下一步行动？',cards:[cards[0]]});
  assert.ok(evidence.some(item=>item.kind==='work'));
  assert.ok(!evidence.some(item=>item.kind==='relationships'));
+});
+
+test('domain-neutral advice retrieval keeps only reflective application context',()=>{
+ const question='我该怎么办？',evidence=retrieveReadingEvidence({question,cards:[cards[0]]});
+ assert.ok(evidence.some(item=>item.kind==='reflection'));
+ assert.ok(!evidence.some(item=>item.kind==='relationships'));
+ assert.ok(!evidence.some(item=>item.kind==='work'));
+});
+
+test('open retrieval does not invent an application domain from a generic advice position',()=>{
+ const evidence=retrieveReadingEvidence({question:'帮我看看',cards:[{id:'m08',reversed:false,position:'建议'}]});
+ assert.equal(evidence.some(item=>item.tier==='application'),false);
 });
 
 test('high-stakes questions without a supported domain do not borrow application prose',()=>{
