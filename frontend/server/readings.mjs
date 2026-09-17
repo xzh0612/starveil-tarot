@@ -205,6 +205,8 @@ function repairGuidance({code,evidence=[],cards=[],requiredGoalEvidence=[]}={}){
   ?'目标正文错误：text 必须复述每个有可用 requiredEvidenceTier 的目标证据中的一个具体概念；预测要使用 reference，建议或比较要使用 application，解释要使用 anchor。'
   :code==='perspective_boundary'
    ?'他人内心边界错误：牌面不能验证对方的真实想法或感受；uncertainty 必须明确写出不可验证边界，并把核验方式落到沟通、现实互动或可观察行为。'
+  :code==='coverage_boundary'
+   ?'证据覆盖错误：当前牌局只有核心牌义，或缺少本轮目标所需的应用/预测/比较资料。uncertainty 必须明确指出缺少哪一层依据，并收窄结论；不要把核心牌义补写成具体建议、预测结果或选项判断。'
   :code==='timing_claim'
    ?'时间断言错误：不要把牌面写成今天、三天后、下周或某个日期必然发生的事件；改为趋势、观察窗口和现实核验。行动建议可以给出记录或核验的时间范围，但不能把它写成预测结果。'
   :code==='text_support'
