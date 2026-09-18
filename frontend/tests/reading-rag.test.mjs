@@ -615,6 +615,16 @@ test('memory retrieval rejects a single generic short overlap',()=>{
  assert.deepEqual(evidence.map(item=>item.evidenceId),[]);
 });
 
+test('memory retrieval respects a deterministic total text budget',()=>{
+ const memories=Array.from({length:6},(_,index)=>({id:`long-${index}`,text:`我在重要决定前会先独处整理思绪，第${index}条。${'补充记录。'.repeat(1_500)}`,enabled:true}));
+ const evidence=retrieveMemoryEvidence({question:'重要决定 独处 整理思绪',memories,max:6,maxTotalChars:4_000});
+ assert.ok(evidence.length>0);
+ assert.ok(evidence.length<6);
+ assert.ok(evidence.reduce((total,item)=>total+item.text.length,0)<=4_000);
+ assert.equal(evidence[0].evidenceId,'memory:long-0');
+ assert.ok(evidence[0].memoryExcerpted);
+});
+
 test('structured output accepts only references from the retrieved evidence set',()=>{
  const evidence=retrieveReadingEvidence({question:'我每天学习两小时，如何保持？',cards:[cards[0]]});
  const valid=JSON.stringify({text:'把稳定节奏拆成可执行的小步。',references:[{evidenceId:evidence[0].evidenceId,cardId:'m08',position:'建议',claim:'稳定节奏'}],followUp:'你最容易在哪个时段中断？',uncertainty:'牌义是反思线索，不是事实证明。'});
