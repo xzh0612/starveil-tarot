@@ -974,6 +974,14 @@ test('focused first readings cannot use clarification to bypass coverage',()=>{
  assert.throws(()=>parseReadingOutput(output,{cards:[cards[0]],evidence,requireCoverage:true,requireActions:true,requireReferences:true,allowClarification:false}),/明确主题不允许跳过首轮解读/);
 });
 
+test('open goals with an explicit theme cannot smuggle in a prediction',()=>{
+ const evidence=retrieveReadingEvidence({question:'这段关系',cards:[cards[0]]});
+ const unsafe=JSON.stringify({text:'你们可能会复合。'});
+ assert.throws(()=>parseReadingOutput(unsafe,{cards:[cards[0]],evidence,requireOpenGoalBoundary:true}),/目标未明确时不能擅自预测/);
+ const grounded=JSON.stringify({text:'牌面提示先观察稳定而明确的互动。'});
+ assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireOpenGoalBoundary:true}));
+});
+
 test('structured actions must cite evidence from the current reading',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const valid=JSON.stringify({text:'先观察再沟通。',actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence[0].evidenceId]}]});

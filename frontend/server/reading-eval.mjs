@@ -68,6 +68,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/responsePlan[^\n]{0,500}(?:goal|emphasis)/i.test(system))issues.push('missing_response_plan_goal_rule');
  if(!/responsePlan[^\n]{0,700}directAnswer/i.test(system))issues.push('missing_direct_answer_plan_rule');
  if(!/responsePlan[^\n]{0,1000}actionGuidance/i.test(system))issues.push('missing_action_guidance_plan_rule');
+ if(!/responsePlan\.goal=open[\s\S]{0,300}clarificationMeta\.allowClarification=false[\s\S]{0,500}(?:不能|不得).{0,20}(?:预测|复合|联系|成功)/u.test(system))issues.push('missing_open_goal_boundary_rule');
  if(!/goalPlan[^\n]{0,700}(?:order|evidenceIds|逐一回应)/i.test(system))issues.push('missing_goal_plan_rule');
  if(!/goalSections[^\n]{0,700}(?:目标|goal|分段|evidenceIds)/i.test(system))issues.push('missing_goal_sections_rule');
  if(!/首轮[^\n]{0,120}(?:直接回应|先回答) activeQuestion[^\n]{0,160}(?:goalPlan|牌位)/u.test(system))issues.push('missing_direct_answer_order_rule');
@@ -142,6 +143,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_response_plan_goal_rule'),
   !issues.includes('missing_direct_answer_plan_rule'),
   !issues.includes('missing_action_guidance_plan_rule'),
+  !issues.includes('missing_open_goal_boundary_rule'),
   !issues.includes('missing_goal_plan_rule'),
   !issues.includes('missing_goal_sections_rule'),
   !issues.includes('missing_synthesis_per_card_rule'),
@@ -214,7 +216,8 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
   const requiredActionGoalEvidence=routing.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok);
   const requireGoalSections=routing.goals.length>1;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireProfessionalActionBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification});
+  const hasExplicitOpenGoal=!routing.goals.length&&routing.themes.some(theme=>['relationship','career','reflection'].includes(theme));
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireProfessionalActionBoundary:requiresProfessionalBoundary(question),requireOpenGoalBoundary:hasExplicitOpenGoal,requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}

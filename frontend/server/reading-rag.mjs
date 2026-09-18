@@ -703,8 +703,13 @@ function hasDeterministicTimingClaim(text){
   return DETERMINISTIC_TIMING_PATTERN.test(segment);
  });
 }
+const OPEN_GOAL_PREDICTION_PATTERN=/(?:会|将|能|可以)\s*(?:复合|回来|联系|发生|实现|结婚|分手|录取|升职|成功|找到|通过|有结果|改变|发展)|(?:未来|结果|趋势|走向).{0,8}(?:会|将|一定|必然)|(?:对方|他|她).{0,8}(?:喜欢|在乎|爱我|想我)/u;
+const NEGATED_OPEN_GOAL_PATTERN=/(?:不能|无法|不代表|不确定|不保证|不意味着|可能不会|未必|不要|避免|不可|只能|仅能)/u;
+function hasOpenGoalPrediction(text){
+ return String(text??'').split(/[。！？!?；;\n]+/u).some(segment=>OPEN_GOAL_PREDICTION_PATTERN.test(segment)&&!NEGATED_OPEN_GOAL_PATTERN.test(segment));
+}
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireProfessionalActionBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,coverageBoundaryGoals=[],requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireProfessionalActionBoundary=false,requireOpenGoalBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,coverageBoundaryGoals=[],requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -833,6 +838,8 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireRealityBoundary&&!needsClarification&&!hasRealityBoundary(uncertainty))throw Error('高风险问题需要现实依据说明，请重试。');
  if(requirePerspectiveBoundary&&!needsClarification&&!hasPerspectiveBoundary(uncertainty))throw Error('涉及他人内心的问题需要明确不可验证边界，请重试。');
  if(requireCoverageBoundary&&!needsClarification&&!hasCoverageBoundary(uncertainty,{goals:coverageBoundaryGoals}))throw Error('证据覆盖不足时必须说明应用资料限制，请重试。');
+ const visibleOutput=[data.text,...goalSections.map(item=>item.text),synthesis.text,...cardReadings.map(item=>item.reading),...actions.flatMap(item=>[item.text,item.reason]),...refs.map(item=>item.claim),followUp,uncertainty].filter(Boolean).join('\n');
+ if(requireOpenGoalBoundary&&!needsClarification&&hasOpenGoalPrediction(visibleOutput))throw Error('目标未明确时不能擅自预测，请重试。');
  if(requireCardReadingSupport&&!needsClarification&&!cardReadingSupportOk)throw Error('逐牌解读内容与证据不匹配，请重试。');
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
