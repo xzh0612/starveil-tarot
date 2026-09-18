@@ -5,6 +5,7 @@ const READING_FALLBACK_ERROR='解读服务暂时未连接。牌面已保留，�
 const READING_ERROR_HINTS={
  missing_uncertainty:'首轮回答缺少解读边界，正在保护你的判断空间。',
  missing_reality_boundary:'高风险问题需要现实资料或专业意见核验，原牌局仍然保留。',
+ open_goal_prediction:'这段主题还没有指定预测目标，请先围绕核心牌面线索和现实观察继续提问。',
  missing_reference_coverage:'回答没有覆盖全部牌面，原牌局仍然保留。',
  missing_reference_anchor:'回答没有为每张牌绑定核心牌义，原牌局仍然保留。',
  invalid_synthesis_evidence:'合读部分的牌义依据未通过核验，原牌局仍然保留。',
