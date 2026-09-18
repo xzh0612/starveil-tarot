@@ -664,6 +664,11 @@ function hasRealityBoundary(text){
  const value=String(text??'').trim();
  return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
 }
+const HIGH_STAKES_DECISION_ACTION_PATTERN=/买入|卖出|下单|签约|签署|签合同|起诉|停药|加药|减药|自行用药|服药|手术|转账|借贷|贷款|房贷|提交诉讼|直接投资|投资|理财|保险/u;
+function hasProfessionalActionBoundary(text){
+ const value=String(text??'').trim();
+ return !HIGH_STAKES_DECISION_ACTION_PATTERN.test(value)||hasRealityBoundary(value);
+}
 const PERSPECTIVE_BOUNDARY_PATTERN=/不能确认|无法知道|无法验证|不能读取|牌面不能判断|需要通过沟通|现实互动|直接询问|行为反馈|观察行动|不能代替沟通|只能作为反思/u;
 function hasPerspectiveBoundary(text){
  const value=String(text??'').trim();
@@ -699,7 +704,7 @@ function hasDeterministicTimingClaim(text){
  });
 }
 
-export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,coverageBoundaryGoals=[],requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
+export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvidence=[],requiredActionGoalEvidence=[],requiredOutputGoals=[],allowedGoalSections=[],requiredGoalSections=[],requireGoalSections=false,requireGoalTextCoverage=false,requireGoalReferenceCoverage=false,requireGoalAlignment=false,requireFollowUpQuestion=false,requireCoverage=false,requireActions=false,requireReferences=false,requireReferenceClaims=false,requireReferenceSupport=false,requireCardReadingSupport=false,requireConcreteActions=false,requireActionReasons=false,requireActionReasonSupport=false,requireActionTextSupport=false,requireTextSupport=false,requireSynthesis=false,requireSynthesisSupport=false,requireSynthesisCardSupport=false,requireSynthesisAnchors=false,requireUncertainty=false,requireRealityBoundary=false,requireProfessionalActionBoundary=false,requirePerspectiveBoundary=false,requireCoverageBoundary=false,coverageBoundaryGoals=[],requireCalibratedLanguage=false,requirePositionEvidence=false,activeQuestion='',requireQuestionRelevance=false,allowClarification=true,isFollowUp=false}={}){
  const text=typeof content==='string'?content.trim():'';
  if(!text)throw Error('解读内容为空，请重试。');
  if(!text.startsWith('{')){
@@ -799,7 +804,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
   });
   if(requireCoverage&&!needsClarification&&(cardReadings.length!==cards.length||cards.some(card=>!seen.has(card.id))))throw Error('首轮解读没有覆盖全部牌面。');
  }
- let actions=[];let actionsConcrete=true,actionsReasoned=true,actionsReasonSupported=true,actionsTextSupported=true,actionsGoalTierSupported=true;
+ let actions=[];let actionsConcrete=true,actionsReasoned=true,actionsReasonSupported=true,actionsTextSupported=true,actionsGoalTierSupported=true,professionalActionBoundaryOk=true;
  const actionGoals=[...new Set((Array.isArray(requiredActionGoalEvidence)?requiredActionGoalEvidence:[]).filter(goal=>GOAL_REFERENCE_TIERS[goal]))];
  const availableActionGoals=actionGoals.filter(goal=>[...evidenceById.values()].some(item=>item?.tier===GOAL_REFERENCE_TIERS[goal]&&Array.isArray(item.retrievalGoals)&&item.retrievalGoals.includes(goal)));
  if(data.actions!==undefined){
@@ -811,6 +816,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
    if(!evidenceIds.some(id=>['anchor','application','personal'].includes(evidenceById.get(id)?.tier)))throw Error('行动建议必须引用核心或应用证据，请重试。');
    if(item.reason!==undefined&&typeof item.reason!=='string')throw Error('行动建议格式不正确，请重试。');
    if(requireActionReasons&&!needsClarification&&(!item.reason||!item.reason.trim()))actionsReasoned=false;
+   if(requireProfessionalActionBoundary&&!needsClarification&&!hasProfessionalActionBoundary(item.text))professionalActionBoundaryOk=false;
    if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&item.reason!==undefined&&!claimSupportedByEvidence(item.reason,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsReasonSupported=false;
    if((requireActionTextSupport||isFollowUp)&&!needsClarification&&!claimSupportedByEvidence(item.text,{text:evidenceIds.map(id=>evidenceById.get(id)?.text??'')},{allowGeneric:false,requireSentenceSupport:true}))actionsTextSupported=false;
    if(requireConcreteActions&&!needsClarification&&!isConcreteAction(item.text))actionsConcrete=false;
@@ -831,6 +837,7 @@ export function parseReadingOutput(content,{cards=[],evidence=[],requiredGoalEvi
  if(requireSynthesisSupport&&!needsClarification&&!synthesisSupportOk)throw Error('综合解读内容与证据不匹配，请重试。');
  if(requireConcreteActions&&!needsClarification&&!actionsConcrete)throw Error('行动建议必须包含可观察的完成标准，请重试。');
  if(requireActionReasons&&!needsClarification&&!actionsReasoned)throw Error('首轮行动建议必须说明与牌面相关的理由，请重试。');
+ if(requireProfessionalActionBoundary&&!needsClarification&&!professionalActionBoundaryOk)throw Error('高风险行动必须先核实现实资料或咨询专业人士，请重试。');
  if((requireActionReasonSupport||isFollowUp)&&!needsClarification&&!actionsReasonSupported)throw Error('行动理由与牌面证据不匹配，请重试。');
  if(!needsClarification&&availableActionGoals.length&&!actionsGoalTierSupported)throw Error('首轮行动建议缺少当前目标的应用证据，请重试。');
  if(requirePositionEvidence&&!needsClarification&&!cardPositionEvidenceOk)throw Error('逐牌解读必须引用可用的牌位语义证据，请重试。');

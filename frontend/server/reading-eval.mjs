@@ -89,6 +89,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/首轮 goalSections 还必须优先使用该目标的 requiredEvidenceTier/i.test(system))issues.push('missing_goal_section_tier_rule');
  if(!/结构化追问若本轮有明确 goal，也必须在 references 或对应 goalSections 中优先引用该目标的 requiredEvidenceTier/u.test(system))issues.push('missing_followup_goal_tier_rule');
  if(!/advice 或 comparison 目标有可用 application 证据时，每条首轮(?:或结构化追问)? action 至少引用一个对应目标的 application ID/u.test(system))issues.push('missing_action_goal_evidence_rule');
+ if(!/action[\s\S]{0,500}(?:买入|卖出|下单|签约|起诉|停药|用药|转账|借贷)[\s\S]{0,500}(?:核实|风险|专业人士)/u.test(system))issues.push('missing_professional_action_rule');
  if(!/text[^\n]{0,700}(?:正文|内容)[^\n]{0,700}(?:证据|evidence)/i.test(system))issues.push('missing_text_support_rule');
  if(!/(?:text 正文(?:也)?必须与(?:本轮引用|所引) evidence 共享具体、非通用概念|text 正文的每个实质句都必须与本轮引用 evidence 共享具体、非通用概念)/i.test(system))issues.push('missing_text_specific_support_rule');
  if(!/activeQuestion 明确包含关系、事业或自我主题时，顶层 text 还必须直接回应每个明确主题，并为每个主题复述至少一个主题词/u.test(system))issues.push('missing_question_relevance_rule');
@@ -160,6 +161,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_goal_section_tier_rule'),
   !issues.includes('missing_followup_goal_tier_rule'),
   !issues.includes('missing_action_goal_evidence_rule'),
+  !issues.includes('missing_professional_action_rule'),
   !issues.includes('missing_text_support_rule'),
   !issues.includes('missing_text_specific_support_rule'),
   !issues.includes('missing_question_relevance_rule'),
@@ -212,7 +214,7 @@ export function evaluateReadingFixture({question,cards,output,requiredKinds=[]}=
   const requiredGoalEvidence=routing.goals.filter(goal=>evidenceMeta.goalCoverage[goal]?.ok);
   const requiredActionGoalEvidence=routing.goals.filter(goal=>['advice','comparison'].includes(goal)&&evidenceMeta.goalCoverage[goal]?.ok);
   const requireGoalSections=routing.goals.length>1;
-  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification});
+  parsed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requiredGoalEvidence,requireGoalReferenceCoverage:true,requiredActionGoalEvidence,requiredOutputGoals:routing.goals,requireGoalAlignment:true,requireFollowUpQuestion:true,allowedGoalSections:routing.goals,requiredGoalSections:requireGoalSections?routing.goals:[],requireGoalSections,requireGoalTextCoverage:routing.goals.length>0,requireCoverage:true,requireActions:true,requireReferences:true,requireReferenceClaims:true,requireReferenceSupport:true,requireCardReadingSupport:true,requireConcreteActions:true,requireActionReasons:true,requireActionReasonSupport:true,requireActionTextSupport:true,requireTextSupport:true,activeQuestion:question,requireQuestionRelevance:true,requireSynthesis:true,requireSynthesisSupport:true,requireSynthesisCardSupport:true,requireSynthesisAnchors:true,requirePositionEvidence:true,requireUncertainty:true,requireRealityBoundary:requiresProfessionalBoundary(question),requireProfessionalActionBoundary:requiresProfessionalBoundary(question),requirePerspectiveBoundary:requiresPerspectiveBoundary(question),requireCoverageBoundary:requiresCoverageBoundary,coverageBoundaryGoals:evidenceMeta.coverageBoundaryGoals,requireCalibratedLanguage:true,allowClarification});
  }catch{
   issues.push('output_contract');
   try{relaxed=parseReadingOutput(output,{cards,evidence:retrieval.evidence,requireCoverage:false});}catch{}
