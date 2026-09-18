@@ -253,8 +253,8 @@ export function buildReadingMessages(body,{evidenceOverride=null,includeRetrieva
  const history=(body.messages??[]).filter(m=>m?.source!=='demo');
  if(history.length>100||history.some(m=>!m||!['user','assistant'].includes(m.role)||typeof m.text!=='string'||m.text.length>16000))throw new Error('对话过长或格式不正确。');
  if(body.memories!==undefined&&!Array.isArray(body.memories))throw new Error('知识库格式不正确。');
- const memories=body.memories??[];
- if(memories.length>30||memories.some(memory=>!memory||typeof memory.id!=='string'||memory.id.length<1||memory.id.length>120||typeof memory.text!=='string'||!memory.text.trim()||memory.text.length>2_000||typeof memory.enabled!=='boolean'))throw new Error('知识库格式不正确。');
+ const memories=body.memories??[],memoryIds=memories.map(memory=>memory?.id);
+ if(memories.length>30||new Set(memoryIds).size!==memoryIds.length||memories.some(memory=>!memory||typeof memory.id!=='string'||memory.id.length<1||memory.id.length>120||typeof memory.text!=='string'||!memory.text.trim()||memory.text.length>2_000||typeof memory.enabled!=='boolean'))throw new Error('知识库格式不正确。');
  const {activeQuestion,retrievalQuestion,retrievalMeta,inheritedOriginal}=readingRetrievalFor(body.question,history);
  const requiresBoundary=requiresProfessionalBoundary(body.question,history)||requiresProfessionalBoundary(activeQuestion),requiresPerspective=requiresPerspectiveBoundary(body.question,history)||requiresPerspectiveBoundary(activeQuestion);
  const evidence=Array.isArray(evidenceOverride)?evidenceOverride:retrieveReadingEvidence({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,highStakes:requiresBoundary});
