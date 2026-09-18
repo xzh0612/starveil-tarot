@@ -561,11 +561,11 @@ function validReference(item,evidenceById,cardsById){
   const card=cardsById.get(item.cardId);
   if(!card||evidence.cardId!==item.cardId||evidence.position!==item.position)throw Error('引用证据无效。');
  }
- return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceAuthority:evidence.sourceAuthority||evidenceSourceAuthority(evidence.source),sourceLabel:evidence.sourceLabel,memoryStatus:evidence.memoryStatus??null,memoryUse:evidence.memoryUse??null,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
+ return {evidenceId:evidence.evidenceId,cardId:evidence.cardId,position:evidence.position,claim:typeof item.claim==='string'?excerpt(item.claim,240):'',evidenceExcerpt:excerpt(evidence.text,360),kind:evidence.kind,tier:evidence.tier,source:evidence.source,sourceType:evidence.sourceType||evidenceSourceType(evidence.source),sourceAuthority:evidence.sourceAuthority||evidenceSourceAuthority(evidence.source),sourceLabel:evidence.sourceLabel,memoryStatus:evidence.memoryStatus??null,memoryUse:evidence.memoryUse??null,memoryExcerpted:evidence.memoryExcerpted===true,url:typeof evidence.url==='string'?evidence.url:null,retrievalReasons:evidence.retrievalReasons??[]};
 }
 
 function evidenceDetails(evidenceIds,evidenceById,maxExcerpt=220){
- return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceAuthority:chunk.sourceAuthority||evidenceSourceAuthority(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
+ return evidenceIds.map(id=>{const chunk=evidenceById.get(id);return {evidenceId:id,kind:chunk.kind,tier:chunk.tier,sourceType:chunk.sourceType||evidenceSourceType(chunk.source),sourceAuthority:chunk.sourceAuthority||evidenceSourceAuthority(chunk.source),sourceLabel:chunk.sourceLabel,memoryStatus:chunk.memoryStatus??null,memoryUse:chunk.memoryUse??null,memoryExcerpted:chunk.memoryExcerpted===true,evidenceExcerpt:excerpt(chunk.text,maxExcerpt)};});
 }
 
 function nonPersonalEvidenceIds(evidenceIds,evidenceById){
