@@ -982,6 +982,14 @@ test('open goals with an explicit theme cannot smuggle in a prediction',()=>{
  assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireOpenGoalBoundary:true}));
 });
 
+test('open goals reject colloquial outcome and mind-reading predictions',()=>{
+ const evidence=retrieveReadingEvidence({question:'这段关系',cards:[cards[0]]});
+ for(const text of ['你们还有机会在一起。','这段关系很有戏。','对方可能对你有感觉。']){
+  assert.throws(()=>parseReadingOutput(JSON.stringify({text}),{cards:[cards[0]],evidence,requireOpenGoalBoundary:true}),/目标未明确时不能擅自预测/);
+ }
+ assert.throws(()=>parseReadingOutput(JSON.stringify({text:'先观察稳定互动。',clarification:'你想知道你们会不会复合？'}),{cards:[cards[0]],evidence,requireOpenGoalBoundary:true}),/目标未明确时不能擅自预测/);
+});
+
 test('structured actions must cite evidence from the current reading',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards:[cards[0]]});
  const valid=JSON.stringify({text:'先观察再沟通。',actions:[{text:'记录一次具体沟通中的事实与感受。',reason:'把抽象担忧变成可观察材料。',evidenceIds:[evidence[0].evidenceId]}]});
