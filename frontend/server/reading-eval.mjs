@@ -53,6 +53,7 @@ export function evaluatePromptContract(messages=[]){
  if(!/starveil_history[\s\S]{0,700}(?:不可信|不能当作当前牌义|不能替代)/i.test(system))issues.push('missing_history_trust_boundary');
  if(!/safetyMeta[\s\S]{0,900}requiresPerspectiveBoundary[\s\S]{0,900}(?:他人|内心|沟通|现实互动)/i.test(system))issues.push('missing_perspective_boundary_rule');
  if(!/sourceAuthority[\s\S]{0,700}canonical_fixed[\s\S]{0,700}(?:不能覆盖|权威|冲突)/i.test(system))issues.push('missing_source_authority_rule');
+ if(!/memoryExcerpted=true[\s\S]{0,240}不能把省略部分补写成事实/u.test(system))issues.push('missing_memory_excerpt_rule');
  if(!/tier|层级|retrievalReasons/i.test(system))issues.push('missing_evidence_hierarchy');
  if(!/json|结构化/i.test(system))issues.push('missing_json_contract');
  if(!/synthesis|综合解读/i.test(system))issues.push('missing_synthesis_contract');
@@ -123,11 +124,13 @@ export function evaluatePromptContract(messages=[]){
  if(!/responsePlan/.test(user)||!/actionGuidance/.test(user))issues.push('missing_action_guidance_plan_context');
  if(!/goalPlan/.test(user)||!/goalOrder|order/.test(user))issues.push('missing_goal_plan_context');
  if(!/retrievalRequired/.test(user))issues.push('missing_anchor_metadata_context');
+ if(!/memoryExcerpted/.test(user))issues.push('missing_memory_excerpt_context');
  const checks=[
   !issues.includes('missing_system_evidence_rule'),
   !issues.includes('missing_history_trust_boundary'),
   !issues.includes('missing_perspective_boundary_rule'),
   !issues.includes('missing_source_authority_rule'),
+  !issues.includes('missing_memory_excerpt_rule'),
   !issues.includes('missing_evidence_hierarchy'),
   !issues.includes('missing_json_contract'),
   !issues.includes('missing_synthesis_contract'),
@@ -196,6 +199,7 @@ export function evaluatePromptContract(messages=[]){
   !issues.includes('missing_action_guidance_plan_context'),
   !issues.includes('missing_goal_plan_context'),
   !issues.includes('missing_anchor_metadata_context'),
+  !issues.includes('missing_memory_excerpt_context'),
  ];
  return {ok:issues.length===0,score:scoreChecks(checks),issues};
 }
