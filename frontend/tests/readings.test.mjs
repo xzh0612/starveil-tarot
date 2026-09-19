@@ -269,3 +269,14 @@ test('returns knowledge and prompt budget metadata with an AI reading',async()=>
   assert.equal(result.promptBudget.historyLimits.maxMessages,24);
  });
 });
+
+test('returns routing and evidence-plan metadata with an AI reading',async()=>{
+ await withServer({apiKey:'test-secret',fetchImpl:async()=>Response.json({model:'deepseek-flash',choices:[{message:{content:JSON.stringify({text:'把学习练习拆成稳定的小步。',synthesis:{text:'核心建议与稳定节奏相互呼应。',evidenceIds:['m08:orientation']},cardReadings:[{cardId:'m08',position:'建议',reading:'把稳定节奏拆成可执行的小步。',evidenceIds:['m08:orientation','m08:work']}],actions:[{text:'今天记录一次稳定而明确的行动，并克制情绪。',reason:'把稳定节奏的建议变成可验证行动。',evidenceIds:['m08:orientation','m08:work']}],references:[{evidenceId:'m08:orientation',cardId:'m08',position:'建议',claim:'稳定节奏'},{evidenceId:'m08:work',cardId:'m08',position:'建议',claim:'稳定节奏'}],uncertainty:'牌面不能证明结果。'})},finish_reason:'stop'}]})},async url=>{
+  const result=await (await post(url,fixture())).json();
+  assert.deepEqual(result.retrievalMeta.goals,['advice']);
+  assert.equal(result.retrievalMeta.confidence,'focused');
+  assert.ok(result.evidencePlan.perCard[0].anchorEvidenceIds.includes('m08:orientation'));
+  assert.equal(result.responsePlan.goal,'advice');
+  assert.equal(result.safetyMeta.requiresProfessionalBoundary,false);
+ });
+});
