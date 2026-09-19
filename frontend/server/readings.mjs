@@ -270,6 +270,12 @@ export function buildReadingMessages(body,{evidenceOverride=null,includeRetrieva
  return [{role:'system',content:SYSTEM},{role:'user',content:`<starveil_context>\n${safeJson(context)}\n</starveil_context>`},...promptHistory.map(m=>({role:m.role,content:fenceHistoryMessage(m)})),{role:'system',content:turnReminder}];
 }
 
+function parseReadingPromptContext(messages){
+ const content=messages?.[1]?.content??'',prefix='<starveil_context>\n',suffix='\n</starveil_context>';
+ if(!content.startsWith(prefix)||!content.endsWith(suffix))return {};
+ try{return JSON.parse(content.slice(prefix.length,-suffix.length));}catch{return {};}
+}
+
 export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl=fetch,timeoutMs=90000,semanticReranker=null,semanticWeight=8,semanticTimeoutMs=1_500}={}){
  let active=0;const requests=[];
  return async function readingMiddleware(req,res,next){
@@ -297,8 +303,9 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
    evidenceOverride=await retrieveReadingEvidenceAsync({question:retrievalQuestion,cards:body.cards,routing:retrievalMeta,highStakes:requiresBoundary,semanticReranker,semanticWeight,semanticTimeoutMs});
    try{messages=buildReadingMessages(body,{evidenceOverride});}catch(e){return reply(400,{error:e.message});}
   }
+  const promptContext=!recommend?parseReadingPromptContext(messages):{};
   if(debug){
-   const contextContent=messages[1]?.content??'',context=JSON.parse(contextContent.slice('<starveil_context>\n'.length,-'\n</starveil_context>'.length));
+   const contextContent=messages[1]?.content??'',context=promptContext;
    return reply(200,{source:'local',provider:'local',model,prompt:{systemChars:messages[0]?.content?.length??0,contextChars:contextContent.length,historyMessages:messages.slice(2).filter(message=>message.role!=='system').length},question:context.question,activeQuestion:context.activeQuestion,retrievalQuestion:context.retrievalQuestion,queryMeta:context.queryMeta,retrievalMeta:context.retrievalMeta,responsePlan:context.responsePlan,goalPlan:context.goalPlan,safetyMeta:context.safetyMeta,promptBudget:context.promptBudget,knowledgeMeta:context.knowledgeMeta,evidenceMeta:context.evidenceMeta,evidencePlan:context.evidencePlan,evidence:context.retrievalDiagnostics??context.evidence,promptEvidence:context.evidence,memoryEvidence:context.memoryEvidence});
   }
   const now=Date.now();while(requests[0]<now-60000)requests.shift();
@@ -340,7 +347,7 @@ export function createReadingMiddleware({apiKey,model='deepseek-flash',fetchImpl
     try{answer=parseReadingOutput(repaired.text,parseOptions);provider=repaired;}catch{return reply(502,{error:firstError.message,code});}
    }
    const fallbackReferences=body.cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return item?{evidenceId:item.evidenceId,cardId:item.cardId,position:item.position,claim:'',evidenceExcerpt:item.text?.slice(0,360)??'',kind:item.kind,tier:item.tier,source:item.source,sourceType:item.sourceType,sourceAuthority:item.sourceAuthority??evidenceSourceAuthority(item.source),sourceLabel:item.sourceLabel,retrievalReasons:item.retrievalReasons??[]}:{cardId:card.id,position:card.position};});
-   reply(200,{text:answer.text,source:'ai',provider:'DeepSeek',model:provider.data.model??model,promptVersion:READING_PROMPT_VERSION,truncated:provider.choice.finish_reason==='length',references:answer.needsClarification?[]:(answer.references.length?answer.references:fallbackReferences),cardReadings:answer.cardReadings,synthesis:answer.synthesis,goalSections:answer.goalSections,actions:answer.actions,needsClarification:answer.needsClarification,clarification:answer.clarification,followUp:answer.followUp,uncertainty:answer.uncertainty,evidenceMeta,goalPlan});
+   reply(200,{text:answer.text,source:'ai',provider:'DeepSeek',model:provider.data.model??model,promptVersion:READING_PROMPT_VERSION,knowledgeMeta:promptContext.knowledgeMeta,promptBudget:promptContext.promptBudget,truncated:provider.choice.finish_reason==='length',references:answer.needsClarification?[]:(answer.references.length?answer.references:fallbackReferences),cardReadings:answer.cardReadings,synthesis:answer.synthesis,goalSections:answer.goalSections,actions:answer.actions,needsClarification:answer.needsClarification,clarification:answer.clarification,followUp:answer.followUp,uncertainty:answer.uncertainty,evidenceMeta,goalPlan});
   }catch{return reply(controller.signal.aborted?504:502,{error:controller.signal.aborted?'解读等待超时或已取消，原牌局已保留。':'暂时无法连接 DeepSeek，请稍后重试。',code:controller.signal.aborted?'provider_timeout':'provider_unavailable'});}
   finally{clearTimeout(timer);res.off('close',disconnect);active--;}
  };
