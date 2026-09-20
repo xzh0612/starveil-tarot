@@ -40,12 +40,14 @@ function GoalSectionList({message}){
  return <details className="message-goal-sections" open={sections.length>1}><summary>按目标拆解 · {sections.length} 项</summary><div className="goal-section-list">{sections.map((section,index)=><article key={`${section.goal}-${index}`}><header><b>{readingGoalLabel(section.goal)}</b></header><p>{section.text}</p>{section.evidence?.length?<EvidenceSummary items={section.evidence}/>:<small>依据 · {(section.evidenceIds??[]).map(evidenceLabel).join('、')}</small>}</article>)}</div></details>;
 }
 function ReadingTrace({message}){
- const knowledge=message?.knowledgeMeta,routing=message?.retrievalMeta,budget=message?.promptBudget,evidence=message?.evidenceMeta,safety=message?.safetyMeta;
+ const knowledge=message?.knowledgeMeta,routing=message?.retrievalMeta,budget=message?.promptBudget,evidence=message?.evidenceMeta,evidencePlan=message?.evidencePlan,safety=message?.safetyMeta;
  if(!knowledge&&!routing&&!budget&&!evidence&&!safety)return null;
  const themes=Array.isArray(routing?.themes)&&routing.themes.length?routing.themes.join(' · '):'未识别主题';
  const goals=Array.isArray(routing?.goals)&&routing.goals.length?routing.goals.map(readingGoalLabel).join(' · '):'开放目标';
+ const confidence={focused:'聚焦',mixed:'混合',open:'开放'}[routing?.confidence]||'待核验';
+ const plannedCards=Array.isArray(evidencePlan?.perCard)&&evidencePlan.perCard.length?evidencePlan.perCard.map(item=>`${cardById[item.cardId]?.name||item.cardId} · ${item.anchorEvidenceIds?.length??0} 核心`).join('；'):'未生成';
  const boundary=safety?.requiresProfessionalBoundary?'高风险 · 需要现实核验':safety?.requiresPerspectiveBoundary?'内心不可验证 · 需要现实互动':'常规现实边界';
- return <details className="message-trace"><summary>解读谱系 <span>{knowledge?.ragVersion||'本地规则'}</span></summary><div className="trace-grid"><span>主题</span><b>{themes}</b><span>回答目标</span><b>{goals}</b><span>证据覆盖</span><b>{evidence?.coverageStatus?evidenceCoverageLabel(evidence.coverageStatus):'待核验'} · {budget?.evidenceItems??0} 条</b><span>记忆上下文</span><b>{budget?.memoryItems??0} 条 · {budget?.memoryExcerptedItems??0} 条为片段</b><span>Prompt 版本</span><b>{knowledge?.promptVersion||'本地规则'}</b><span>现实边界</span><b>{boundary}</b></div></details>;
+ return <details className="message-trace"><summary>解读谱系 <span>{knowledge?.ragVersion||'本地规则'}</span></summary><div className="trace-grid"><span>主题</span><b>{themes}</b><span>回答目标</span><b>{goals}</b><span>路由置信</span><b>{confidence}</b><span>证据覆盖</span><b>{evidence?.coverageStatus?evidenceCoverageLabel(evidence.coverageStatus):'待核验'} · {budget?.evidenceItems??0} 条</b><span>证据规划</span><b>{plannedCards}</b><span>记忆上下文</span><b>{budget?.memoryItems??0} 条 · {budget?.memoryExcerptedItems??0} 条为片段</b><span>Prompt 版本</span><b>{knowledge?.promptVersion||'本地规则'}</b><span>现实边界</span><b>{boundary}</b></div></details>;
 }
 function AppPanel({title,eyebrow,onClose,children,wide=false}){
  const ref=useRef(null),close=useRef(onClose);close.current=onClose;
