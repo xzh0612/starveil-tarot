@@ -280,3 +280,12 @@ test('returns routing and evidence-plan metadata with an AI reading',async()=>{
   assert.equal(result.safetyMeta.requiresProfessionalBoundary,false);
  });
 });
+
+test('keeps local feedback metadata out of the model history fence',()=>{
+ const body=fixture();
+ body.messages=[{role:'assistant',text:'上一轮解读',source:'ai',feedback:'review',knowledgeMeta:{ragVersion:'private-ui-marker'}},{role:'user',text:'继续聊聊'}];
+ const messages=buildReadingMessages(body);
+ const history=messages.filter(message=>message.role==='assistant').map(message=>message.content).join('\n');
+ assert.match(history,/上一轮解读/);
+ assert.doesNotMatch(history,/review|private-ui-marker|feedback|knowledgeMeta/);
+});
