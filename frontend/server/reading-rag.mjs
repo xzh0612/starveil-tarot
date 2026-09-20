@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v40';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v41';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -51,7 +51,7 @@ const THEMES=[
 ];
 
 const GOALS=[
- {name:'advice',words:['怎么办','如何','怎么做比较好','怎么','应该','先做什么','该做什么','需要注意什么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','如何处理','如何调整','如何沟通','如何安排','如何平衡','如何规划','怎么处理','怎么调整','怎么沟通','怎么安排','怎么平衡','怎么规划','建议','下一步','行动','安排','处理','沟通','平衡','规划','开口','调整','改善','应不应该']},
+ {name:'advice',words:['怎么办','如何','怎么做比较好','怎么','应该','先做什么','该做什么','需要注意什么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','如何处理','如何调整','如何沟通','如何安排','如何平衡','如何兼顾','如何规划','怎么处理','怎么调整','怎么沟通','怎么安排','怎么平衡','怎么兼顾','怎么规划','建议','下一步','行动','安排','处理','沟通','平衡','兼顾','规划','开口','调整','改善','应不应该']},
  // Temporal context words such as “未来” or “接下来” qualify a question,
  // but do not by themselves ask for a prediction. Keep them low-weight so
  // “未来我该怎么办” routes to advice, while “未来会怎样” still routes to
@@ -61,7 +61,7 @@ const GOALS=[
  // Decision questions are often phrased without the words "比较" or
  // "哪个". Keep these yes-or-no forms in the comparison goal so retrieval
  // still supplies decision-oriented application evidence.
- {name:'comparison',words:['比较','区别','哪个','哪一个','选择哪一个','哪一个更好','哪一个更适合我','哪条','哪种','选哪','选什么','该选什么','利弊','优缺点','取舍','要不要','要不要继续','想不想','是否想','是否需要','是不是需要','适不适合','先联系','还是等','先做哪一个','留在这里还是离开','留下还是离开','留下还是继续','继续不继续','是否继续','还是离开','换不换工作','应该不应该','应该留下吗','该不该','是不是应该','是否应该','是不是要','是否要','值得继续吗','值得吗','适合我吗','适合吗','是否值得','值不值得']},
+ {name:'comparison',words:['比较','区别','哪个','哪一个','选择哪一个','哪一个更好','哪一个更适合我','哪条','哪种','选哪','选什么','怎么选','怎么选择','怎么挑','该选什么','利弊','优缺点','取舍','怎么取舍','要不要','要不要继续','想不想','是否想','是否需要','是不是需要','适不适合','先联系','还是等','先做哪一个','留在这里还是离开','留下还是离开','留下还是继续','继续不继续','是否继续','还是离开','换不换工作','应该不应该','应该留下吗','该不该','是不是应该','是否应该','是不是要','是否要','值得继续吗','值得吗','适合我吗','适合吗','是否值得','值不值得']},
 ];
 const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecast:'reference',explanation:'anchor'};
 
@@ -72,7 +72,7 @@ const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecas
 // active while avoiding a broad sentiment classifier.
 const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
-const ADVICE_CONTINUATION_TERMS=['处理','安排','平衡','调整','改善','沟通','规划','准备','开始','面对','解决','保持','练习','行动','开口','落实'];
+const ADVICE_CONTINUATION_TERMS=['处理','安排','平衡','兼顾','调整','改善','沟通','规划','准备','开始','面对','解决','保持','练习','行动','开口','落实'];
 function activeLexiconTerms(text,terms,{preferLongerIntent=false,goalName=''}={}){
  return terms.filter(term=>{
    // Prefer an explicit longer intent phrase over the shorter occurrence it

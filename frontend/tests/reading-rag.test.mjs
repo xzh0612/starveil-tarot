@@ -957,6 +957,11 @@ test('question routing treats action suffixes as advice instead of forecast',()=
  assert.deepEqual(analyzeReadingQuestion('工作如何发展？').goals,['forecast']);
 });
 
+test('question routing keeps selection language in the comparison goal',()=>{
+ assert.deepEqual(analyzeReadingQuestion('两个工作机会怎么选？').goals,['comparison']);
+ assert.deepEqual(analyzeReadingQuestion('两个方案怎么选择？').goals,['comparison']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
