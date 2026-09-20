@@ -1153,6 +1153,13 @@ test('mind-reading boundary recognizes colloquial feeling questions',()=>{
  assert.equal(requiresPerspectiveBoundary('我喜欢他吗？'),false);
 });
 
+test('mind-reading boundary recognizes colloquial inner-state questions',()=>{
+ assert.equal(requiresPerspectiveBoundary('他到底在想什么？'),true);
+ assert.equal(requiresPerspectiveBoundary('对方现在是什么心态？'),true);
+ assert.equal(requiresPerspectiveBoundary('她什么意思？'),true);
+ assert.equal(requiresPerspectiveBoundary('我现在是什么心态？'),false);
+});
+
 test('high-stakes boundary accumulates user history but ignores assistant prose',()=>{
  assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'user',text:'这项投资要不要买？'}]),true);
  assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'assistant',text:'这项投资要不要买？'}]),false);
