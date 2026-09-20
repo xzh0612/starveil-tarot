@@ -1137,6 +1137,13 @@ test('mind-reading questions require an uncertainty boundary about observable re
  assert.equal(parseReadingOutput(grounded,{cards:[card],evidence,requirePerspectiveBoundary:true}).uncertainty,'牌面不能确认对方的真实想法，需要通过沟通和现实互动核验。');
 });
 
+test('mind-reading boundary recognizes colloquial feeling questions',()=>{
+ assert.equal(requiresPerspectiveBoundary('对方是不是喜欢我？'),true);
+ assert.equal(requiresPerspectiveBoundary('他有没有感觉？'),true);
+ assert.equal(requiresPerspectiveBoundary('他对我有好感吗？'),true);
+ assert.equal(requiresPerspectiveBoundary('我喜欢他吗？'),false);
+});
+
 test('high-stakes boundary accumulates user history but ignores assistant prose',()=>{
  assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'user',text:'这项投资要不要买？'}]),true);
  assert.equal(requiresProfessionalBoundary('我想继续聊关系。',[{role:'assistant',text:'这项投资要不要买？'}]),false);
