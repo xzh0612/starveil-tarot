@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v49';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v50';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -29,7 +29,7 @@ export function validateReadingCorpus(){
 export const READING_CORPUS_STATUS=validateReadingCorpus();
 if(!READING_CORPUS_STATUS.ok)throw Error('塔罗知识库不完整，已停止生成解读。');
 
-const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','检查报告','化验','急诊','自伤','自杀','成瘾','法律','律师','诉讼','官司','仲裁','合同','纠纷','离婚','抚养','监护','投资','股票','基金','理财','财务','财运','借贷','贷款','房贷','债务','欠款','保险','理赔','税务','失眠','睡眠','睡不好','睡不着','疼痛','手术','就医','副作用','心理危机','抑郁','惊恐'];
+const PROFESSIONAL_BOUNDARY_WORDS=['健康','症状','疾病','诊断','治疗','药物','医疗','检查报告','化验','急诊','自伤','自杀','成瘾','法律','律师','诉讼','官司','起诉','上诉','仲裁','合同','纠纷','离婚','抚养','监护','投资','股票','基金','理财','财务','财运','借贷','贷款','房贷','买房','购房','债务','欠款','保险','理赔','税务','失眠','睡眠','睡不好','睡不着','睡眠不足','睡不够','睡四小时','少睡','疼痛','胸痛','胸口疼','胸口痛','头疼','头痛','腹痛','发烧','高烧','咳嗽','呼吸困难','手术','停药','换药','用药','吃药','服药','就医','副作用','心理危机','抑郁','惊恐'];
 
 export function requiresProfessionalBoundary(question,messages=[]){
  const texts=[String(question??''),...(Array.isArray(messages)?messages.filter(message=>message?.role==='user'&&typeof message.text==='string').map(message=>message.text):[])];

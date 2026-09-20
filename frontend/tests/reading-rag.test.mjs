@@ -1126,6 +1126,15 @@ test('professional boundary recognizes common financial, legal and clinical phra
  assert.equal(requiresProfessionalBoundary('我想看看这段关系怎么沟通。'),false);
 });
 
+test('professional boundary recognizes colloquial high-stakes wording',()=>{
+ assert.equal(requiresProfessionalBoundary('我最近胸口疼怎么办？'),true);
+ assert.equal(requiresProfessionalBoundary('我能不能停药？'),true);
+ assert.equal(requiresProfessionalBoundary('对方起诉我怎么办？'),true);
+ assert.equal(requiresProfessionalBoundary('现在适合买房吗？'),true);
+ assert.equal(requiresProfessionalBoundary('我每天只睡四小时会怎样？'),true);
+ assert.equal(requiresProfessionalBoundary('我最近很焦虑怎么办？'),false);
+});
+
 test('mind-reading questions require an uncertainty boundary about observable reality',()=>{
  const card={id:'m08',reversed:false,position:'建议'};
  const evidence=retrieveReadingEvidence({question:'他的真实想法是什么？',cards:[card]});
