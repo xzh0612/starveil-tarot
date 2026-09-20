@@ -599,12 +599,22 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.equal(evidence[0].memoryUse,'context_only');
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
  assert.ok(evidence[0].retrievalTerms.length>0);
- assert.equal(evidence[0].retrievalMethod,'memory-keyword-v2');
+ assert.equal(evidence[0].retrievalMethod,'memory-keyword-v3');
 });
 
 test('memory retrieval returns no unrelated personal records',()=>{
  const evidence=retrieveMemoryEvidence({question:'我该如何准备考试？',memories:[{id:'m1',text:'我喜欢在周末散步。',enabled:true},{id:'m2',text:'家里的猫叫月光。',enabled:true}]});
  assert.deepEqual(evidence,[]);
+});
+
+test('memory retrieval uses a concrete alias group without broadening unrelated records',()=>{
+ const evidence=retrieveMemoryEvidence({question:'我想和他交流一下，怎么开口？',memories:[
+  {id:'m1',text:'重要的事情可以先沟通，再讨论彼此的边界。',enabled:true},
+  {id:'m2',text:'我喜欢在周末散步。',enabled:true},
+ ]});
+ assert.deepEqual(evidence.map(item=>item.evidenceId),['memory:m1']);
+ assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_expansion']);
+ assert.equal(evidence[0].retrievalMethod,'memory-keyword-v3');
 });
 
 test('memory retrieval rejects a single generic short overlap',()=>{

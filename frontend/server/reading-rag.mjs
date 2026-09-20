@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v38';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v39';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -475,17 +475,37 @@ export async function retrieveReadingEvidenceAsync({question,cards,maxPerCard=5,
  return rerankReadingEvidence(evidence,{semanticScores:resolvedScores,maxTotalEvidence:resolveReadingEvidenceBudget(question,cards,maxTotalEvidence,resolvedRouting),semanticWeight,requiredGoalEvidence:resolvedRouting.goals,reserveGoalEvidencePerCard:maxTotalEvidence===null});
 }
 
+// Conservative aliases improve recall for a private memory without turning
+// every broad topic word into a match. A group expands only after the query
+// contains one of its concrete terms; the expanded term remains lower-weight
+// than the user's exact wording.
+const MEMORY_ALIAS_GROUPS=[
+ ['沟通','交流','聊天','对话'],
+ ['独处','一个人','静下来','安静'],
+ ['焦虑','压力','不安','内耗'],
+ ['学习','复习','备考','考试'],
+ ['工作','职场','职业','事业'],
+ ['决定','选择','取舍','路径'],
+];
+function expandMemoryQueryTerms(question){
+ const direct=chineseNgrams(question),expanded=new Set(direct);
+ for(const group of MEMORY_ALIAS_GROUPS){
+  if(group.some(term=>direct.has(term)))for(const term of group)expanded.add(term);
+ }
+ return {direct,expanded};
+}
+
 export function retrieveMemoryEvidence({question,memories,max=6,maxTotalChars=6_000}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(memories))return [];
- const terms=chineseNgrams(question),limit=Math.max(1,Math.min(10,Number.isFinite(Number(max))?Number(max):6)),budget=Math.max(1,Math.min(12_000,Number.isFinite(Number(maxTotalChars))?Number(maxTotalChars):6_000));
+ const {direct,expanded}=expandMemoryQueryTerms(question),limit=Math.max(1,Math.min(10,Number.isFinite(Number(max))?Number(max):6)),budget=Math.max(1,Math.min(12_000,Number.isFinite(Number(maxTotalChars))?Number(maxTotalChars):6_000));
  const genericTerms=new Set(['如何','怎么','可以','需要','安排','自己','事情','问题','现在','最近','之后','今天','明天','什么','哪个','是否','还是','一个','进行']);
  const ranked=memories.filter(memory=>memory&&memory.enabled===true&&typeof memory.id==='string'&&memory.id.length<=120&&typeof memory.text==='string'&&memory.text.trim())
   .map((memory,index)=>{
   const rawText=memory.text.trim(),text=rawText.slice(0,2_000),lower=text.toLowerCase();
-  const matchedTerms=[...terms].filter(term=>lower.includes(term));
-  let score=0;for(const term of matchedTerms)score+=term.length>2?1.4:.35;
+  const matchedDirectTerms=[...direct].filter(term=>lower.includes(term)),matchedExpandedTerms=[...expanded].filter(term=>!direct.has(term)&&lower.includes(term)),matchedTerms=[...new Set([...matchedDirectTerms,...matchedExpandedTerms])];
+  let score=0;for(const term of matchedDirectTerms)score+=term.length>2?1.4:.35;for(const term of matchedExpandedTerms)score+=term.length>2?.75:.2;
   const strongTerms=matchedTerms.filter(term=>term.length>2),shortTerms=matchedTerms.filter(term=>term.length===2);
-  return {memory,index,text,textLength:rawText.length,score,matchedTerms,strongTerms,shortTerms};
+  return {memory,index,text,textLength:rawText.length,score,matchedTerms,strongTerms,shortTerms,matchedDirectTerms,matchedExpandedTerms};
   })
   // A single generic two-character overlap is too weak to expose a private
   // record. Require one longer phrase or several independent short matches.
@@ -499,7 +519,7 @@ export function retrieveMemoryEvidence({question,memories,max=6,maxTotalChars=6_
   selected.push({...item,text:boundedText,memoryExcerpted:boundedText.length<item.textLength});
   selectedChars+=boundedText.length;
  }
- return selected.map(({memory,text,matchedTerms,score,memoryExcerpted})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:['memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v2',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceAuthority:evidenceSourceAuthority('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',memoryExcerpted,url:null}));
+ return selected.map(({memory,text,matchedTerms,score,memoryExcerpted,matchedExpandedTerms})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:[matchedExpandedTerms.length?'memory_keyword_expansion':'memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v3',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceAuthority:evidenceSourceAuthority('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',memoryExcerpted,url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){
