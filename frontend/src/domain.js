@@ -42,6 +42,11 @@ export function selectCard(session,index){
  return {...session,selected:[...session.selected,index]};
 }
 export function chosenCards(session){return session.selected.map((index,i)=>({...session.deck[index],position:session.spread.positions[i]}));}
+export function updateReadingFeedback(messages,index,feedback){
+ const allowed=new Set(['helpful','review']);
+ if(!Array.isArray(messages)||!Number.isInteger(index)||index<0||index>=messages.length||messages[index]?.role!=='assistant'||!allowed.has(feedback))return messages;
+ return messages.map((message,messageIndex)=>messageIndex===index?{...message,feedback}:message);
+}
 export function createSession(question,spread,reversals){return {id:crypto.randomUUID(),date:new Date().toISOString(),question,spread,deck:newDeck(reversals),selected:[],revealed:[],messages:[],deckVersion:DECK_VERSION};}
 export function load(key,fallback){try{return JSON.parse(localStorage.getItem(`starveil:${key}`))??fallback;}catch{return fallback;}}
 export function save(key,value){localStorage.setItem(`starveil:${key}`,JSON.stringify(value));}
