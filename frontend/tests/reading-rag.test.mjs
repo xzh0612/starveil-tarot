@@ -970,6 +970,12 @@ test('question routing keeps paired option outcomes in the comparison goal',()=>
  assert.ok(paired.matchedGoalTerms.includes('选项结果比较'));
 });
 
+test('question routing sends causal yes-or-no phrasing to explanation',()=>{
+ assert.deepEqual(analyzeReadingQuestion('是不是因为我们冷战？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('会不会是因为压力太大？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('是不是会有变化？').goals,['forecast']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
