@@ -632,6 +632,14 @@ test('memory retrieval rejects a single generic short overlap',()=>{
  assert.deepEqual(evidence.map(item=>item.evidenceId),[]);
 });
 
+test('memory retrieval ignores pronoun and temporal short overlaps',()=>{
+ const evidence=retrieveMemoryEvidence({question:'我最近压力很大，怎么调整？',memories:[
+  {id:'generic',text:'我最近会安排一些事情。',enabled:true},
+  {id:'specific',text:'我会记录每次压力变化，再调整节奏。',enabled:true},
+ ]});
+ assert.deepEqual(evidence.map(item=>item.evidenceId),['memory:specific']);
+});
+
 test('memory retrieval respects a deterministic total text budget',()=>{
  const memories=Array.from({length:6},(_,index)=>({id:`long-${index}`,text:`我在重要决定前会先独处整理思绪，第${index}条。${'补充记录。'.repeat(1_500)}`,enabled:true}));
  const evidence=retrieveMemoryEvidence({question:'重要决定 独处 整理思绪',memories,max:6,maxTotalChars:4_000});

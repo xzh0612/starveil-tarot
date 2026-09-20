@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v47';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v48';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -524,12 +524,14 @@ export function retrieveMemoryEvidence({question,memories,max=6,maxTotalChars=6_
  if(typeof question!=='string'||!question.trim()||!Array.isArray(memories))return [];
  const {direct,expanded}=expandMemoryQueryTerms(question),limit=Math.max(1,Math.min(10,Number.isFinite(Number(max))?Number(max):6)),budget=Math.max(1,Math.min(12_000,Number.isFinite(Number(maxTotalChars))?Number(maxTotalChars):6_000));
  const genericTerms=new Set(['如何','怎么','可以','需要','安排','自己','事情','问题','现在','最近','之后','今天','明天','什么','哪个','是否','还是','一个','进行']);
+ const noisyTermPattern=/^(?:我|你|他|她|它|我们|你们|他们|这|那|在|有|会|很|想|要|能|不|没|还|已|将|都|也|就|才|先|再|把|被|和|与|或|但|因为|所以|如果|最近|现在|之后|今天|明天|一个|一些|事情|问题|安排|自己|如何|怎么|是否|还是).{1,3}$/u;
+ const isInformativeTerm=term=>!genericTerms.has(term)&&!noisyTermPattern.test(term);
  const ranked=memories.filter(memory=>memory&&memory.enabled===true&&typeof memory.id==='string'&&memory.id.length<=120&&typeof memory.text==='string'&&memory.text.trim())
   .map((memory,index)=>{
   const rawText=memory.text.trim(),text=rawText.slice(0,2_000),lower=text.toLowerCase();
   const matchedDirectTerms=[...direct].filter(term=>lower.includes(term)),matchedExpandedTerms=[...expanded].filter(term=>!direct.has(term)&&lower.includes(term)),matchedTerms=[...new Set([...matchedDirectTerms,...matchedExpandedTerms])];
   let score=0;for(const term of matchedDirectTerms)score+=term.length>2?1.4:.35;for(const term of matchedExpandedTerms)score+=term.length>2?.75:.2;
-  const strongTerms=matchedTerms.filter(term=>term.length>2),shortTerms=matchedTerms.filter(term=>term.length===2);
+  const informativeTerms=matchedTerms.filter(isInformativeTerm),strongTerms=informativeTerms.filter(term=>term.length>2),shortTerms=informativeTerms.filter(term=>term.length===2);
   return {memory,index,text,textLength:rawText.length,score,matchedTerms,strongTerms,shortTerms,matchedDirectTerms,matchedExpandedTerms};
   })
   // A single generic two-character overlap is too weak to expose a private
