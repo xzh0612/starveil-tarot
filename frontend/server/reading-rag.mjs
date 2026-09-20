@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v42';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v43';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -73,6 +73,8 @@ const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecas
 const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不是问|不是要问|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
 const ADVICE_CONTINUATION_TERMS=['处理','安排','平衡','兼顾','调整','改善','沟通','规划','准备','开始','面对','解决','保持','练习','行动','开口','落实'];
+const PAIRED_OPTION_OUTCOME_PATTERN=/(?:选择|选|方案|路径|选项)[^。！？?\n]{0,16}(?:会怎样|会如何|怎么样|结果如何|有什么变化)[，,；;、和与及]+(?:选择|选|方案|路径|选项)[^。！？?\n]{0,16}(?:会怎样|会如何|怎么样|结果如何|有什么变化)/u;
+function hasPairedOptionOutcome(text){return PAIRED_OPTION_OUTCOME_PATTERN.test(text);}
 function activeLexiconTerms(text,terms,{preferLongerIntent=false,goalName=''}={}){
  return terms.filter(term=>{
    // Prefer an explicit longer intent phrase over the shorter occurrence it
@@ -128,6 +130,12 @@ export function analyzeReadingQuestion(question){
   const terms=activeLexiconTerms(text,goal.words,{preferLongerIntent:true,goalName:goal.name}),weakTerms=activeLexiconTerms(text,goal.weakWords??[],{preferLongerIntent:true,goalName:goal.name});
   return {name:goal.name,terms,weakTerms,score:terms.length*2+weakTerms.length*.5};
  });
+ const pairedOptionOutcome=hasPairedOptionOutcome(text);
+ if(pairedOptionOutcome){
+  const comparisonGoal=goalScored.find(item=>item.name==='comparison');
+  comparisonGoal.terms=[...comparisonGoal.terms,'选项结果比较'];
+  comparisonGoal.score=Math.max(comparisonGoal.score,2);
+ }
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),
   // Weak temporal context alone should keep the question open. It may qualify
   // an explicit goal, but it must not manufacture a forecast route by itself.

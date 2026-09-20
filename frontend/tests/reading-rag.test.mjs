@@ -964,6 +964,12 @@ test('question routing keeps selection language in the comparison goal',()=>{
  assert.deepEqual(analyzeReadingQuestion('两个方案怎么选择？').goals,['comparison']);
 });
 
+test('question routing keeps paired option outcomes in the comparison goal',()=>{
+ const paired=analyzeReadingQuestion('如果选择A会怎样，选择B会怎样？');
+ assert.deepEqual(paired.goals,['forecast','comparison']);
+ assert.ok(paired.matchedGoalTerms.includes('选项结果比较'));
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});
