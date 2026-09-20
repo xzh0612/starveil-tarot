@@ -973,6 +973,8 @@ test('question routing keeps paired option outcomes in the comparison goal',()=>
 test('question routing sends causal yes-or-no phrasing to explanation',()=>{
  assert.deepEqual(analyzeReadingQuestion('是不是因为我们冷战？').goals,['explanation']);
  assert.deepEqual(analyzeReadingQuestion('会不会是因为压力太大？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('是因为工作太忙吗？').goals,['explanation']);
+ assert.deepEqual(analyzeReadingQuestion('我想知道是什么导致现在的状态。').goals,['explanation']);
  assert.deepEqual(analyzeReadingQuestion('是不是会有变化？').goals,['forecast']);
 });
 
