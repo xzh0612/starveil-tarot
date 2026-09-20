@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v46';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v47';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -446,7 +446,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
   // domain from the position label.
   const positionKinds=new Set(POSITION_HINTS.filter(hint=>hint.words.some(word=>String(card.position).includes(word))).map(hint=>hint.kind));
   const allowPositionApplication=!suppressFallbackApplication&&!hasSupportedDomain&&!applicationKinds.length&&(
-   goals.length>0||positionKinds.has('relationships')||positionKinds.has('reflection')
+   goals.includes('forecast')||positionKinds.has('relationships')||positionKinds.has('reflection')
   );
   const candidates=sorted.filter(chunk=>!['relationships','work','reflection'].includes(chunk.kind)||allowedApplications.has(chunk.kind)||(allowPositionApplication&&chunk.retrievalReasons?.includes('position_match')));
   const thematic=applicationKinds.map(kind=>candidates.find(chunk=>chunk.kind===kind)).filter(Boolean);

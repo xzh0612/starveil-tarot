@@ -357,6 +357,11 @@ test('open retrieval does not invent an application domain from a generic advice
  assert.equal(evidence.some(item=>item.tier==='application'),false);
 });
 
+test('generic explanation retrieval does not borrow position application domains',()=>{
+ const evidence=retrieveReadingEvidence({question:'这张牌是什么意思？',cards:[{id:'m08',reversed:false,position:'建议'}]});
+ assert.equal(evidence.some(item=>item.tier==='application'),false);
+});
+
 test('high-stakes questions without a supported domain do not borrow application prose',()=>{
  const cards=[{id:'m08',reversed:false,position:'建议'}];
  const evidence=retrieveReadingEvidence({question:'这项投资要不要买？',cards});
