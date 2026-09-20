@@ -951,6 +951,12 @@ test('question routing keeps separate clauses in mixed goals',()=>{
  assert.deepEqual(advice.goals,['advice']);
 });
 
+test('question routing treats action suffixes as advice instead of forecast',()=>{
+ assert.deepEqual(analyzeReadingQuestion('关系如何处理？').goals,['advice']);
+ assert.deepEqual(analyzeReadingQuestion('感情和工作如何平衡？').goals,['advice']);
+ assert.deepEqual(analyzeReadingQuestion('工作如何发展？').goals,['forecast']);
+});
+
 test('first reading synthesis must cite every selected card',()=>{
  const evidence=retrieveReadingEvidence({question:'我该怎样处理这段关系？',cards});
  const refs=cards.map(card=>{const item=evidence.find(e=>e.cardId===card.id&&e.kind==='orientation');return {evidenceId:item.evidenceId,cardId:card.id,position:card.position,claim:item.text.slice(0,4)};});

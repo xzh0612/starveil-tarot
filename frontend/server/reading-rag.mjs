@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v39';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v40';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -51,7 +51,7 @@ const THEMES=[
 ];
 
 const GOALS=[
- {name:'advice',words:['怎么办','如何','怎么做比较好','怎么','应该','先做什么','该做什么','需要注意什么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','建议','下一步','行动','安排','调整','改善','应不应该']},
+ {name:'advice',words:['怎么办','如何','怎么做比较好','怎么','应该','先做什么','该做什么','需要注意什么','怎样处理','怎样调整','怎样沟通','怎样安排','怎样做','怎样面对','怎样开始','怎样改善','怎样解决','如何处理','如何调整','如何沟通','如何安排','如何平衡','如何规划','怎么处理','怎么调整','怎么沟通','怎么安排','怎么平衡','怎么规划','建议','下一步','行动','安排','处理','沟通','平衡','规划','开口','调整','改善','应不应该']},
  // Temporal context words such as “未来” or “接下来” qualify a question,
  // but do not by themselves ask for a prediction. Keep them low-weight so
  // “未来我该怎么办” routes to advice, while “未来会怎样” still routes to
@@ -72,7 +72,8 @@ const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecas
 // active while avoiding a broad sentiment classifier.
 const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
-function activeLexiconTerms(text,terms,{preferLongerIntent=false}={}){
+const ADVICE_CONTINUATION_TERMS=['处理','安排','平衡','调整','改善','沟通','规划','准备','开始','面对','解决','保持','练习','行动','开口','落实'];
+function activeLexiconTerms(text,terms,{preferLongerIntent=false,goalName=''}={}){
  return terms.filter(term=>{
    // Prefer an explicit longer intent phrase over the shorter occurrence it
    // actually contains. Do this per occurrence rather than per question:
@@ -87,6 +88,14 @@ function activeLexiconTerms(text,terms,{preferLongerIntent=false}={}){
   while(offset<=text.length){
    const index=text.indexOf(term,offset);
    if(index<0)return false;
+   // Phrases such as “关系如何” or “工作如何” are forecast candidates only
+   // when they stand on their own or continue into a trend/result word. If an
+   // action verb follows, preserve the advice route instead of letting the
+   // domain noun steal the user's “how should I handle it?” intent.
+   if(goalName==='forecast'&&term.endsWith('如何')&&ADVICE_CONTINUATION_TERMS.some(next=>text.slice(index+term.length,index+term.length+next.length)===next)){
+    offset=index+Math.max(1,term.length);
+    continue;
+   }
    const prefix=text.slice(Math.max(0,index-8),index);
    if(!NEGATED_INTENT_PREFIX.test(prefix))return true;
    offset=index+Math.max(1,term.length);
@@ -116,7 +125,7 @@ export function analyzeReadingQuestion(question){
  const matchedTerms=[...new Set([...strongMatchedTerms,...weakMatchedTerms])];
  const themeScores=Object.fromEntries(scored.map(item=>[item.name,item.score]));
  const goalScored=GOALS.map(goal=>{
-  const terms=activeLexiconTerms(text,goal.words,{preferLongerIntent:true}),weakTerms=activeLexiconTerms(text,goal.weakWords??[],{preferLongerIntent:true});
+  const terms=activeLexiconTerms(text,goal.words,{preferLongerIntent:true,goalName:goal.name}),weakTerms=activeLexiconTerms(text,goal.weakWords??[],{preferLongerIntent:true,goalName:goal.name});
   return {name:goal.name,terms,weakTerms,score:terms.length*2+weakTerms.length*.5};
  });
  const activeGoals=goalScored.filter(item=>item.score>=2),goalFallback=goalScored.filter(item=>item.score>0),
