@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v41';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v42';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -70,7 +70,7 @@ const GOAL_REQUIRED_TIERS={advice:'application',comparison:'application',forecas
 // become active goals even though the user explicitly ruled them out. The
 // bounded four-character tail keeps ordinary phrases such as “不知道要不要”
 // active while avoiding a broad sentiment classifier.
-const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
+const NEGATED_INTENT_PREFIX=/(?:不想|不是想|不是要|不是问|不是要问|不用|(?<!要)不要|无需|并非|不在于|不问|不求|不考虑|不需要)[^。！？?\n]{0,4}$/u;
 const GOAL_LEXICON_TERMS=[...new Set(GOALS.flatMap(goal=>[...(goal.words??[]),...(goal.weakWords??[])]))];
 const ADVICE_CONTINUATION_TERMS=['处理','安排','平衡','兼顾','调整','改善','沟通','规划','准备','开始','面对','解决','保持','练习','行动','开口','落实'];
 function activeLexiconTerms(text,terms,{preferLongerIntent=false,goalName=''}={}){

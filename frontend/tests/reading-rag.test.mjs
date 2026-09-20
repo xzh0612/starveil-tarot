@@ -228,6 +228,8 @@ test('question routing ignores negated intent phrases without suppressing real g
  assert.deepEqual(explanation.goals,['explanation']);
  const advice=analyzeReadingQuestion('我不是想问会不会复合，我想知道怎么处理？');
  assert.deepEqual(advice.goals,['advice']);
+ const negatedForecast=analyzeReadingQuestion('不是问他会不会回来，我想知道我要怎么面对。');
+ assert.deepEqual(negatedForecast.goals,['advice']);
  const decision=analyzeReadingQuestion('我不知道要不要主动联系他。');
  assert.deepEqual(decision.goals,['comparison']);
 });
