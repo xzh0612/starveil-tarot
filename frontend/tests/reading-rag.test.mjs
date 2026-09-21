@@ -123,6 +123,11 @@ test('question routing covers thought, stance, continuation and admission phrasi
  const thought=analyzeReadingQuestion('他的真实想法是什么？');
  assert.deepEqual(thought.themes,['relationship']);
  assert.deepEqual(thought.goals,['explanation']);
+ const viewpoint=analyzeReadingQuestion('他对我态度如何？');
+ assert.deepEqual(viewpoint.themes,['relationship']);
+ assert.deepEqual(viewpoint.goals,['explanation']);
+ const view=analyzeReadingQuestion('对方怎么看我？');
+ assert.deepEqual(view.goals,['explanation']);
  assert.deepEqual(analyzeReadingQuestion('她对我到底是什么态度？').goals,['explanation']);
  assert.deepEqual(analyzeReadingQuestion('我到底应该不应该继续？').goals,['comparison']);
  const admission=analyzeReadingQuestion('我会不会被录取？');
