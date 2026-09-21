@@ -1157,6 +1157,8 @@ test('mind-reading boundary recognizes colloquial inner-state questions',()=>{
  assert.equal(requiresPerspectiveBoundary('他到底在想什么？'),true);
  assert.equal(requiresPerspectiveBoundary('对方现在是什么心态？'),true);
  assert.equal(requiresPerspectiveBoundary('她什么意思？'),true);
+ assert.equal(requiresPerspectiveBoundary('他对我态度如何？'),true);
+ assert.equal(requiresPerspectiveBoundary('对方怎么看我？'),true);
  assert.equal(requiresPerspectiveBoundary('我现在是什么心态？'),false);
 });
 

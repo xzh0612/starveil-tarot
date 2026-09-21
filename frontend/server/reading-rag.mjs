@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v52';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v53';
 export const MEMORY_RETRIEVAL_VERSION='memory-keyword-v3';
 
 // Keep provenance separate from the human-readable source name. The model and
@@ -39,7 +39,7 @@ export function requiresProfessionalBoundary(question,messages=[]){
 
 const PERSPECTIVE_BOUNDARY_WORDS=['真实想法','真实感受','真实态度','心里怎么想','心里在想','对方怎么想','他怎么想','她怎么想','爱不爱我','喜欢我吗','在不在乎','有没有想我','对我是什么感觉'];
 const PERSPECTIVE_RELATION_PATTERN=/(?:他|她|对方|对象|伴侣|前任|那个人)[^。！？?\n]{0,10}(?:爱我|喜欢我|在乎我|想我|有好感|有感觉|什么态度|是什么态度|对我是什么感觉)/u;
-const PERSPECTIVE_INNER_STATE_PATTERN=/(?:他|她|对方|对象|伴侣|前任|那个人)[^。！？?\n]{0,8}(?:到底|究竟|现在|目前)?[^。！？?\n]{0,4}(?:在想什么|怎么想|什么心态|什么打算|怎么打算|什么意思|什么意图|是不是认真的)/u;
+const PERSPECTIVE_INNER_STATE_PATTERN=/(?:他|她|对方|对象|伴侣|前任|那个人)[^。！？?\n]{0,8}(?:到底|究竟|现在|目前)?[^。！？?\n]{0,4}(?:在想什么|怎么想|什么心态|什么打算|怎么打算|什么意思|什么意图|是不是认真的|对我什么态度|态度如何|态度怎样|怎么看我|怎么评价我|怎么看待我)/u;
 export function requiresPerspectiveBoundary(question,messages=[]){
  const texts=[String(question??''),...(Array.isArray(messages)?messages.filter(message=>message?.role==='user'&&typeof message.text==='string').map(message=>message.text):[])];
  return texts.some(text=>{const normalized=String(text).toLowerCase();return PERSPECTIVE_BOUNDARY_WORDS.some(word=>normalized.includes(word))||PERSPECTIVE_RELATION_PATTERN.test(normalized)||PERSPECTIVE_INNER_STATE_PATTERN.test(normalized);});
