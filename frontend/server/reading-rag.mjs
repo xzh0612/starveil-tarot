@@ -4,7 +4,8 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v51';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v52';
+export const MEMORY_RETRIEVAL_VERSION='memory-keyword-v3';
 
 // Keep provenance separate from the human-readable source name. The model and
 // client can use this stable enum to tell fixed card meaning from external
@@ -548,7 +549,7 @@ export function retrieveMemoryEvidence({question,memories,max=6,maxTotalChars=6_
   selected.push({...item,text:boundedText,memoryExcerpted:boundedText.length<item.textLength});
   selectedChars+=boundedText.length;
  }
- return selected.map(({memory,text,matchedTerms,score,memoryExcerpted,matchedExpandedTerms})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:[matchedExpandedTerms.length?'memory_keyword_expansion':'memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:'memory-keyword-v3',retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceAuthority:evidenceSourceAuthority('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',memoryExcerpted,url:null}));
+ return selected.map(({memory,text,matchedTerms,score,memoryExcerpted,matchedExpandedTerms})=>({evidenceId:`memory:${memory.id}`,cardId:null,cardName:null,position:null,orientation:null,kind:'memory',tier:'personal',retrievalReasons:[matchedExpandedTerms.length?'memory_keyword_expansion':'memory_keyword_match'],retrievalTerms:matchedTerms.slice(0,8),retrievalMethod:MEMORY_RETRIEVAL_VERSION,retrievalScore:Number(score.toFixed(3)),text,source:'memory',sourceType:evidenceSourceType('memory'),sourceAuthority:evidenceSourceAuthority('memory'),sourceLabel:'你确认的知识库',memoryStatus:'user_confirmed',memoryUse:'context_only',memoryExcerpted,url:null}));
 }
 
 export function summarizeReadingEvidence(evidence,cards=[],{themes=[],goals=[]}={}){

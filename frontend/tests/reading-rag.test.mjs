@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,requiresPerspectiveBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,MEMORY_RETRIEVAL_VERSION,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,requiresPerspectiveBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -606,7 +606,7 @@ test('memory retrieval is opt-in and ranks user-confirmed context by the questio
  assert.equal(evidence[0].memoryUse,'context_only');
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_match']);
  assert.ok(evidence[0].retrievalTerms.length>0);
- assert.equal(evidence[0].retrievalMethod,'memory-keyword-v3');
+ assert.equal(evidence[0].retrievalMethod,MEMORY_RETRIEVAL_VERSION);
 });
 
 test('memory retrieval returns no unrelated personal records',()=>{
@@ -621,7 +621,7 @@ test('memory retrieval uses a concrete alias group without broadening unrelated 
  ]});
  assert.deepEqual(evidence.map(item=>item.evidenceId),['memory:m1']);
  assert.deepEqual(evidence[0].retrievalReasons,['memory_keyword_expansion']);
- assert.equal(evidence[0].retrievalMethod,'memory-keyword-v3');
+ assert.equal(evidence[0].retrievalMethod,MEMORY_RETRIEVAL_VERSION);
 });
 
 test('memory retrieval rejects a single generic short overlap',()=>{
