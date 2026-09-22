@@ -1124,6 +1124,23 @@ test('high-stakes actions must carry their own reality check',()=>{
  assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireRealityBoundary:true,requireProfessionalActionBoundary:true}));
 });
 
+test('colloquial housing actions use the same professional action boundary',()=>{
+ const evidence=retrieveReadingEvidence({question:'现在适合买房吗？',cards:[cards[0]]});
+ const orientation=evidence.find(item=>item.kind==='orientation');
+ const unsafe=JSON.stringify({
+  text:'牌面提示可以推进。',
+  actions:[{text:'今天先执行买房决定。',reason:'把牌面线索落实为行动。',evidenceIds:[orientation.evidenceId]}],
+  uncertainty:'买房决定请依据合同资料、贷款条件和专业意见。',
+ });
+ assert.throws(()=>parseReadingOutput(unsafe,{cards:[cards[0]],evidence,requireRealityBoundary:true,requireProfessionalActionBoundary:true}),/高风险行动必须先核实现实资料或咨询专业人士/);
+ const grounded=JSON.stringify({
+  text:'牌面提示先整理条件。',
+  actions:[{text:'今天先核实购房合同和贷款条件，再咨询专业人士。',reason:'先用现实资料核验牌面线索，再决定是否继续。',evidenceIds:[orientation.evidenceId]}],
+  uncertainty:'买房决定请依据合同资料、贷款条件和专业意见。',
+ });
+ assert.doesNotThrow(()=>parseReadingOutput(grounded,{cards:[cards[0]],evidence,requireRealityBoundary:true,requireProfessionalActionBoundary:true}));
+});
+
 test('professional boundary recognizes common financial, legal and clinical phrasings',()=>{
  assert.equal(requiresProfessionalBoundary('这套房贷现在该不该申请？'),true);
  assert.equal(requiresProfessionalBoundary('这份检查报告代表什么？'),true);

@@ -4,7 +4,7 @@ import {cardGuides} from '../src/data/card-guides.js';
 
 const references=JSON.parse(readFileSync(new URL('../src/data/card-references.json',import.meta.url),'utf8'));
 
-export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v54';
+export const READING_KNOWLEDGE_VERSION='rws-1909-rag-v55';
 export const MEMORY_RETRIEVAL_VERSION='memory-keyword-v3';
 
 // Keep provenance separate from the human-readable source name. The model and
@@ -721,7 +721,7 @@ function hasRealityBoundary(text){
  const value=String(text??'').trim();
  return value.length>=8&&REALITY_BOUNDARY_PATTERN.test(value);
 }
-const HIGH_STAKES_DECISION_ACTION_PATTERN=/买入|卖出|下单|签约|签署|签合同|起诉|停药|加药|减药|自行用药|服药|手术|转账|借贷|贷款|房贷|提交诉讼|直接投资|投资|理财|保险/u;
+const HIGH_STAKES_DECISION_ACTION_PATTERN=/买入|卖出|下单|签约|签署|签合同|合同|买房|购房|起诉|上诉|仲裁|离婚|抚养|监护|停药|加药|减药|自行用药|服药|手术|转账|借贷|贷款|房贷|提交诉讼|直接投资|投资|理财|保险/u;
 function hasProfessionalActionBoundary(text){
  const value=String(text??'').trim();
  return !HIGH_STAKES_DECISION_ACTION_PATTERN.test(value)||hasRealityBoundary(value);
