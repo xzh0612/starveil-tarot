@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {spreads} from '../src/domain.js';
-import {recommendLocalSpreads} from '../src/spread-recommendation.js';
-import {parseRecommendations} from '../server/spread-recommendations.mjs';
+import {spreads} from '../../src/domain.js';
+import {recommendLocalSpreads} from '../../src/spread-recommendation.js';
+import {parseRecommendations} from '../spread-recommendations.mjs';
 
 test('local recommendations prioritize relationship questions with a useful reason',()=>{
  const result=recommendLocalSpreads('我和她还有机会继续发展吗？');

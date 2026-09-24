@@ -1,6 +1,6 @@
-import {buildReadingMessages} from '../server/readings.mjs';
-import {evaluateFollowupFixture,evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
-import {retrieveReadingEvidence} from '../server/reading-rag.mjs';
+import {buildReadingMessages} from '../server-js-reference/readings.mjs';
+import {evaluateFollowupFixture,evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalSuite} from '../server-js-reference/reading-eval.mjs';
+import {retrieveReadingEvidence} from '../server-js-reference/reading-rag.mjs';
 
 const question='我们之间的沟通和边界要怎么调整？';
 const cards=[

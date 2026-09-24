@@ -5,10 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "node scripts/dev-all.mjs",
+    "agent": "backend/.venv/bin/python -m backend.app",
     "build": "vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
     "eval:reading": "node scripts/evaluate-reading.mjs",
-    "test:sites": "node --test tests/sites-worker.test.mjs"
+    "eval:reading:py": "backend/.venv/bin/python -m backend.evaluate_reading",
+    "test:sites": "node --test tests/sites-worker.test.mjs",
+    "test:agent": "backend/.venv/bin/python -m pytest backend/tests",
+    "test:reference": "node --test server-js-reference/tests/*.test.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

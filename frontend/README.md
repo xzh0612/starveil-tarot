@@ -2,17 +2,43 @@
 
 ## 运行
 
+解读 agent 是独立的 Python 服务（`backend/`），首次使用先装依赖：
+
 ```sh
-npm install
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install -r backend/requirements.txt
+```
+
+然后一条命令同时启动 agent 和前端：
+
+```sh
+npm run dev:all
+```
+
+打开 http://localhost:5173 。Vite 只把 `/api/readings/*` 和 `/api/spreads/recommend` 代理到 `127.0.0.1:8787` 上的 Python agent，其余路径行为和以前完全一致。
+
+也可以分开启动：
+
+```sh
+npm run agent                                # Python agent，默认 8787
 npm run dev -- --host 0.0.0.0 --port 4173 --strictPort
 ```
 
-打开 http://localhost:4173 。生产构建：`npm run build`。领域测试：`node --test tests/domain.test.mjs`。
+生产构建：`npm run build`（不含 agent，和以前一样只打包静态资源与 worker）。
+
+## 测试
+
+```sh
+npm run test:agent       # Python agent 测试（pytest）
+npm run test:reference   # 原 JavaScript 参考实现测试（277 个，迁移期间保留）
+node --test tests/*.test.mjs   # 前端测试
+```
 
 运行 RAG／Prompt 离线质量门：
 
 ```sh
-npm run eval:reading
+npm run eval:reading:py   # Python（现役）
+npm run eval:reading      # 原 JavaScript 参考实现（迁移期间保留）
 ```
 
 质量门不会调用付费模型，固定检查检索主题是否命中、每张牌是否有正逆位证据、首轮是否逐牌覆盖、引用是否来自本次证据集、回答是否包含可执行动作，以及 system／user 消息是否保留证据边界和 JSON 输出约束。要回归一次真实模型输出，可把响应 JSON 传给 `evaluateReadingFixture`，不需要改动生产接口。
@@ -88,9 +114,9 @@ type ErrorResponse = {error: string; code?: 'provider_auth' | 'provider_balance'
 
 首轮明确问题必须覆盖每张牌、返回综合 `synthesis`、非空 `uncertainty` 和至少一条 `actions`；顶层 `text` 也必须与本轮引用证据共享有意义概念，不能只写脱离牌面的事实；每张逐牌解读除了引用核心锚点，还必须复述所引证据中的一个有意义概念，避免只挂引用而写出无关牌义；首轮合读除了覆盖每张牌，还必须为每张牌引用至少一个核心锚点，不能只引用 Waite 或现代参考资料；首轮每条行动必须有非空 `reason` 说明它与牌面相关，且理由要与 `evidenceIds` 指向的证据共享有意义概念，并包含时间、次数、范围或结果等可核验标记；服务端会校验每条行动的 `evidenceIds` 至少包含核心牌义、问题应用语义或本人确认的记忆，并在健康、法律、投资等高风险问题缺少具体现实核验边界时拒绝该响应。`evidenceMeta.coverageStatus` 为 `anchor_only` 或 `incomplete` 时，Prompt 要求模型收窄结论并明确不确定；其中 `anchor_only` 还必须在 `uncertainty` 中明确应用证据或资料不足。若 `retrievalMeta` 判断问题为 `open` 或 `mixed`，模型可以返回 `needsClarification: true` 和一个具体 `clarification` 问题；澄清分支必须只提这个问题，不能同时返回部分 `cardReadings`、`synthesis`、`actions` 或 `references`，避免用不完整证据先下结论。结构化追问只要返回 `references` 就必须提供可由证据支持的 `claim`；若返回 `cardReadings` 或 `synthesis`，正文也必须与所引证据共享有意义概念；纯文本追问仍可兼容显示。若首轮 JSON 不合约，后端最多追加一次只针对结构修复的请求，并附带稳定校验码，再走同一套牌面、证据和安全校验；追问可以只返回相关牌位，行动清单也可以为空。
 
-后端只解读已确定的牌，不能重新选择牌。已知牌阵会在服务端与目录位置逐项校验，避免把“关系之镜”的牌位套成通用含义。`server/reading-rag.mjs` 会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。只有你在知识库中明确启用的记录才会按相关性作为 `memoryEvidence` 发送，并与牌义证据分开。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。
+后端只解读已确定的牌，不能重新选择牌。已知牌阵会在服务端与目录位置逐项校验，避免把“关系之镜”的牌位套成通用含义。`backend/reading_rag.py`（迁移前为 `server/reading-rag.mjs`）会为每张牌保留正逆位和图像象征，再按问题、牌位和主题补充关系／事业、反思问题、Waite 原典或 Corpora 片段；每条证据有稳定 `evidenceId`。只有你在知识库中明确启用的记录才会按相关性作为 `memoryEvidence` 发送，并与牌义证据分开。Prompt 要求模型返回引用，服务端拒绝不属于本次牌局的引用。异常时显示重试并保留牌局。
 
-`server/reading-eval.mjs` 提供不联网的检索、Prompt 和首轮解读回归评分；它复用生产环境的 `retrieveReadingEvidence` 与 `parseReadingOutput`，因此质量门检查的就是实际发送和校验的协议。`requiresProfessionalBoundary` 会识别健康、法律、投资等高风险问题；这类模型输出若缺少 `uncertainty` 现实边界，后端会拒绝返回。
+`backend/reading_eval.py`（迁移前为 `server/reading-eval.mjs`）提供不联网的检索、Prompt 和首轮解读回归评分；它复用生产环境的 `retrieveReadingEvidence` 与 `parseReadingOutput`，因此质量门检查的就是实际发送和校验的协议。`requiresProfessionalBoundary` 会识别健康、法律、投资等高风险问题；这类模型输出若缺少 `uncertainty` 现实边界，后端会拒绝返回。
 
 ## 资源与来源
 

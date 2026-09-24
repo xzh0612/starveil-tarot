@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {GOAL_REFERENCE_TIERS,MEMORY_RETRIEVAL_VERSION,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,requiresPerspectiveBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../server/reading-rag.mjs';
+import {GOAL_REFERENCE_TIERS,MEMORY_RETRIEVAL_VERSION,READING_CORPUS_STATUS,validateReadingCorpus,retrieveReadingEvidence,retrieveReadingEvidenceAsync,rerankReadingEvidence,retrieveMemoryEvidence,summarizeReadingEvidence,parseReadingOutput,requiresProfessionalBoundary,requiresPerspectiveBoundary,analyzeReadingQuestion,readingQueryFor,readingRetrievalFor,canAskClarification,evidenceSourceType,evidenceSourceAuthority} from '../reading-rag.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -297,7 +297,7 @@ test('retrieval labels evidence hierarchy and deterministic reasons',()=>{
  assert.ok(application.retrievalReasons.includes('theme_match'));
  assert.ok(application.retrievalTerms.includes('感受'));
  assert.deepEqual(application.retrievalThemes,['relationship']);
- assert.equal(application.retrievalMethod,'bm25+rules+expansion-v1');
+ assert.equal(application.retrievalMethod,'bm25+rules+expansion-v2');
  assert.ok(application.retrievalDirectTerms.includes('感受'));
  assert.equal(typeof application.retrievalScore,'number');
  assert.ok(evidence.some(item=>item.retrievalReasons.includes('keyword_match')));
@@ -315,6 +315,23 @@ test('retrieval keeps direct and low-weight lexicon expansion terms separate',()
  const work=evidence.find(item=>item.kind==='work');
  assert.ok(work.retrievalExpandedTerms.includes('辞职'));
  assert.ok(!work.retrievalDirectTerms.includes('辞职'));
+});
+
+test('retrieval does not treat generic question words as topical evidence',()=>{
+ const evidence=retrieveReadingEvidence({question:'未来会怎样发展？同时我该怎么安排下一步？',cards:[{id:'m08',reversed:false,position:'建议'}]});
+ const reflection=evidence.find(item=>item.kind==='reflection');
+ assert.ok(reflection);
+ assert.ok(!reflection.retrievalDirectTerms.includes('怎样'));
+ assert.ok(!reflection.retrievalDirectTerms.includes('怎么'));
+});
+
+test('retrieval scores lexical relevance against the whole spread corpus',()=>{
+ const question='我该如何处理这段关系？';
+ const score=draws=>retrieveReadingEvidence({question,cards:draws}).find(item=>item.evidenceId==='m08:symbolism').retrievalScore;
+ // The second card changes document frequency/average length, not this
+ // candidate's text, position, routing or fixed rule boosts.
+ assert.notEqual(score(cards),score([cards[0]]));
+ assert.equal(score(cards),score([...cards].reverse()));
 });
 
 test('retrieval selects relationship context for relationship questions',()=>{

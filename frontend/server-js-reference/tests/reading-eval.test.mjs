@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {evaluateFollowupFixture,evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase,evaluateRetrievalSuite} from '../server/reading-eval.mjs';
-import {retrieveReadingEvidence} from '../server/reading-rag.mjs';
-import {buildReadingMessages} from '../server/readings.mjs';
+import {evaluateFollowupFixture,evaluatePromptContract,evaluateReadingFixture,evaluateRetrievalCase,evaluateRetrievalSuite} from '../reading-eval.mjs';
+import {retrieveReadingEvidence} from '../reading-rag.mjs';
+import {buildReadingMessages} from '../readings.mjs';
 
 const cards=[
  {id:'m08',reversed:false,position:'建议'},
@@ -300,7 +300,7 @@ test('prompt evaluation requires evidence boundaries, JSON contract and user con
 });
 
 test('prompt evaluation protects truncated personal-memory excerpts',()=>{
- const messages=buildReadingMessages({question:'做重要决定前我该如何安排自己？',cards:[cards[0]],memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}]});
+ const messages=buildReadingMessages({question:'做重要决定前我该如何安排自己？',cards:[cards[0]],memories:[{id:'m1',text:'做重要决定前，我需要先独处整理思绪。',enabled:true}],usePersonalMemory:true});
  assert.equal(evaluatePromptContract(messages).ok,true);
  const missing=messages.map(message=>({...message}));
  missing[0].content=missing[0].content.replace('memoryExcerpted=true 表示服务端为了保护 Prompt 预算只传入了该记忆的前段，不能把省略部分补写成事实。','');

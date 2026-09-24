@@ -220,8 +220,13 @@ function queryExpansionTerms(routing){
  return terms;
 }
 
+// These words route intent, but do not identify the subject. Keeping them out
+// of direct lexical evidence prevents a generic question form from outranking
+// a topic-bearing phrase such as "关系" or "学习".
+const GENERIC_QUERY_TERMS=new Set(['现在','目前','什么','如何','怎么','怎样','是否','会不会','能不能','可不可以','为什么','哪里','哪个','哪些']);
+
 function weightedQueryTerms(question,routing){
- const direct=chineseNgrams(question),expanded=queryExpansionTerms(routing),weights=new Map([...direct].map(term=>[term,1]));
+ const direct=new Set([...chineseNgrams(question)].filter(term=>!GENERIC_QUERY_TERMS.has(term))),expanded=queryExpansionTerms(routing),weights=new Map([...direct].map(term=>[term,1]));
  for(const term of expanded)if(!weights.has(term))weights.set(term,.35);
  return {direct,expanded,weights};
 }
@@ -420,13 +425,14 @@ export function rerankReadingEvidence(evidence,{semanticScores={},maxTotalEviden
 export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null,highStakes=null}={}){
  if(typeof question!=='string'||!question.trim()||!Array.isArray(cards))return [];
  const resolvedRouting=routing??analyzeReadingQuestion(question),queryTerms=weightedQueryTerms(question,resolvedRouting),terms=queryTerms.weights,themes=resolvedRouting.themes,goals=resolvedRouting.goals,limit=Math.max(3,Math.min(7,maxPerCard)),resolvedHighStakes=highStakes===null?requiresProfessionalBoundary(question):Boolean(highStakes),hasSupportedDomain=themes.some(theme=>['relationship','career','reflection'].includes(theme)),explicitApplicationKinds=hasSupportedDomain?new Set(applicationKindsForThemes(themes,[])):new Set(),suppressFallbackApplication=resolvedHighStakes&&!explicitApplicationKinds.size;
+ const globalCorpus=cards.filter(card=>cardById[card?.id]&&typeof card.reversed==='boolean'&&typeof card.position==='string'&&card.position.trim()).flatMap(card=>candidateChunks(card,question));
  const perCard=cards.flatMap(card=>{
   const canonical=cardById[card?.id];
   if(!canonical||typeof card.reversed!=='boolean'||typeof card.position!=='string'||!card.position.trim())return [];
   const rawChunks=candidateChunks(card,question);
   const chunks=rawChunks.map((chunk,index)=>{
    const signals=matchingSignals(chunk,{position:card.position,terms,themes,goals,directTerms:queryTerms.direct});
-   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:rawChunks,directTerms:queryTerms.direct}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedDirectTerms:signals.matchedDirectTerms,matchedExpandedTerms:signals.matchedExpandedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,matchedPositionKinds:signals.matchedPositionKinds,index};
+   return {...chunk,score:scoreChunk(chunk,{position:card.position,terms,themes,goals,corpus:globalCorpus,directTerms:queryTerms.direct}),retrievalReasons:retrievalReasons(chunk,signals),matchedTerms:signals.matchedTerms,matchedDirectTerms:signals.matchedDirectTerms,matchedExpandedTerms:signals.matchedExpandedTerms,matchedThemes:signals.matchedThemes,matchedGoals:signals.matchedGoals,matchedPositionKinds:signals.matchedPositionKinds,index};
   });
   const sorted=[...chunks].sort((a,b)=>b.score-a.score||a.index-b.index);
   const required=chunks.filter(chunk=>['symbolism','orientation'].includes(chunk.kind));
@@ -469,7 +475,7 @@ export function collectReadingEvidence({question,cards,maxPerCard=5,routing=null
    retrievalThemes:chunk.matchedThemes,
    retrievalPositionKinds:chunk.matchedPositionKinds,
    retrievalGoals:chunk.matchedGoals,
-   retrievalMethod:'bm25+rules+expansion-v1',
+   retrievalMethod:'bm25+rules+expansion-v2',
    retrievalScore:Number(chunk.score.toFixed(3)),
    retrievalRequired:['symbolism','orientation'].includes(chunk.kind),
    text:chunk.text,

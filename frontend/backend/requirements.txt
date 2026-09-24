@@ -1,0 +1,11 @@
+# Runtime dependencies of the Starveil reading agent.
+# Install into a local virtual environment:
+#
+#   cd frontend
+#   python3 -m venv backend/.venv
+#   backend/.venv/bin/pip install -r backend/requirements.txt
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+
+# Development only (the ported test suite).
+pytest==9.1.1
