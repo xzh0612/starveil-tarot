@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {cards,newDeck,selectCard,chosenCards,randomInt,updateReadingFeedback} from '../src/domain.js';
+import {cards,newDeck,selectCard,chosenCards,randomInt,updateReadingFeedback,createSession} from '../src/domain.js';
 test('78 permanent unique identities and local artwork paths',()=>{assert.equal(cards.length,78);assert.equal(new Set(cards.map(c=>c.id)).size,78);});
 test('shuffle keeps all identities and disabled reversals',()=>{const deck=newDeck(false,n=>n-1);assert.equal(new Set(deck.map(c=>c.id)).size,78);assert.ok(deck.every(c=>!c.reversed));});
 test('selection preserves the clicked identity and leaves holes, no duplicates',()=>{let s={deck:newDeck(false,n=>n-1),selected:[],spread:{positions:['a','b']}};s=selectCard(s,77);assert.equal(chosenCards(s)[0].id,s.deck[77].id);assert.equal(selectCard(s,77),s);s=selectCard(s,2);assert.equal(selectCard(s,3),s);assert.deepEqual(s.selected,[77,2]);});
@@ -9,3 +9,4 @@ test('random rejection avoids biased tail',()=>{let calls=0;const values=[429496
 test('each permanent card has a real local image',()=>{for(const c of cards)assert.ok(existsSync(new URL(`../public${c.image}`,import.meta.url)),c.id);});
 test('serialized session preserves chosen identities and orientation',()=>{const original={deck:newDeck(true,n=>n-1),selected:[2,70,44],spread:{positions:['现状','阻碍','建议']}};assert.deepEqual(chosenCards(JSON.parse(JSON.stringify(original))),chosenCards(original));});
 test('reading feedback only annotates assistant messages with known labels',()=>{const messages=[{role:'user',text:'问题'},{role:'assistant',text:'解读'}];const updated=updateReadingFeedback(messages,1,'helpful');assert.equal(updated[0],messages[0]);assert.equal(updated[1].feedback,'helpful');assert.notEqual(updated,messages);assert.equal(updateReadingFeedback(messages,0,'review'),messages);assert.equal(updateReadingFeedback(messages,1,'unknown'),messages);});
+test('new sessions disable personal memory until the user opts in',()=>{const session=createSession('问题',{id:'one',name:'一张指引',description:'给此刻一个清晰的观察角度',positions:['当下指引']},false);assert.equal(session.usePersonalMemory,false);});

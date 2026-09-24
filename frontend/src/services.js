@@ -76,13 +76,13 @@ export async function parseReadingResponse(response){
  return data;
 }
 /** Replace this adapter with a server endpoint; never put provider secrets in Vite env.
- * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?}
+ * POST /api/readings/interpret {sessionId, question, deckVersion, spread?, cards, messages, memories?, usePersonalMemory?}
  * -> {text, source:'ai', promptVersion?, knowledgeMeta?:{deckVersion, ragVersion, promptVersion, corpus, clientDeckVersion}, promptBudget?:{historyInputMessages, historySelectedMessages, historyInputChars, historySelectedChars, historyOmittedMessages, historyTruncatedMessages, historyLimits, historyTruncationStrategy, promptCharLimit, historyCompactedForBudget, questionChars, activeQuestionChars, evidenceItems, evidenceTextChars, memoryItems, memoryTextChars, memoryExcerptedItems, memoryLimits}, retrievalMeta?:{themes, goals, confidence, themeScores, goalScores}, evidencePlan?:{perCard, goalEvidenceIds, goalRequiredEvidenceIds, personalEvidenceIds}, responsePlan?:{goal, turn, targetText, emphasis, directAnswer, actionGuidance}, safetyMeta?:{requiresProfessionalBoundary, requiresPerspectiveBoundary}, needsClarification?, clarification?, goalPlan?:{mode, order, items:[{sequence, goal, emphasis, requiredEvidenceTier, evidenceIds, requiredEvidenceIds, evidenceAvailable}]}, goalSections?:[{goal, text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, memoryExcerpted, evidenceExcerpt}]}], cardReadings?:[{cardId, position, orientation, reading, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, memoryExcerpted, evidenceExcerpt}]}], synthesis?:{text, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, memoryExcerpted, evidenceExcerpt}]}, actions?:[{text, reason, evidenceIds, evidence?:[{evidenceId, kind, tier, sourceType, sourceLabel, memoryStatus, memoryUse, memoryExcerpted, evidenceExcerpt}]}], references:[{evidenceId, cardId, position, claim, evidenceExcerpt, kind, tier, source, sourceType, sourceLabel, memoryStatus, memoryUse, memoryExcerpted, retrievalReasons}], followUp?, uncertainty?}
  */
-export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],signal}){
+export async function interpret({sessionId,question,spread,cards,messages=[],memories=[],usePersonalMemory=false,signal}){
  const endpoint=env.VITE_READING_ENDPOINT;
  if(endpoint){
-  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,question,spread,cards,messages,memories,deckVersion:'rws-1909-v1'}),signal});
+  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,question,spread,cards,messages,memories,usePersonalMemory,deckVersion:'rws-1909-v1'}),signal});
   return parseReadingResponse(response);
  }
  await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,900);signal?.addEventListener('abort',()=>{clearTimeout(timer);reject(new DOMException('Aborted','AbortError'));},{once:true});});

@@ -47,6 +47,6 @@ export function updateReadingFeedback(messages,index,feedback){
  if(!Array.isArray(messages)||!Number.isInteger(index)||index<0||index>=messages.length||messages[index]?.role!=='assistant'||!allowed.has(feedback))return messages;
  return messages.map((message,messageIndex)=>messageIndex===index?{...message,feedback}:message);
 }
-export function createSession(question,spread,reversals){return {id:crypto.randomUUID(),date:new Date().toISOString(),question,spread,deck:newDeck(reversals),selected:[],revealed:[],messages:[],deckVersion:DECK_VERSION};}
+export function createSession(question,spread,reversals){return {id:crypto.randomUUID(),date:new Date().toISOString(),question,spread,deck:newDeck(reversals),selected:[],revealed:[],messages:[],usePersonalMemory:false,deckVersion:DECK_VERSION};}
 export function load(key,fallback){try{return JSON.parse(localStorage.getItem(`starveil:${key}`))??fallback;}catch{return fallback;}}
 export function save(key,value){localStorage.setItem(`starveil:${key}`,JSON.stringify(value));}

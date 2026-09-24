@@ -1,1 +1,1 @@
-export {Scene} from './PosterScene';
+export {Scene} from './SpatialScene';
