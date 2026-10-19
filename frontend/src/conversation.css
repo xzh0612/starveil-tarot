@@ -1,0 +1,52 @@
+/* 对话抽屉（panel==='reading'）：WorkBuddy 式聊天结构，沿用暗紫塔罗配色 */
+.panel.chat{width:min(560px,50%)}
+.panel.chat>header{padding:20px 22px 15px}
+.panel.chat>header h2{font-size:19px}
+.panel-header-actions{display:flex;align-items:center;gap:6px}
+.panel.chat .panel-body{display:flex;flex-direction:column;overflow:hidden;padding:0}
+.chat-thread-wrap{position:relative;flex:1;min-height:0;display:flex}
+.chat-thread{flex:1;min-height:0;overflow-y:auto;padding:18px 22px 22px;display:flex;flex-direction:column;gap:18px;scrollbar-width:thin;scrollbar-color:#785b9240 transparent}
+.chat-empty{margin:4px 0 0;font-size:12px;line-height:1.9;color:#a892b6}
+.turn-user{align-self:flex-end;max-width:82%;background:#241a35;border:1px solid #3b2f52;border-radius:12px 12px 3px 12px;padding:11px 14px}
+.turn-user p{margin:0;font-size:13px;line-height:1.9;white-space:pre-wrap}
+.turn{display:flex;gap:10px;align-items:flex-start}
+.turn-avatar{width:24px;height:24px;border-radius:50%;background:#2f2442;border:1px solid #3b2f52;color:#c9aceb;font:11px/1 Arial,sans-serif;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.turn-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.turn-body>*{width:100%}
+.turn-name{font:10px Arial,sans-serif;letter-spacing:.1em;color:#9d8db3}
+.turn-name b{color:#c9aceb;font-weight:400}
+.step-rows{display:flex;flex-direction:column;gap:5px}
+.step-row{display:flex;align-items:center;gap:7px;font:10px/1.6 ui-monospace,Menlo,monospace;color:#9d8db3}
+.step-row>svg{flex-shrink:0;color:#7fbd9c}
+.step-row.warning{color:#d8b879}
+.step-row.warning>svg{color:#d8b879}
+.turn-text{margin:0;font-size:13px;line-height:2;white-space:pre-wrap}
+.trace-row{border:1px solid #312948;border-radius:8px;background:#b89bc40a}
+.trace-row>summary{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;list-style:none;color:#b7a3c6;font-size:11px}
+.trace-row>summary::-webkit-details-marker{display:none}
+.trace-row>summary svg{font-size:12px;color:#8d7fa3;flex-shrink:0;transition:transform .25s}
+.trace-row[open]>summary svg{transform:rotate(90deg)}
+.trace-row-body{border-top:1px solid #c4a8d51c;padding:11px 12px}
+.trace-row-body .card-reading-list{border-top:0;padding:0}
+.trace-row-body .goal-section-list{margin-top:0}
+.trace-row-body .evidence-list{grid-template-columns:1fr;margin-top:0}
+.trace-row-body .trace-grid{margin-top:0;background:none;border:0;padding:0}
+.turn-body .message-synthesis,.turn-body .message-actions,.turn-body .message-clarification,.turn-body .message-uncertainty,.turn-body .message-followup{margin-top:0}
+.turn-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:3px 14px}
+.turn-toolbar button{font-size:11px;color:#8d7fa3;padding:2px 0}
+.turn-toolbar button:hover{color:#e8dfee}
+.turn-toolbar button.selected{color:#c9aceb}
+.turn-toolbar small{font-size:9px;color:#7d6f92}
+.chat-status{margin:0;font-size:11px;color:#9d8db3;animation:pulse 1.5s infinite}
+.chat-jump{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;background:#2f2442;border:1px solid #4a3d61;color:#c9aceb;display:flex;align-items:center;justify-content:center;font-size:15px}
+.chat-composer{border-top:1px solid var(--line);padding:12px 22px 10px;background:#171125;flex-shrink:0}
+.chat-composer form{display:flex;align-items:flex-end;gap:10px;border:1px solid #4a3d61;border-radius:12px;background:#1d1530;padding:4px 5px 5px 14px}
+.chat-composer form:focus-within{border-color:#7a5fa0}
+.chat-composer textarea{flex:1;border:0;background:none;padding:9px 0;min-height:20px;max-height:120px;resize:none;font-size:12px;line-height:1.7;border-radius:0;outline:none}
+.chat-send{width:32px;height:32px;border-radius:50%;background:#3a2d52;color:#d9c8ee;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.chat-composer-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font:10px Arial,sans-serif;color:#7d6f92}
+.chat-composer-meta button{font-size:10px;color:#8d7fa3}
+.chat-composer-meta button:hover{color:#e8dfee}
+.chat-composer-meta button.on{color:#c9aceb}
+.chat-disclaimer{margin:8px 0 0;text-align:center;font-size:9px;color:#6d6180}
+@media(max-width:680px){.panel.chat>header{padding:16px 16px 12px}.chat-thread{padding:14px 16px 18px}.chat-composer{padding:10px 14px 8px}.turn-user{max-width:94%}}

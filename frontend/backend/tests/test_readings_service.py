@@ -1225,7 +1225,7 @@ def test_requests_grounded_json_and_returns_validated_evidence_metadata():
     assert result["followUp"] == "你最容易在哪个时段中断？"
     assert result["uncertainty"] == "牌面不能证明结果。"
     assert sent["init"]["response_format"]["type"] == "json_object"
-    assert sent["init"]["max_tokens"] == 1400
+    assert sent["init"]["max_tokens"] == 8000
     assert "evidenceId" in sent["init"]["messages"][1]["content"]
 
 

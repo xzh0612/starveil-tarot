@@ -262,8 +262,8 @@ def create_response_plan(
 
 def reading_max_tokens(card_count: int, has_prior_assistant: bool) -> int:
     if has_prior_assistant:
-        return 1400
-    return min(3200, max(1400, 900 + int(_clamp(card_count, 1, 12)) * 140))
+        return 8000
+    return min(8000, max(8000, 900 + int(_clamp(card_count, 1, 12)) * 140))
 
 
 def truncate_history_text(raw: Any, max_message_chars: int) -> str:

@@ -48,6 +48,51 @@ const READING_ERROR_HINTS={
 export function readingErrorHint(code){
  return READING_ERROR_HINTS[code]||'这次解读没有通过服务端核验，原牌局仍然保留。';
 }
+const CONFIG_ERROR_HINT='设置没有保存成功，请稍后重试。';
+/** Derive the settings endpoint from the reading endpoint, so a custom base path keeps working. */
+export function agentConfigEndpoint(base=env.VITE_READING_ENDPOINT){
+ if(!base)return '';
+ return `${base.replace(/\/[^/]*$/,'')}/config`;
+}
+/** True when a failure means "no local agent to talk to at all", not "the agent said no". */
+function agentOffline(response){return !response.ok&&(response.status===404||response.status>=500);}
+/**
+ * Read the local agent settings. Never throws: an unreachable or older agent
+ * simply reports `available:false`, and the UI stays as it was before.
+ * -> {available:true, configured, model, source:'env'|'file'|'none', editable, restartRequired}
+ */
+export async function readingConfig({endpoint,signal}={}){
+ const target=endpoint??agentConfigEndpoint();
+ if(!target)return {available:false};
+ let response;
+ try{response=await fetch(target,{method:'GET',signal});}catch{return {available:false};}
+ if(agentOffline(response))return {available:false};
+ const raw=await response.json().catch(()=>null),data=raw&&typeof raw==='object'?raw:{};
+ if(!response.ok)return {available:true,configured:false,model:data.model||'',source:data.source||'none',editable:false,restartRequired:false,error:data.error||CONFIG_ERROR_HINT,code:data.code};
+ return {available:true,configured:data.configured===true,model:typeof data.model==='string'?data.model:'',source:data.source||'none',editable:data.editable!==false,restartRequired:data.restartRequired===true};
+}
+async function writeConfig(method,body,{endpoint,signal}={}){
+ const target=endpoint??agentConfigEndpoint();
+ if(!target)throw Object.assign(new Error(CONFIG_ERROR_HINT),{code:'config_unavailable'});
+ const response=await fetch(target,{method,headers:body?{'Content-Type':'application/json'}:undefined,body:body?JSON.stringify(body):undefined,signal});
+ const raw=await response.json().catch(()=>null),data=raw&&typeof raw==='object'?raw:{};
+ if(!response.ok){
+  const error=new Error(typeof data.error==='string'&&data.error?data.error:CONFIG_ERROR_HINT);
+  if(typeof data.code==='string'&&/^[a-z0-9_]{1,64}$/.test(data.code))error.code=data.code;
+  error.status=response.status;
+  throw error;
+ }
+ return {available:true,configured:data.configured===true,model:typeof data.model==='string'?data.model:'',source:data.source||'none',editable:data.editable!==false,restartRequired:data.restartRequired===true};
+}
+/** Save the local DeepSeek settings; the key is written on disk, never echoed back. */
+export function saveReadingConfig({apiKey,model}={},options={}){
+ const body={};
+ if(typeof apiKey==='string')body.apiKey=apiKey;
+ if(typeof model==='string')body.model=model;
+ return writeConfig('POST',body,options);
+}
+/** Remove the locally stored key, keeping the rest of `.env.local` untouched. */
+export function clearReadingConfig(options={}){return writeConfig('DELETE',null,options);}
 const COVERAGE_LABELS={complete:'完整覆盖牌面与当前主题',anchor_only:'以核心牌义为主，应用语义较少',incomplete:'核心牌义证据不完整'};
 export function evidenceCoverageLabel(status){
  return COVERAGE_LABELS[status]||'覆盖情况待核验';

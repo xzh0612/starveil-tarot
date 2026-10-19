@@ -36,7 +36,7 @@ npm run dev:all
 
 `dev:all` 会同时拉起解读 agent 和 Vite dev server，并互相守护：任一退出就整体退出。打开 <http://localhost:5173>。
 
-只想看界面、不需要 AI 解读时，可以单独跑 `npm run dev`；此时 `/api/readings/interpret` 拿不到服务（代理返回 500），前端会显示「解读服务暂时未连接。牌面已保留」。遇到这条提示，基本就是 agent 没在跑。
+只想看界面、不需要 AI 解读时，可以单独跑 `npm run dev`；此时 `/api/readings/interpret` 拿不到服务（代理返回 500），前端会显示「解读服务暂时未连接。牌面已保留」。遇到这条提示，基本就是 agent 没在跑——服务起来之后，也可以直接在对话面板的引导卡里配置密钥，不用改任何文件。
 
 生产构建：
 
@@ -46,7 +46,7 @@ npm run build
 
 本地预览构建产物用 `npm run preview`（同样需要 agent 在跑才会解读）。
 
-GitHub Actions 会在每次分支推送、Pull Request 和手动触发时，在 `frontend/` 下用 Node 22 执行锁定依赖安装、Sites 生产构建、前端 Node 测试、离线 RAG/Prompt 评估和高危依赖审计。工作流见 `.github/workflows/quality.yml`，不需要也不会读取 DeepSeek 密钥。注意：CI 目前只覆盖前端 Node 测试与 `server-js-reference/` 的离线评估，Python agent 的 290 个 pytest 用例需要在本地运行 `npm run test:agent`。
+GitHub Actions 会在每次分支推送、Pull Request 和手动触发时，在 `frontend/` 下用 Node 22 执行锁定依赖安装、Sites 生产构建、前端 Node 测试、离线 RAG/Prompt 评估和高危依赖审计。工作流见 `.github/workflows/quality.yml`，不需要也不会读取 DeepSeek 密钥。注意：CI 目前只覆盖前端 Node 测试与 `server-js-reference/` 的离线评估，Python agent 的 312 个 pytest 用例需要在本地运行 `npm run test:agent`。
 
 RAG 与 Prompt 离线质量门：
 
@@ -58,7 +58,7 @@ npm --prefix frontend run eval:reading:py   # 直接跑 Python agent
 <details>
 <summary>离线评估覆盖的质量门（Prompt v47 / RAG v55）</summary>
 
-它不调用 DeepSeek，只用固定问题、牌面和模拟 JSON 检查证据主题覆盖、逐牌覆盖、核心锚点、正文、行动正文和行动理由的证据支持、引用合法性、可执行建议、首轮与追问轮次的覆盖不足边界、选择型问题的决策应用召回、明确“哪条/哪种”及“要不要/该不该”比较目标路由、常见“能不能/有没有机会”预测目标路由、否定意图短语不会误触发目标路由、目标路由评估覆盖 advice/forecast/explanation/comparison 且检查额外误路由、混合主题不会混入无关应用域、单目标不会混入未路由的 goalSections、目标化 responsePlan、按目标生成的 directAnswer 开场框架和 actionGuidance 行动约束、首轮先直接回应当前问题再按目标展开、混合问题的 goalPlan 逐目标顺序、goalSections 分段顺序与证据绑定、所有已路由目标的层级引用（建议必须有 application 证据，且每条首轮行动建议在 application 可用时也必须引用对应目标证据）、目标证据覆盖诊断与按 advice/forecast/explanation/comparison 写明缺失层级的覆盖不足边界、大牌阵动态证据预算、按牌位目标层级预留、紧预算下先保留牌位语义证据再预留目标证据、混合目标按牌位轮转预留、未来-only 问题保留牌位应用语义、显式预算先保留目标层、按分数预留目标证据、弱代词与上下文追问的原始主题继承、当前目标覆盖旧目标、追问目标路由传入证据检索、离线评估复用目标证据层级、具体引用词校验、引用 claim 逐句证据校验、绝对断言校准（覆盖全部用户可见字段）、确定时间预测校准（拒绝把日期写成必然结果，允许把时间范围用于观察或核验动作）、澄清分支边界（不伪造 fallback 引用）、明确 mixed 目标不被无谓澄清和 Prompt 上下文边界、模型证据与检索诊断隔离、牌阵推荐理由必须引用目录牌位概念并与用户问题主题相连、结构化追问正文证据支持、纯文本追问也必须命中具体证据、结构化追问必须引用当前目标层级、目标分段也能作为追问正文的证据来源、牌阵位置语义命中与诊断字段、首轮逐牌解读对可用牌位证据的引用约束、行动正文与理由证据支持（正文和理由必须命中非通用牌面概念）、顶层正文证据支持、首轮正文引用范围约束、单目标目标分段证据支持、首轮目标分段层级约束、目标分段层级修复指引、目标化覆盖边界修复指引、结构化 grounding 修复指引、共享目标证据层级契约、逐句、逐分句结构化正文证据约束、混合主题的逐域覆盖诊断、按牌位的目标证据缺口诊断，以及混合目标顶层摘要覆盖和紧预算下按牌位预留证据槽位。当前 Python agent 侧共有 290 个 pytest 用例（前端另有 22 个 Node 用例），离线 Prompt、RAG 检索和结构化解读评估均需通过；离线契约与线上解析同样校验首轮 action 的目标 application 证据、结构化追问 action 的证据支持、跨用户历史轮次保留高风险现实边界，以及逗号、顿号和常见转折/并列/因果连接词分句不能追加无来源事实。
+它不调用 DeepSeek，只用固定问题、牌面和模拟 JSON 检查证据主题覆盖、逐牌覆盖、核心锚点、正文、行动正文和行动理由的证据支持、引用合法性、可执行建议、首轮与追问轮次的覆盖不足边界、选择型问题的决策应用召回、明确“哪条/哪种”及“要不要/该不该”比较目标路由、常见“能不能/有没有机会”预测目标路由、否定意图短语不会误触发目标路由、目标路由评估覆盖 advice/forecast/explanation/comparison 且检查额外误路由、混合主题不会混入无关应用域、单目标不会混入未路由的 goalSections、目标化 responsePlan、按目标生成的 directAnswer 开场框架和 actionGuidance 行动约束、首轮先直接回应当前问题再按目标展开、混合问题的 goalPlan 逐目标顺序、goalSections 分段顺序与证据绑定、所有已路由目标的层级引用（建议必须有 application 证据，且每条首轮行动建议在 application 可用时也必须引用对应目标证据）、目标证据覆盖诊断与按 advice/forecast/explanation/comparison 写明缺失层级的覆盖不足边界、大牌阵动态证据预算、按牌位目标层级预留、紧预算下先保留牌位语义证据再预留目标证据、混合目标按牌位轮转预留、未来-only 问题保留牌位应用语义、显式预算先保留目标层、按分数预留目标证据、弱代词与上下文追问的原始主题继承、当前目标覆盖旧目标、追问目标路由传入证据检索、离线评估复用目标证据层级、具体引用词校验、引用 claim 逐句证据校验、绝对断言校准（覆盖全部用户可见字段）、确定时间预测校准（拒绝把日期写成必然结果，允许把时间范围用于观察或核验动作）、澄清分支边界（不伪造 fallback 引用）、明确 mixed 目标不被无谓澄清和 Prompt 上下文边界、模型证据与检索诊断隔离、牌阵推荐理由必须引用目录牌位概念并与用户问题主题相连、结构化追问正文证据支持、纯文本追问也必须命中具体证据、结构化追问必须引用当前目标层级、目标分段也能作为追问正文的证据来源、牌阵位置语义命中与诊断字段、首轮逐牌解读对可用牌位证据的引用约束、行动正文与理由证据支持（正文和理由必须命中非通用牌面概念）、顶层正文证据支持、首轮正文引用范围约束、单目标目标分段证据支持、首轮目标分段层级约束、目标分段层级修复指引、目标化覆盖边界修复指引、结构化 grounding 修复指引、共享目标证据层级契约、逐句、逐分句结构化正文证据约束、混合主题的逐域覆盖诊断、按牌位的目标证据缺口诊断，以及混合目标顶层摘要覆盖和紧预算下按牌位预留证据槽位。当前 Python agent 侧共有 312 个 pytest 用例（前端另有 29 个 Node 用例），离线 Prompt、RAG 检索和结构化解读评估均需通过；离线契约与线上解析同样校验首轮 action 的目标 application 证据、结构化追问 action 的证据支持、跨用户历史轮次保留高风险现实边界，以及逗号、顿号和常见转折/并列/因果连接词分句不能追加无来源事实。
 
 本轮还增加了 activeQuestion 相关性门禁：当问题明确落在关系、事业或自我主题时，顶层回答必须覆盖每个明确主题，并为每个主题复述至少一个同域词；证据充分但答非所问的泛化文本会被标记为 `question_relevance` 并进入一次有边界的修复流程。
 
@@ -80,7 +80,10 @@ Prompt v47 在 v44 的开放目标门禁之外，继续覆盖“有戏、有没�
 
 ## DeepSeek 配置
 
-在 `frontend/.env.local` 中配置（该文件不随仓库提交）：
+两种方式，任选其一：
+
+- **在应用里配置（推荐）**：首次解读时对话面板会出现「接入你的密钥」引导卡；之后随时可以在右上角「偏好设置 → AI 解读」里修改、更换或清除。密钥保存到 `frontend/.env.local` 并即时生效，不需要重启；页面只显示「已配置/未配置」，密钥本身不会回显。
+- **手工配置**：直接编辑 `frontend/.env.local`：
 
 ```dotenv
 DEEPSEEK_API_KEY=你的密钥
@@ -89,13 +92,14 @@ DEEPSEEK_MODEL=deepseek-flash
 VITE_READING_ENDPOINT=/api/readings/interpret
 ```
 
-密钥只能放在 `DEEPSEEK_API_KEY` 里由 Python agent 读取，不要加 `VITE_` 前缀——带该前缀的变量会被内联进浏览器产物。`STARVEIL_AGENT_PORT` 可以改 agent 端口（默认 8787），Vite 的代理目标会跟着它走。没有密钥时 agent 仍会启动，但解读接口返回 `provider_not_configured`。
+密钥只能放在 `DEEPSEEK_API_KEY` 里由 Python agent 读取，不要加 `VITE_` 前缀——带该前缀的变量会被内联进浏览器产物。`STARVEIL_AGENT_PORT` 可以改 agent 端口（默认 8787），Vite 的代理目标会跟着它走。没有密钥时 agent 仍会启动，但解读接口返回 `provider_not_configured`。若密钥来自启动时的环境变量，界面会显示「由环境变量提供」并锁定编辑。
 
-agent 提供四个只允许本机调用的接口：
+agent 提供五个只允许本机调用的接口：
 
 - `POST /api/readings/interpret`：发送已确定的牌局和对话，返回解读。
 - `POST /api/spreads/recommend`：根据问题推荐牌阵。
 - `GET /api/readings/status`：返回 provider 与模型是否已就绪。
+- `GET/POST/DELETE /api/readings/config`：读取、保存或清除本机密钥与模型；仅接受 loopback 来源，并校验 Host 白名单以防 DNS rebinding，密钥永不回显。
 - `POST /api/readings/debug`：返回 Prompt 与检索的调试上下文。
 
 接口会校验牌面、正逆位、请求大小、来源、并发和超时。首轮模型输出必须逐牌引用固定牌义、让正文和合读与证据相符、用核心锚点完成合读、为行动建议提供证据、在 advice/comparison 目标有 application 证据时让每条行动都引用对应 application、与证据相符的理由和可观察完成标准，并拒绝“保证一定会”之类的绝对预测；健康、法律、投资等高风险问题还必须包含现实依据边界。只有主题和回答目标都开放的问题才会先进入只提一个具体问题的澄清分支；已经明确多个目标的 mixed 问题直接按目标分段回答，不能同时返回部分牌义。若 JSON 结构偶发不合约，后端最多自动修复一次并重新校验。档案与个人知识库不会自动发送给模型。
@@ -103,8 +107,8 @@ agent 提供四个只允许本机调用的接口：
 ## 测试
 
 ```bash
-npm --prefix frontend run test:agent          # Python agent，290 个用例
-cd frontend && node --test tests/*.test.mjs   # 前端，22 个用例
+npm --prefix frontend run test:agent          # Python agent，312 个用例
+cd frontend && node --test tests/*.test.mjs   # 前端，29 个用例
 ```
 
 Python 侧覆盖 Prompt 组装与黄金快照、RAG 检索与输出校验、解读服务（含用假 transport 注入 provider 失败、超时和鉴权错误）、牌阵推荐与离线评估；Node 侧覆盖牌义完整性、固定牌序、随机洗牌、前端服务层、网站静态资源和 Sites 构建检查。

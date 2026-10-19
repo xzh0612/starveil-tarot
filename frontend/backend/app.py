@@ -20,6 +20,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 
+from .agent_config import CONFIG_PATH, AgentConfigEndpoint, load_env_file
 from .readings import READING_PROMPT_VERSION, REQUEST_BODY_LIMIT, ReadingService
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
@@ -34,23 +35,6 @@ AGENT_PATHS = (
 
 #: Default port the Vite dev server proxies `/api` to.
 DEFAULT_PORT = 8787
-
-
-def load_env_file(path: Path) -> dict[str, str]:
-    """Minimal `.env` reader, matching how Vite parsed `frontend/.env.local`."""
-    values: dict[str, str] = {}
-    if not path.exists():
-        return values
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, _, value = stripped.partition("=")
-        value = value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
-            value = value[1:-1]
-        values[key.strip()] = value
-    return values
 
 
 def resolve_settings() -> dict[str, Any]:
@@ -72,7 +56,12 @@ def serialize(payload: Any) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
-def create_app(service: ReadingService | None = None, settings: dict[str, Any] | None = None) -> FastAPI:
+def create_app(
+    service: ReadingService | None = None,
+    settings: dict[str, Any] | None = None,
+    config_path: Path | None = None,
+    environ: dict[str, str] | None = None,
+) -> FastAPI:
     # Settings — and therefore the API key file — are only read when the caller did
     # not already supply a service. Tests inject their own service and never touch
     # `frontend/.env.local`.
@@ -81,6 +70,14 @@ def create_app(service: ReadingService | None = None, settings: dict[str, Any] |
         service = ReadingService(api_key=settings["api_key"], model=settings["model"])
     app = FastAPI(title="Starveil reading agent", version=READING_PROMPT_VERSION)
     app.state.service = service
+    # The settings endpoint owns its own env file path and environment view, so a
+    # test can point it at a temporary file without touching the real one.
+    config = AgentConfigEndpoint(
+        service=service,
+        env_path=config_path if config_path is not None else _ENV_FILE,
+        environ=environ,
+    )
+    app.state.config = config
 
     async def _read_body(request: Request) -> bytes:
         """Read at most one byte past the cap, so the service can answer 413."""
@@ -99,14 +96,24 @@ def create_app(service: ReadingService | None = None, settings: dict[str, Any] |
     )
     async def agent_route(request: Request, path: str) -> Response:
         client = request.client
-        status, payload = await service.handle(
-            "/" + path,
-            request.method,
-            {key.lower(): value for key, value in request.headers.items()},
-            client.host if client else None,
-            await _read_body(request),
-            is_disconnected=request.is_disconnected,
-        )
+        full_path = "/" + path
+        lower_headers = {key.lower(): value for key, value in request.headers.items()}
+        body = await _read_body(request)
+        if full_path == CONFIG_PATH:
+            # Not routed through `ReadingService`: see the note in `agent_config.py`
+            # about keeping the ported service comparable with the JS original.
+            status, payload = await config.handle(
+                request.method, lower_headers, client.host if client else None, body
+            )
+        else:
+            status, payload = await service.handle(
+                full_path,
+                request.method,
+                lower_headers,
+                client.host if client else None,
+                body,
+                is_disconnected=request.is_disconnected,
+            )
         return Response(
             content=serialize(payload),
             status_code=status,

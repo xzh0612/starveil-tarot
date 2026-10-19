@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel} from '../src/services.js';
+import {parseReadingResponse,readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel,agentConfigEndpoint,readingConfig,saveReadingConfig,clearReadingConfig} from '../src/services.js';
 
 test('reading error hints turn stable validation codes into calm UI copy',()=>{
  assert.match(readingErrorHint('invalid_synthesis_evidence'),/合读部分的牌义依据未通过核验/);
@@ -65,4 +65,85 @@ test('reading response rejects a successful body without text',async()=>{
   assert.equal(error.status,200);
   return true;
  });
+});
+
+test('the settings endpoint is derived from the reading endpoint',()=>{
+ assert.equal(agentConfigEndpoint('/api/readings/interpret'),'/api/readings/config');
+ assert.equal(agentConfigEndpoint('/custom/base/interpret'),'/custom/base/config');
+ assert.equal(agentConfigEndpoint(undefined),'');
+});
+
+test('reading config reports unavailable instead of throwing when no agent answers',async()=>{
+ assert.deepEqual(await readingConfig({endpoint:''}),{available:false});
+ const original=globalThis.fetch;
+ globalThis.fetch=async()=>{throw new TypeError('fetch failed');};
+ try{assert.deepEqual(await readingConfig({endpoint:'/api/readings/config'}),{available:false});}
+ finally{globalThis.fetch=original;}
+});
+
+test('reading config treats a 404 or 5xx agent as unavailable',async()=>{
+ const original=globalThis.fetch;
+ try{
+  globalThis.fetch=async()=>new Response('not found',{status:404});
+  assert.deepEqual(await readingConfig({endpoint:'/api/readings/config'}),{available:false});
+  globalThis.fetch=async()=>new Response('proxy error',{status:500});
+  assert.deepEqual(await readingConfig({endpoint:'/api/readings/config'}),{available:false});
+ }finally{globalThis.fetch=original;}
+});
+
+test('reading config surfaces the agent state without ever returning the key',async()=>{
+ const original=globalThis.fetch;let seen=null;
+ globalThis.fetch=async(url,init)=>{seen={url,init};return Response.json({configured:true,model:'deepseek-flash',source:'file',editable:true,restartRequired:false});};
+ try{
+  const config=await readingConfig({endpoint:'/api/readings/config'});
+  assert.deepEqual(config,{available:true,configured:true,model:'deepseek-flash',source:'file',editable:true,restartRequired:false});
+  assert.deepEqual(Object.keys(config).filter(k=>/key|secret|token/i.test(k)),[]);
+  assert.equal(seen.url,'/api/readings/config');
+  assert.equal(seen.init.method,'GET');
+ }finally{globalThis.fetch=original;}
+});
+
+test('a refused host is reported as available with an explanation',async()=>{
+ const original=globalThis.fetch;
+ globalThis.fetch=async()=>Response.json({error:'配置文件只接受本机地址访问。',code:'config_host_not_allowed'},{status:403});
+ try{
+  const config=await readingConfig({endpoint:'/api/readings/config'});
+  assert.equal(config.available,true);
+  assert.equal(config.configured,false);
+  assert.equal(config.editable,false);
+  assert.equal(config.code,'config_host_not_allowed');
+ }finally{globalThis.fetch=original;}
+});
+
+test('saving sends only the provided fields and keeps the server message on failure',async()=>{
+ const original=globalThis.fetch;const calls=[];
+ globalThis.fetch=async(url,init)=>{calls.push({url,init});return Response.json({configured:true,model:'deepseek-flash',source:'file',editable:true,restartRequired:false});};
+ try{
+  const saved=await saveReadingConfig({apiKey:'sk-live-123'},{endpoint:'/api/readings/config'});
+  assert.equal(saved.configured,true);
+  assert.equal(calls[0].init.method,'POST');
+  assert.equal(calls[0].init.headers['Content-Type'],'application/json');
+  assert.deepEqual(JSON.parse(calls[0].init.body),{apiKey:'sk-live-123'});
+ }finally{globalThis.fetch=original;}
+
+ globalThis.fetch=async()=>Response.json({error:'当前密钥由启动时的环境变量提供。',code:'config_env_locked'},{status:409});
+ try{
+  await assert.rejects(saveReadingConfig({apiKey:'sk-live-123'},{endpoint:'/api/readings/config'}),error=>{
+   assert.equal(error.message,'当前密钥由启动时的环境变量提供。');
+   assert.equal(error.code,'config_env_locked');
+   assert.equal(error.status,409);
+   return true;
+  });
+ }finally{globalThis.fetch=original;}
+});
+
+test('clearing a key uses DELETE and reports the new state',async()=>{
+ const original=globalThis.fetch;let method='';
+ globalThis.fetch=async(url,init)=>{method=init.method;return Response.json({configured:false,model:'deepseek-flash',source:'none',editable:true,restartRequired:false});};
+ try{
+  const cleared=await clearReadingConfig({endpoint:'/api/readings/config'});
+  assert.equal(method,'DELETE');
+  assert.equal(cleared.configured,false);
+  assert.equal(cleared.source,'none');
+ }finally{globalThis.fetch=original;}
 });
