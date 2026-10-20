@@ -10,6 +10,7 @@ import pytest
 from backend.reading_rag import (
     _claim_supported_by_evidence,
     _has_real_claim_terms,
+    _is_concrete_action,
     _is_mostly_foreign,
     parse_reading_output,
     retrieve_reading_evidence_async,
@@ -350,3 +351,82 @@ def test_goal_section_may_quote_its_card_anchor(monkeypatch):
     text = "人物在星光下向水池和大地倒水，坦诚带来恢复，试用安排要落成书面条款。"
     parsed = parse_reading_output(_goal_section_output(text), options)
     assert parsed["goalSections"][0]["evidenceIds"] == ["m08:work"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Live output: names a step, a deadline and an outcome, but uses verbs
+        # outside the task-verb list (争取 / 接触 / 约定).
+        "如果条件允许，向对方争取以短期项目或试岗方式接触新岗位，事先约定期限与退出条件，再根据试做结果决定是否转入。",
+        "本周内向对方索要一份书面岗位说明，逐条核对职责、薪酬、考核与退出条件。",
+        "用一天时间列出当前岗位与新岗位各自的固定开支覆盖，给两边打分。",
+    ],
+)
+def test_concrete_action_accepts_a_schedulable_step_with_an_observable_end(text):
+    """Concreteness must not depend on the action using a listed verb."""
+    assert _is_concrete_action(text) is True
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "多观察一下",
+        "调整心态，保持积极",
+        # Scheduled but still says nothing checkable.
+        "明天好好沟通",
+        "顺其自然，别想太多",
+    ],
+)
+def test_concrete_action_still_rejects_advice_without_an_observable_end(text):
+    assert _is_concrete_action(text) is False
+
+
+def _synthesis_output(text, evidence_id="m08:symbolism"):
+    return json.dumps(
+        {"text": "先看整体。", "synthesis": {"text": text, "evidenceIds": [evidence_id]}},
+        ensure_ascii=False,
+    )
+
+
+def test_synthesis_may_connect_the_cards_in_its_own_words(monkeypatch):
+    """Synthesis exists to relate the cards, so half of it is the model's
+    reasoning. Requiring 0.75 lexical overlap rejected live readings at 0.56."""
+    monkeypatch.delenv("STARVEIL_SUPPORT_RATIO", raising=False)
+    text = (
+        "人物在星光下向水池和大地倒水，强调坦诚与恢复；"
+        "三者串联起来，你们可以把反复争吵的小事当作辨认旧模式的入口。"
+    )
+    parsed = parse_reading_output(
+        _synthesis_output(text),
+        {"cards": CARD, "evidence": TWO_CHUNKS, "requireSynthesisSupport": True},
+    )
+    assert parsed["synthesis"]["text"] == text
+
+
+def test_action_text_may_carry_one_procedural_clause():
+    """An instruction adds steps the card text cannot contain; one clause in
+    three is allowed, a hallucinated clause beside a grounded one is not."""
+    options = {"cards": CARD, "evidence": TWO_CHUNKS, "requireActionTextSupport": True}
+
+    def payload(text):
+        return json.dumps(
+            {
+                "text": "先核对信任问题。",
+                "actions": [
+                    {
+                        "text": text,
+                        "reason": "依据牌面坦诚线索。",
+                        "evidenceIds": ["m08:relationships"],
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        )
+
+    grounded = "建议通过诚实和一致的行动重建信任，先核对信任问题，只问试用期或转岗条件。"
+    parsed = parse_reading_output(payload(grounded), options)
+    assert parsed["actions"][0]["text"] == grounded
+
+    with pytest.raises(ValueError, match="行动建议内容与证据不匹配"):
+        parse_reading_output(payload("先核对信任问题。对方已经搬去火星。"), options)

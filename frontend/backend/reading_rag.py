@@ -1816,6 +1816,19 @@ _MIN_CLAIM_CLAUSE_CHARS = 6
 #: its content wholesale, while not asking a section to be pure quotation.
 _GOAL_SECTION_SUPPORT_RATIO = 0.5
 
+#: Support floor for the synthesis. Its job is to connect the cards, so part of
+#: it is necessarily the model's own reasoning ("三者串联起来", "把反复争吵的小事
+#: 当作辨认旧模式的入口") and shares no n-gram with the card text even when it is
+#: faithful. Live output measured 0.56-0.6. Half still rejects a synthesis that
+#: invents its content (the "对方一定会回来" case scores 0).
+_SYNTHESIS_SUPPORT_RATIO = 0.5
+
+#: Support floor for an action's text. An instruction names steps the reading
+#: cannot contain ("只问试用期或转岗条件", "把回答记录下来"), so one clause in three
+#: may be procedural. A hallucination hidden inside an action still fails:
+#: "今天记录一次稳定节奏的行动。对方已经搬去火星。" scores 0.5.
+_ACTION_TEXT_SUPPORT_RATIO = 2 / 3
+
 #: CJK share below which a chunk's body is treated as a foreign-language source.
 #: The corpus mixes Chinese editorial guides with the English Waite text and
 #: English modern-application notes (which still carry a short Chinese label such
@@ -2026,10 +2039,12 @@ _ACTION_VERB_PATTERN = re.compile(
     "记录|列出|写下|核实|查阅|联系|沟通|安排|设定|拆分|练习|观察|复盘|比较|暂停|预约|整理|确认|测试|制定|检查|收集"
     "|测量|追踪|完成|行动|执行|买入|咨询|询问|阅读"
 )
+#: Cues that the step ends in a checkable state ("回复", "是否", "完成"). Time
+#: words deliberately stay out: "明天好好沟通" is scheduled but still vague.
 # JavaScript's `\d` is ASCII-only, so `[0-9]` is used instead of Python's Unicode `\d`.
-_ACTION_MARKER_PATTERN = re.compile(
-    "今天|明天|本周|这周|一周|七天|三天|一天|分钟|小时|一次|两次|第[0-9]+次|一项|一条|一个|每周|截止|结果|是否|回复"
-    "|回应|复盘|完成|记录|写下|列出|确认"
+_ACTION_COMPLETION_PATTERN = re.compile(
+    "结果|是否|回复|回应|复盘|完成|记录|写下|列出|确认|截止|一次|两次|第[0-9]+次"
+    "|一项|一条|一个|每周"
 )
 
 
@@ -2040,17 +2055,48 @@ _ACTION_COUNTED_VERB_PATTERN = re.compile(
     "(?:列|写|算|问|查|记|试|比|画|做|定|改|找|聊|读)[一两三四五六七八九十0-9]"
 )
 
+#: A time bound makes an action schedulable ("本周", "三个月内", "期限").
+_ACTION_TIME_BOUND_PATTERN = re.compile(
+    "今天|明天|后天|本周|这周|下周|本月|月底|季度|期限|截止"
+    "|[0-9一两三四五六七八九十]+(?:天|周|个月|月|小时|分钟|年)内?"
+)
+
+#: A deliverable gives the action an artifact to finish ("一份书面说明", "清单").
+_ACTION_DELIVERABLE_PATTERN = re.compile(
+    "一份|一条|两条|三条|三项|两栏|一栏|一封|一张|清单|列表|名单|表格|书面"
+    "|文档|文件|计划书|协议|合同|总结|明细|打分|评分|对照表"
+)
+
+#: An observable outcome tells the user whether the step worked.
+_ACTION_OUTCOME_PATTERN = re.compile(
+    "结果|反馈|回复|答复|结论|验收|确认|明确|是否|记录"
+)
+
 
 def _is_concrete_action(text: Any) -> bool:
+    """Concrete means the action says both what to do and how you know it is done.
+
+    The verb whitelist only covered everyday task verbs, so live output such as
+    "向对方争取以短期项目接触新岗位，先约定期限与退出条件" was rejected although
+    it names a step, a deadline and an outcome. Judging the structure instead of
+    the vocabulary keeps the same bar without an ever-growing word list: an
+    action needs something schedulable (a time bound or a task verb) and
+    something observable (a deliverable or an outcome).
+    """
     value = _string(text).strip()
-    return (
-        len(value) >= 6
-        and (
-            _ACTION_VERB_PATTERN.search(value) is not None
-            or _ACTION_COUNTED_VERB_PATTERN.search(value) is not None
-        )
-        and _ACTION_MARKER_PATTERN.search(value) is not None
+    if len(value) < 6:
+        return False
+    schedulable = bool(
+        _ACTION_VERB_PATTERN.search(value)
+        or _ACTION_COUNTED_VERB_PATTERN.search(value)
+        or _ACTION_TIME_BOUND_PATTERN.search(value)
     )
+    observable = bool(
+        _ACTION_COMPLETION_PATTERN.search(value)
+        or _ACTION_DELIVERABLE_PATTERN.search(value)
+        or _ACTION_OUTCOME_PATTERN.search(value)
+    )
+    return schedulable and observable
 
 
 _REALITY_BOUNDARY_PATTERN = re.compile("现实|核实|资料|专业|医生|律师|持牌|风险|证据|咨询|法规|评估|审查|验证|确认")
@@ -2648,6 +2694,7 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
                 synthesis["text"],
                 {"text": _reference_evidence_text(evidence_ids, evidence_by_id, "；")},
                 require_sentence_support=True,
+                min_ratio=_SYNTHESIS_SUPPORT_RATIO,
             )
         ):
             synthesis_support_ok = False
@@ -2899,6 +2946,7 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
                         + action_context_text
                     },
                     require_sentence_support=True,
+                    min_ratio=_ACTION_TEXT_SUPPORT_RATIO,
                 )
             ):
                 actions_text_supported = False
