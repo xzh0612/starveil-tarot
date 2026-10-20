@@ -326,3 +326,27 @@ def test_goal_section_still_rejects_invented_content(monkeypatch):
     text = "试用安排要落成书面条款，按期重新评估，把模糊处先问清再回头比较。"
     with pytest.raises(ValueError, match="目标分段内容与证据不匹配"):
         parse_reading_output(_goal_section_output(text), _goal_section_options())
+
+
+_GOAL_ANCHOR = {
+    "evidenceId": "m08:symbolism",
+    "cardId": "m08",
+    "position": "建议",
+    "kind": "symbolism",
+    "tier": "anchor",
+    "source": "canonical_fixed",
+    "text": "人物在星光下向水池和大地倒水，强调坦诚与恢复。",
+    "retrievalGoals": ["advice"],
+    "retrievalReasons": [],
+}
+
+
+def test_goal_section_may_quote_its_card_anchor(monkeypatch):
+    """goalPlan restricts citable ids per goal, so a section can quote an anchor
+    it is not allowed to list. The anchor must still count as its support."""
+    monkeypatch.delenv("STARVEIL_SUPPORT_RATIO", raising=False)
+    options = _goal_section_options()
+    options["evidence"] = [_GOAL_CHUNK, _GOAL_ANCHOR]
+    text = "人物在星光下向水池和大地倒水，坦诚带来恢复，试用安排要落成书面条款。"
+    parsed = parse_reading_output(_goal_section_output(text), options)
+    assert parsed["goalSections"][0]["evidenceIds"] == ["m08:work"]
