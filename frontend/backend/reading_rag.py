@@ -1807,6 +1807,95 @@ _CLAIM_SPLIT_PATTERN = re.compile(
 #: longer smuggle a new fact behind a conjunction.
 _MIN_CLAIM_CLAUSE_CHARS = 6
 
+#: Support floor for a goal section, lower than the default ratio on purpose.
+#: The prompt requires an advice or comparison section to state conditions,
+#: costs and next steps, which are the model's own reasoning ("试用安排要落成书面
+#: 条款") and cannot appear in card text by definition. Live output split roughly
+#: evenly between quoted card material and such guidance (0.44-0.74 across runs),
+#: so half is the structural floor here: it still rejects a section that invents
+#: its content wholesale, while not asking a section to be pure quotation.
+_GOAL_SECTION_SUPPORT_RATIO = 0.5
+
+#: CJK share below which a chunk's body is treated as a foreign-language source.
+#: The corpus mixes Chinese editorial guides with the English Waite text and
+#: English modern-application notes (which still carry a short Chinese label such
+#: as "建设面：").
+_FOREIGN_TEXT_CJK_SHARE = 0.2
+
+
+def _is_mostly_foreign(text: Any) -> bool:
+    """True when a chunk body is written in a language the claim is not.
+
+    Used narrowly by the reference-claim gate: a Chinese claim about an English
+    source shares no term by construction, so term matching there measures the
+    language boundary rather than whether the claim is grounded.
+    """
+    body = "".join(_string(text).split())
+    if not body:
+        return False
+    cjk = sum(1 for char in body if "\u4e00" <= char <= "\u9fff")
+    return cjk / len(body) < _FOREIGN_TEXT_CJK_SHARE
+
+
+#: Perspective and reporting words that introduce a claim without asserting
+#: anything themselves ("工作应用强调…", "牌面提示…"). They name the angle the
+#: claim is written from, so they cannot be grounded and must not be scored.
+_CLAIM_FRAMING_WORDS = frozenset(
+    {
+        "应用",
+        "层面",
+        "角度",
+        "方面",
+        "视角",
+        "强调",
+        "提示",
+        "显示",
+        "指出",
+        "意味着",
+        "包括",
+        "涵盖",
+        "关注",
+        "侧重",
+        "涉及",
+        "对应",
+        "倾向",
+    }
+)
+
+#: Vocabulary that frames a claim without asserting anything specific.
+_CLAIM_FILLER_WORDS = _CLAIM_STOPWORDS | set(_CLAIM_GENERIC_TERM_LIST) | set(_CLAIM_FRAMING_WORDS)
+
+
+def _has_real_claim_terms(clause: Any) -> bool:
+    """True when a clause holds a word outside the stop/generic vocabulary.
+
+    Two-character n-grams that straddle two filler words ("事业上需", "要分析")
+    survive the stop-word filter but assert nothing — they are slicing artifacts.
+    A clause built entirely from filler ("事业上需要分析") therefore has no fact to
+    verify and must stay neutral instead of counting as a miss.
+    """
+    text = _string(clause)
+    if not text:
+        return False
+    masked = [False] * len(text)
+    for word in _CLAIM_FILLER_WORDS:
+        if not word:
+            continue
+        start = text.find(word)
+        while start != -1:
+            for index in range(start, start + len(word)):
+                masked[index] = True
+            start = text.find(word, start + 1)
+    run = 0
+    for is_masked in masked:
+        if is_masked:
+            if run >= 2:
+                return True
+            run = 0
+        else:
+            run += 1
+    return run >= 2
+
 
 def _support_ratio_floor() -> float:
     """Share of substantive clauses that must share a real evidence term.
@@ -1836,6 +1925,7 @@ def _claim_supported_by_evidence(
     allow_generic: bool = False,
     require_sentence_support: bool = False,
     anchor_only: bool = False,
+    min_ratio: float | None = None,
 ) -> bool:
     evidence_text = _prop(evidence, "text")
     evidence_terms = _chinese_ngrams("" if evidence_text is None else evidence_text)
@@ -1868,6 +1958,11 @@ def _claim_supported_by_evidence(
             if not specific_terms:
                 # Pure connective/framing clause: neutral, never counts against the ratio.
                 continue
+            if not _has_real_claim_terms(sentence):
+                # Everything in here is stop/generic vocabulary ("事业上需要分析"),
+                # so the surviving n-grams are slicing artifacts across filler
+                # words, not assertions. Counting them only creates misses.
+                continue
             counted += 1
             if any(term in evidence_terms for term in specific_terms):
                 supported += 1
@@ -1891,7 +1986,8 @@ def _claim_supported_by_evidence(
         # explain *why the step works* ("limiting the time keeps it observable"),
         # which by nature is not written in the card text.
         return supported_count > 0
-    return supported_count / substantive >= _support_ratio_floor()
+    floor = _support_ratio_floor() if min_ratio is None else min_ratio
+    return supported_count / substantive >= floor
 
 
 _CLARIFICATION_CUE_PATTERN = re.compile("[哪什么如何怎么是否还是谁何时什么时候哪里多少为何为什么更想想看先看]")
@@ -1937,11 +2033,22 @@ _ACTION_MARKER_PATTERN = re.compile(
 )
 
 
+#: Single-character verbs followed by a count ("列两栏", "写三条", "算一遍").
+#: The two-character verb list misses ordinary phrasing, and the count keeps the
+#: pattern from matching bare uses of these common characters.
+_ACTION_COUNTED_VERB_PATTERN = re.compile(
+    "(?:列|写|算|问|查|记|试|比|画|做|定|改|找|聊|读)[一两三四五六七八九十0-9]"
+)
+
+
 def _is_concrete_action(text: Any) -> bool:
     value = _string(text).strip()
     return (
         len(value) >= 6
-        and _ACTION_VERB_PATTERN.search(value) is not None
+        and (
+            _ACTION_VERB_PATTERN.search(value) is not None
+            or _ACTION_COUNTED_VERB_PATTERN.search(value) is not None
+        )
         and _ACTION_MARKER_PATTERN.search(value) is not None
     )
 
@@ -2316,19 +2423,21 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
         and any(not reference["claim"] for reference in refs)
     ):
         raise ValueError("引用说明不能为空，请重试。")
-    if (
-        require_reference_support
-        and not needs_clarification
-        and any(
-            not _claim_supported_by_evidence(
+    if require_reference_support and not needs_clarification:
+        for reference in refs:
+            chunk = evidence_by_id.get(reference["evidenceId"])
+            if _is_mostly_foreign(_prop(chunk, "text")):
+                # The claim is Chinese prose summarising an English source, so
+                # there is no shared term to match by construction. Id, card and
+                # tier are still validated above; only term matching is skipped,
+                # and it stays strict for every Chinese-sourced citation.
+                continue
+            if not _claim_supported_by_evidence(
                 reference["claim"],
-                evidence_by_id.get(reference["evidenceId"]),
+                chunk,
                 require_sentence_support=True,
-            )
-            for reference in refs
-        )
-    ):
-        raise ValueError("引用说明与证据不匹配，请重试。")
+            ):
+                raise ValueError("引用说明与证据不匹配，请重试。")
 
     goal_sections: list[dict[str, Any]] = []
     if "goalSections" in data:
@@ -2398,10 +2507,27 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
                 )
             ):
                 raise ValueError("目标分段缺少目标层级证据，请重试。")
+            # A section may also draw on its card's anchors (symbolism and
+            # orientation) while citing only goal-tier evidence: anchors explain
+            # the card itself, and goalPlan restricts which ids may be cited per
+            # goal, so a section can legitimately quote an anchor it may not list.
+            support_ids = list(evidence_ids)
+            for evidence_id in evidence_ids:
+                card_id = _prop(evidence_by_id.get(evidence_id), "cardId")
+                support_ids.extend(
+                    chunk["evidenceId"]
+                    for chunk in evidence_by_id.values()
+                    if _prop(chunk, "cardId") == card_id and _prop(chunk, "tier") == "anchor"
+                )
             if not needs_clarification and not _claim_supported_by_evidence(
                 item["text"],
-                {"text": _reference_evidence_text(evidence_ids, evidence_by_id, "；")},
+                {
+                    "text": _reference_evidence_text(
+                        _unique(support_ids), evidence_by_id, "；"
+                    )
+                },
                 require_sentence_support=True,
+                min_ratio=_GOAL_SECTION_SUPPORT_RATIO,
             ):
                 raise ValueError("目标分段内容与证据不匹配，请重试。")
             seen_goals.add(item["goal"])
