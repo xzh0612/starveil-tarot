@@ -120,6 +120,23 @@ that yields `504 provider_timeout`.
 `ReadingService.semantic_reranker` is injected the same way and must be an
 `async` callable.
 
+## Deliberate upgrade beyond the 1:1 port (2026-10)
+
+The port itself is still behaviour-preserving, but the evidence gate now carries
+an explicit, opt-out upgrade aimed at real provider output (the strict contract
+rejected otherwise-grounded readings wholesale):
+
+| Knob | Default | Effect |
+|---|---|---|
+| `STARVEIL_SEMANTIC_RERANK` | `1` | Blend a dependency-free semantic score (`semantic_reranker.py`) into the lexical evidence ranking. `0` disables it and restores the ported ranking. |
+| `STARVEIL_SUPPORT_RATIO` | `0.75` | Share of substantive clauses that must share an evidence term. `1.0` restores the original "every clause grounded" contract. |
+
+`/api/readings/debug` additionally returns `repairCodes`, a process-lifetime
+counter of which contract failures actually fire, so the gate can be tuned from
+evidence rather than guesses. Neither knob changes the JSON contract. GraphRAG
+was evaluated and deliberately not adopted: the corpus is 78 structured cards,
+where a knowledge graph's build cost dwarfs its benefit.
+
 ## Non-negotiables
 
 1. **No behaviour changes.** No extra validation, no reordered checks, no

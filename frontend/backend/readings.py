@@ -20,6 +20,7 @@ import asyncio
 import json
 import math
 import re
+from collections import Counter
 import socket
 import time
 import urllib.error
@@ -529,11 +530,24 @@ _REPAIR_RULES: list[tuple[re.Pattern[str], str]] = [
 ]
 
 
+#: Phase-0 diagnostics: count which contract failures actually fire against the
+#: real provider. Read via `repair_code_stats()` (also surfaced on /debug) so the
+#: gate can be tuned from evidence instead of guesses.
+_REPAIR_CODE_STATS: Counter[str] = Counter()
+
+
+def repair_code_stats() -> dict[str, int]:
+    """Snapshot of repair codes seen since process start, most frequent first."""
+    return dict(_REPAIR_CODE_STATS.most_common())
+
+
 def repair_code(error: BaseException) -> str:
     message = "" if getattr(error, "args", None) is None else str(error)
     for pattern, code in _REPAIR_RULES:
         if pattern.search(message):
+            _REPAIR_CODE_STATS[code] += 1
             return code
+    _REPAIR_CODE_STATS["output_contract"] += 1
     return "output_contract"
 
 
@@ -1047,6 +1061,7 @@ class ReadingService:
                 "promptEvidence": context.get("evidence"),
                 "memoryEvidence": context.get("memoryEvidence"),
                 "memoryMeta": context.get("memoryMeta"),
+                "repairCodes": repair_code_stats(),
             }
 
         now = time.monotonic() * 1000

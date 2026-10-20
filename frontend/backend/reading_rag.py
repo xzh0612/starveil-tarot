@@ -26,6 +26,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 import re
 from decimal import ROUND_HALF_UP, Decimal
 from types import MappingProxyType
@@ -1800,6 +1801,27 @@ _CLAIM_SPLIT_PATTERN = re.compile(
 )
 
 
+def _support_ratio_floor() -> float:
+    """Share of substantive clauses that must share a real evidence term.
+
+    ``1.0`` reproduces the original "every clause must be grounded" contract.
+    The default is loosened because real provider prose mixes grounded claims
+    with connective/framing clauses; requiring a literal term in *every* comma
+    clause rejected otherwise-grounded readings wholesale. Override with
+    ``STARVEIL_SUPPORT_RATIO`` (clamped to 0..1).
+    """
+    raw = os.environ.get("STARVEIL_SUPPORT_RATIO", "0.75")
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return 0.75
+    if value < 0:
+        return 0.0
+    if value > 1:
+        return 1.0
+    return value
+
+
 def _claim_supported_by_evidence(
     claim: Any, evidence: Any, *, allow_generic: bool = False, require_sentence_support: bool = False
 ) -> bool:
@@ -1814,7 +1836,8 @@ def _claim_supported_by_evidence(
     ]
     if not sentences:
         return False
-    meaningful = False
+    substantive = 0
+    supported_count = 0
     for sentence in sentences:
         claim_terms = [
             term
@@ -1825,14 +1848,18 @@ def _claim_supported_by_evidence(
             claim_terms if allow_generic else [term for term in claim_terms if not _is_generic_claim_term(term)]
         )
         if not specific_terms:
+            # Pure connective/framing clause: neutral, never counts against the ratio.
             continue
-        meaningful = True
-        supported = any(term in evidence_terms for term in specific_terms)
-        if require_sentence_support and not supported:
-            return False
-        if not require_sentence_support and supported:
-            return True
-    return meaningful if require_sentence_support else False
+        substantive += 1
+        if any(term in evidence_terms for term in specific_terms):
+            supported_count += 1
+            if not require_sentence_support:
+                return True
+    if not require_sentence_support:
+        return False
+    if substantive == 0:
+        return False
+    return supported_count / substantive >= _support_ratio_floor()
 
 
 _CLARIFICATION_CUE_PATTERN = re.compile("[哪什么如何怎么是否还是谁何时什么时候哪里多少为何为什么更想想看先看]")

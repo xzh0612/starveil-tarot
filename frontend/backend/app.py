@@ -22,6 +22,7 @@ from fastapi.responses import Response
 
 from .agent_config import CONFIG_PATH, AgentConfigEndpoint, load_env_file
 from .readings import READING_PROMPT_VERSION, REQUEST_BODY_LIMIT, ReadingService
+from .semantic_reranker import rerank_evidence
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
 _ENV_FILE = _PACKAGE_DIR.parent / ".env.local"
@@ -48,6 +49,9 @@ def resolve_settings() -> dict[str, Any]:
         "api_key": setting("DEEPSEEK_API_KEY"),
         "model": setting("DEEPSEEK_MODEL", "deepseek-flash"),
         "port": int(setting("STARVEIL_AGENT_PORT", str(DEFAULT_PORT)) or DEFAULT_PORT),
+        # Hybrid retrieval: blend a dependency-free semantic score into the
+        # lexical evidence ranking. Set STARVEIL_SEMANTIC_RERANK=0 to disable.
+        "semantic_rerank": setting("STARVEIL_SEMANTIC_RERANK", "1"),
     }
 
 
@@ -67,7 +71,17 @@ def create_app(
     # `frontend/.env.local`.
     if service is None:
         settings = settings if settings is not None else resolve_settings()
-        service = ReadingService(api_key=settings["api_key"], model=settings["model"])
+        semantic_enabled = str(settings.get("semantic_rerank", "1")).strip().lower() not in (
+            "0",
+            "false",
+            "off",
+            "no",
+        )
+        service = ReadingService(
+            api_key=settings["api_key"],
+            model=settings["model"],
+            semantic_reranker=rerank_evidence if semantic_enabled else None,
+        )
     app = FastAPI(title="Starveil reading agent", version=READING_PROMPT_VERSION)
     app.state.service = service
     # The settings endpoint owns its own env file path and environment view, so a
