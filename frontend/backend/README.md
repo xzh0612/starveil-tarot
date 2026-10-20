@@ -130,6 +130,14 @@ rejected otherwise-grounded readings wholesale):
 |---|---|---|
 | `STARVEIL_SEMANTIC_RERANK` | `1` | Blend a dependency-free semantic score (`semantic_reranker.py`) into the lexical evidence ranking. `0` disables it and restores the ported ranking. |
 | `STARVEIL_SUPPORT_RATIO` | `0.75` | Share of substantive clauses that must share an evidence term. `1.0` restores the original "every clause grounded" contract. |
+| `STARVEIL_DUMP_RAW` | unset | Path to append every raw provider reply to. Diagnostic only; leave unset in normal use. |
+
+Gate semantics, tuned against live provider output rather than fixtures: a card
+reading is checked against the union of its cited evidence (not chunk by chunk);
+a goal section may cite the card's anchors as long as one cited item carries its
+own goal tag; an action's reason only needs to be anchored in a card concept
+(`anchor_only`), and an action's text may draw on the answer's own prose, which
+is itself evidence-checked.
 
 `/api/readings/debug` additionally returns `repairCodes`, a process-lifetime
 counter of which contract failures actually fire, so the gate can be tuned from

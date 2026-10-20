@@ -1800,6 +1800,13 @@ _CLAIM_SPLIT_PATTERN = re.compile(
     "(?:[。！？!?；;，,、\\n]+|然而|但是|不过|同时|并且|而且|只是|然后|随后|因此|所以|以及|因为|并|而|且|还|也|但|却)"
 )
 
+#: Clause length below which the fragment is treated as a label or transition
+#: ("事业层面", "作为阻碍", "落到工作") rather than a checkable assertion. Such
+#: fragments carry no fact to verify, so counting them as misses only punishes
+#: ordinary prose. Contrast markers (但/却/然而) still split, so a claim can no
+#: longer smuggle a new fact behind a conjunction.
+_MIN_CLAIM_CLAUSE_CHARS = 6
+
 
 def _support_ratio_floor() -> float:
     """Share of substantive clauses that must share a real evidence term.
@@ -1823,7 +1830,12 @@ def _support_ratio_floor() -> float:
 
 
 def _claim_supported_by_evidence(
-    claim: Any, evidence: Any, *, allow_generic: bool = False, require_sentence_support: bool = False
+    claim: Any,
+    evidence: Any,
+    *,
+    allow_generic: bool = False,
+    require_sentence_support: bool = False,
+    anchor_only: bool = False,
 ) -> bool:
     evidence_text = _prop(evidence, "text")
     evidence_terms = _chinese_ngrams("" if evidence_text is None else evidence_text)
@@ -1836,29 +1848,49 @@ def _claim_supported_by_evidence(
     ]
     if not sentences:
         return False
-    substantive = 0
-    supported_count = 0
-    for sentence in sentences:
-        claim_terms = [
-            term
-            for term in _chinese_ngrams(sentence)
-            if len(term) >= 2 and term not in _CLAIM_STOPWORDS
-        ]
-        specific_terms = (
-            claim_terms if allow_generic else [term for term in claim_terms if not _is_generic_claim_term(term)]
-        )
-        if not specific_terms:
-            # Pure connective/framing clause: neutral, never counts against the ratio.
-            continue
-        substantive += 1
-        if any(term in evidence_terms for term in specific_terms):
-            supported_count += 1
-            if not require_sentence_support:
-                return True
-    if not require_sentence_support:
-        return False
+
+    def scan(min_chars: int) -> tuple[int, int]:
+        supported = 0
+        counted = 0
+        for sentence in sentences:
+            if len(sentence) < min_chars:
+                continue
+            claim_terms = [
+                term
+                for term in _chinese_ngrams(sentence)
+                if len(term) >= 2 and term not in _CLAIM_STOPWORDS
+            ]
+            specific_terms = (
+                claim_terms
+                if allow_generic
+                else [term for term in claim_terms if not _is_generic_claim_term(term)]
+            )
+            if not specific_terms:
+                # Pure connective/framing clause: neutral, never counts against the ratio.
+                continue
+            counted += 1
+            if any(term in evidence_terms for term in specific_terms):
+                supported += 1
+        return supported, counted
+
+    # Ratio mode ignores label-ish fragments because they would dilute the score;
+    # coverage mode asks for a single grounded clause anywhere, so dropping any
+    # clause there can only produce false negatives.
+    supported_count, substantive = scan(_MIN_CLAIM_CLAUSE_CHARS if require_sentence_support else 1)
+    if substantive == 0 and require_sentence_support:
+        # The whole claim is made of short clauses ("稳定节奏"). Labels are only
+        # neutral when there is something else to measure; otherwise they are all
+        # we have, so check them rather than failing on an empty denominator.
+        supported_count, substantive = scan(1)
     if substantive == 0:
         return False
+    if not require_sentence_support:
+        return supported_count > 0
+    if anchor_only:
+        # A justification only has to be anchored in a card concept. It may also
+        # explain *why the step works* ("limiting the time keeps it observable"),
+        # which by nature is not written in the card text.
+        return supported_count > 0
     return supported_count / substantive >= _support_ratio_floor()
 
 
@@ -2332,15 +2364,23 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
             ):
                 raise ValueError("目标分段顺序不符合本轮目标计划，请重试。")
             evidence_ids = []
+            goal_tagged = 0
             for evidence_id in item["evidenceIds"]:
                 chunk = evidence_by_id.get(evidence_id)
-                if (
-                    chunk is None
-                    or not isinstance(chunk.get("retrievalGoals"), list)
-                    or item["goal"] not in chunk["retrievalGoals"]
-                ):
+                if chunk is None:
                     raise ValueError("目标分段引用无效，请重试。")
+                if (
+                    isinstance(chunk.get("retrievalGoals"), list)
+                    and item["goal"] in chunk["retrievalGoals"]
+                ):
+                    goal_tagged += 1
                 evidence_ids.append(chunk["evidenceId"])
+            # A section may also cite the card's anchors (symbolism/orientation),
+            # which carry no goal tag by design — they explain the card, not the
+            # goal. What matters is that the section is anchored by at least one
+            # item routed to its own goal.
+            if goal_tagged < 1:
+                raise ValueError("目标分段引用无效，请重试。")
             required_tier = GOAL_REFERENCE_TIERS[item["goal"]]
             has_available_required_tier = any(
                 _prop(chunk, "tier") == required_tier
@@ -2440,7 +2480,11 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
 
     synthesis: dict[str, Any] = {"text": "", "evidenceIds": []}
     synthesis_support_ok = True
-    if "synthesis" in data:
+    # The clarification branch requires every structured field to stay empty
+    # (validated above). The provider still emits the key as `{}` because the
+    # prompt schema lists it, so shape-validating it here would reject a
+    # contract-compliant answer.
+    if "synthesis" in data and not needs_clarification:
         if (
             not isinstance(data.get("synthesis"), dict)
             or not data["synthesis"]
@@ -2566,13 +2610,15 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
             if (
                 require_card_reading_support
                 and not needs_clarification
-                and not any(
-                    _claim_supported_by_evidence(
-                        item["reading"],
-                        evidence_by_id.get(evidence_id),
-                        require_sentence_support=True,
-                    )
-                    for evidence_id in evidence_ids
+                # A card reading cites several chunks (symbolism, orientation,
+                # domain notes) and draws on all of them, so support is judged
+                # against the union of the cited evidence — the same rule
+                # synthesis and actions already use. Checking each chunk on its
+                # own asks every single one to explain the whole paragraph.
+                and not _claim_supported_by_evidence(
+                    item["reading"],
+                    {"text": _reference_evidence_text(evidence_ids, evidence_by_id, "")},
+                    require_sentence_support=True,
                 )
             ):
                 card_reading_support_ok = False
@@ -2633,6 +2679,21 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
     actions_text_supported = True
     actions_goal_tier_supported = True
     professional_action_boundary_ok = True
+    # An action is an instruction ("pause ten minutes, then talk"), so it rarely
+    # repeats the card wording. It must still be continuous with the reading it
+    # belongs to, otherwise it is an unrelated action bolted on (the classic
+    # "buy a camera" failure). Grounding therefore accepts either the cited
+    # evidence or the answer's own prose, which is itself evidence-checked.
+    action_context_text = " ".join(
+        text
+        for text in [
+            _string(data.get("text")),
+            synthesis["text"],
+            *[item["text"] for item in goal_sections],
+            *[item["reading"] for item in card_readings],
+        ]
+        if text
+    )
     action_goals = _unique(
         [goal for goal in required_action_goal_evidence if goal in GOAL_REFERENCE_TIERS]
     )
@@ -2697,6 +2758,7 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
                     item["reason"],
                     {"text": _reference_evidence_text(evidence_ids, evidence_by_id, "")},
                     require_sentence_support=True,
+                    anchor_only=True,
                 )
             ):
                 actions_reason_supported = False
@@ -2705,7 +2767,11 @@ def parse_reading_output(content: Any, options: Any = None) -> dict[str, Any]:
                 and not needs_clarification
                 and not _claim_supported_by_evidence(
                     item["text"],
-                    {"text": _reference_evidence_text(evidence_ids, evidence_by_id, "")},
+                    {
+                        "text": _reference_evidence_text(evidence_ids, evidence_by_id, "")
+                        + " "
+                        + action_context_text
+                    },
                     require_sentence_support=True,
                 )
             ):

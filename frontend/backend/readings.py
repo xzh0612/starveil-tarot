@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 import re
 from collections import Counter
 import socket
@@ -922,6 +923,22 @@ def urllib_transport(*, url: str, headers: dict[str, str], body: str, timeout_se
         return error.code, error.read().decode("utf-8", "replace")
 
 
+def _dump_raw_response(text: str) -> None:
+    """Append a provider reply to `STARVEIL_DUMP_RAW` when that path is set.
+
+    Off by default. Exists so a failing contract can be diagnosed from the exact
+    bytes the model produced instead of guessing from the error code.
+    """
+    path = os.environ.get("STARVEIL_DUMP_RAW")
+    if not path or not text:
+        return
+    try:
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(f"\n===== {time.strftime('%H:%M:%S')} =====\n{text}\n")
+    except OSError:
+        pass
+
+
 class ReadingService:
     """The ported equivalent of `createReadingMiddleware`."""
 
@@ -1266,8 +1283,13 @@ class ReadingService:
                 try:
                     answer = parse_reading_output(repaired["text"], parse_options)
                     provider = repaired
-                except ValueError:
-                    return 502, {"error": str(first_error), "code": code}
+                except ValueError as repair_error:
+                    # Report what actually blocked the repaired attempt. Echoing the
+                    # first error hid the real blocker behind the same code forever.
+                    return 502, {
+                        "error": str(repair_error),
+                        "code": repair_code(repair_error),
+                    }
 
             fallback_references = []
             for card in body["cards"]:
@@ -1385,6 +1407,8 @@ class ReadingService:
         choice = choices[0] if isinstance(choices, list) and choices else None
         message = choice.get("message") if isinstance(choice, dict) else None
         content = message.get("content") if isinstance(message, dict) else None
+        if isinstance(content, str):
+            _dump_raw_response(content)
         return {"kind": "ok", "data": data, "choice": choice, "text": content}
 
 

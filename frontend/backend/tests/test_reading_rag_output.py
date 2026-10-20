@@ -1544,6 +1544,51 @@ def test_clarification_responses_may_pause_interpretation_while_keeping_strict_v
         )
 
 
+def test_clarification_accepts_the_empty_synthesis_object_real_providers_emit():
+    """A real DeepSeek reply for an abstract question sets ``needsClarification``
+    and still emits every schema key, with the structured ones empty. The empty
+    ``synthesis`` must not be mistaken for a malformed synthesis. This is the
+    exact payload captured from a live 2026-10-20 run."""
+    evidence = retrieve_reading_evidence(question="我最近想看看牌。", cards=CARDS)
+    output = js_json(
+        {
+            "text": "你问的这次转变，方向还没有落到具体一块，我先确认一下。",
+            "needsClarification": True,
+            "clarification": "这次转变最贴近工作或学习、一段关系，还是个人状态？",
+            "goalSections": [],
+            "cardReadings": [],
+            "synthesis": {},
+            "actions": [],
+            "references": [],
+            "followUp": "",
+            "uncertainty": "具体领域未确认，牌面只能给出倾向。",
+        }
+    )
+    parsed = parse_reading_output(
+        output,
+        {
+            "cards": CARDS,
+            "evidence": evidence,
+            "requireCoverage": True,
+            "requireSynthesis": True,
+            "requireSynthesisAnchors": True,
+        },
+    )
+    assert parsed["needsClarification"] is True
+    assert parsed["synthesis"] == {"text": "", "evidenceIds": []}
+
+
+def test_empty_synthesis_is_still_rejected_outside_the_clarification_branch():
+    """The loophole is scoped to clarification; a normal first reading that
+    forgets its synthesis must keep failing."""
+    evidence = retrieve_reading_evidence(question="我最近想看看牌。", cards=CARDS)
+    output = js_json({"text": "先看这两张牌。", "synthesis": {}})
+    with pytest.raises(ValueError, match="综合解读格式不正确"):
+        parse_reading_output(
+            output, {"cards": CARDS, "evidence": evidence, "requireSynthesis": True}
+        )
+
+
 def test_clarification_must_contain_a_concrete_question_cue():
     evidence = retrieve_reading_evidence(question="我最近想看看牌。", cards=[CARDS[0]])
     vague = js_json({"text": "请补充方向。", "needsClarification": True, "clarification": "请补充。"})
