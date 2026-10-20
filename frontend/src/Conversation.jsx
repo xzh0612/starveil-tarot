@@ -1,7 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
-import {ArrowDown,ArrowRight,CaretRight,Check,Info,PaperPlaneTilt,Warning} from '@phosphor-icons/react';
-import {cardById} from './domain';
-import {readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel} from './services';
+import {ArrowDown,ArrowRight,CaretDown,CaretLeft,CaretRight,Cards,Check,ClockCounterClockwise,Info,Microphone,MicrophoneSlash,PaperPlaneTilt,Warning} from '@phosphor-icons/react';
+import {cardById,chosenCards,load,save} from './domain';
+import {readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel,saveReadingConfig} from './services';
+import {formatRelativeTime,mergeTranscript} from './chat-utils';
 import {AgentKeyCard} from './AgentConfigCard';
 
 const EVIDENCE_LABELS={orientation:'正逆位牌义',symbolism:'图像象征',relationships:'关系与情感',work:'事业与行动',reflection:'反思问题',waite:'Waite 原典',modern:'现代开放资料'};
@@ -78,34 +79,170 @@ function AssistantTurn({m,index,onFeedback,onToast,onRetry,onPreset}){
   </div>
  </div>;
 }
-/** 底部输入框：Enter 发送（避开中文输入法组词），Shift+Enter 换行，随内容增高。 */
-function Composer({input,setInput,onSubmit,busy,session,onToggleMemory}){
+/** 模型快速切换：只改 DEEPSEEK_MODEL，保存后对运行中的服务热生效。 */
+function ModelMenu({config,onChanged,onToast}){
+ const [open,setOpen]=useState(false),[busy,setBusy]=useState(false);
+ if(!config?.available)return null;
+ const current=config.model||'deepseek-flash';
+ const known=[
+  {id:'deepseek-flash',label:'DeepSeek Flash',desc:'更快 · 日常解读'},
+  {id:'deepseek-chat',label:'DeepSeek Chat',desc:'更稳 · 长文与推理'},
+ ];
+ const options=known.some(option=>option.id===current)?known:[...known,{id:current,label:current,desc:'当前配置的模型'}];
+ const locked=config.editable===false;
+ async function pick(id){
+  if(id===current){setOpen(false);return;}
+  setBusy(true);
+  try{
+   const next=await saveReadingConfig({model:id});
+   onChanged?.(next);
+   onToast?.(`已切换到 ${id}。`);
+  }catch(error){
+   onToast?.(error?.message||'模型切换失败。');
+  }finally{
+   setBusy(false);setOpen(false);
+  }
+ }
+ return <div className="chat-model">
+  <button type="button" className="chat-model-trigger" onClick={()=>setOpen(value=>!value)} aria-haspopup="listbox" aria-expanded={open} disabled={busy||locked} title={locked?'模型由启动环境变量指定':`当前模型 ${current}`}>
+   <span>{busy?'切换中…':`模型 · ${current}`}</span><CaretDown/>
+  </button>
+  {open&&<>
+   <div className="chat-model-backdrop" onClick={()=>setOpen(false)}/>
+   <div className="chat-model-menu" role="listbox" aria-label="选择解读模型">
+    {options.map(option=><button type="button" key={option.id} role="option" aria-selected={option.id===current} className={option.id===current?'active':''} onClick={()=>pick(option.id)}><span><b>{option.label}</b><small>{option.desc}</small></span>{option.id===current&&<Check size={12} weight="bold"/>}</button>)}
+    {locked&&<p className="chat-model-locked">由启动环境变量指定，界面不可改</p>}
+   </div>
+  </>}
+ </div>;
+}
+
+/** 语音输入：使用浏览器 Web Speech API（Chrome / Edge 可用），识别结果接在已有文字后面。 */
+function useVoiceInput({input,setInput,onToast,disabled}){
+ const [listening,setListening]=useState(false);
+ const recRef=useRef(null),baseRef=useRef('');
+ const supported=typeof window!=='undefined'&&!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+ useEffect(()=>()=>{try{recRef.current?.abort();}catch{/* 页面卸载时忽略 */}},[]);
+ function stop(){try{recRef.current?.stop();}catch{/* 已经结束 */}}
+ function start(){
+  if(disabled||listening)return;
+  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let rec;
+  try{rec=new Recognition();}catch{onToast?.('当前浏览器无法启动语音识别。');return;}
+  rec.lang='zh-CN';rec.interimResults=true;rec.continuous=false;
+  baseRef.current=input||'';
+  rec.onresult=event=>{
+   let finalText='',interim='';
+   for(let i=event.resultIndex;i<event.results.length;i++){
+    const result=event.results[i];
+    if(result.isFinal)finalText+=result[0].transcript;
+    else interim+=result[0].transcript;
+   }
+   setInput(mergeTranscript(baseRef.current,finalText)+interim);
+  };
+  rec.onerror=event=>{
+   setListening(false);
+   if(event.error==='not-allowed'||event.error==='service-not-allowed')onToast?.('没有麦克风权限，请在地址栏允许后重试。');
+   else if(event.error!=='aborted')onToast?.('语音识别暂时不可用，请改用键盘输入。');
+  };
+  rec.onend=()=>{setListening(false);recRef.current=null;};
+  recRef.current=rec;setListening(true);
+  try{rec.start();}catch{setListening(false);onToast?.('语音识别启动失败，请重试。');}
+ }
+ return {supported,listening,start,stop};
+}
+
+/** 全屏左右栏的收起状态：记住上次选择，下次进来保持原样。 */
+const RAIL_KEY='chatRails';
+function loadRails(){const saved=load(RAIL_KEY,{});return {left:saved?.left===true,right:saved?.right===true};}
+function saveRails(next){try{save(RAIL_KEY,next);}catch{/* 存储不可用时不影响使用 */}}
+
+/** 全屏左栏：历史对话列表，点击直接切回那一次对话。 */
+function HistorySidebar({history=[],currentId,onSelect,collapsed=false,onToggle}){
+ const saved=Array.isArray(history)?history:[];
+ const currentIsSaved=!!currentId&&saved.some(item=>item.id===currentId);
+ if(collapsed)return <aside className="chat-history collapsed">
+  <button type="button" className="chat-rail-expand" onClick={onToggle} title="展开历史对话" aria-label="展开历史对话" aria-expanded="false"><ClockCounterClockwise/><span>历史对话</span>{saved.length>0&&<small>{saved.length}</small>}</button>
+ </aside>;
+ return <aside className="chat-history">
+  <header>
+   <span className="chat-rail-title"><ClockCounterClockwise/> 历史对话</span>
+   <span className="chat-rail-head-right"><small>{saved.length?`${saved.length} 条`:'空'}</small><button type="button" className="chat-rail-toggle" onClick={onToggle} title="收起历史对话" aria-label="收起历史对话" aria-expanded="true"><CaretLeft/></button></span>
+  </header>
+  <div className="chat-history-list">
+   {currentId&&!currentIsSaved&&<div className="chat-history-item active current" aria-current="true"><b>当前对话</b><span>进行中</span></div>}
+   {saved.length===0&&!currentId&&<p className="chat-rail-empty">保存过的对话会出现在这里。</p>}
+   {saved.map(item=><button type="button" key={item.id} className={`chat-history-item ${item.id===currentId?'active':''}`} onClick={()=>onSelect?.(item)}><b>{item.question||'未命名对话'}</b><span>{[item.spread?.name,formatRelativeTime(item.date)].filter(Boolean).join(' · ')}</span>{Array.isArray(item.messages)&&item.messages.length?<small>{item.messages.length} 条消息</small>:null}</button>)}
+  </div>
+ </aside>;
+}
+
+/** 全屏右栏：本局抽到的牌，随会话切换而更新。 */
+function CardsPanel({session,collapsed=false,onToggle}){
+ const draws=session?chosenCards(session):[];
+ const spread=session?.spread;
+ if(collapsed)return <aside className="chat-cards collapsed">
+  <button type="button" className="chat-rail-expand" onClick={onToggle} title="展开本局牌面" aria-label="展开本局牌面" aria-expanded="false"><Cards/><span>本局牌面</span>{draws.length>0&&<small>{draws.length}</small>}</button>
+ </aside>;
+ return <aside className="chat-cards">
+  <header>
+   <span className="chat-rail-title"><Cards/> 本局牌面</span>
+   <span className="chat-rail-head-right"><small>{spread?.positions?.length?`${spread.positions.length} 张`:''}</small><button type="button" className="chat-rail-toggle" onClick={onToggle} title="收起本局牌面" aria-label="收起本局牌面" aria-expanded="true"><CaretRight/></button></span>
+  </header>
+  {session?.question&&<p className="chat-cards-question">{session.question}</p>}
+  <div className="chat-cards-list">
+   {draws.length===0&&<p className="chat-rail-empty">这一局还没有抽牌。</p>}
+   {draws.map((draw,index)=>{
+    const card=cardById[draw.id];
+    return <article className="chat-card-item" key={`${draw.id}-${index}`}>
+     <div className="chat-card-thumb"><img src={card?.image} alt={card?.name||''} className={draw.reversed?'reversed':''}/></div>
+     <div className="chat-card-meta"><b>{card?.name||draw.id}</b><span>{draw.position}</span><small>{draw.reversed?'逆位':'正位'}{card?.key?` · ${card.key}`:''}</small></div>
+    </article>;
+   })}
+  </div>
+ </aside>;
+}
+/** 底部输入区：Enter 发送（避开中文输入法组词），Shift+Enter 换行，随内容增高。
+ *  结构对齐 WorkBuddy：错误横幅贴在输入容器上方共享边线，容器内是编辑区 + 工具行。 */
+function Composer({input,setInput,onSubmit,busy,session,onToggleMemory,error,errorCode,agentConfig,setKeyCard,onRetry,onModelChanged,onToast}){
  const taRef=useRef(null);
+ const voice=useVoiceInput({input,setInput,onToast,disabled:busy});
  useEffect(()=>{const el=taRef.current;if(!el)return;el.style.height='auto';el.style.height=`${Math.min(el.scrollHeight,120)}px`;},[input]);
  function onKeyDown(event){
   if(event.key==='Enter'&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();onSubmit(event);}
  }
  return <div className="chat-composer">
-  <form onSubmit={onSubmit}>
-   <textarea ref={taRef} rows={1} aria-label="和女巫对话" placeholder={session?.messages.length?'继续聊聊这次牌局…':'牌已翻开，想先从哪里说起？'} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKeyDown} disabled={busy}/>
-   <button className="chat-send" type="submit" aria-label="发送问题" disabled={busy||!input.trim()}><PaperPlaneTilt/></button>
+  {error&&<div className="chat-banner" role="alert"><Warning/><div><p>{error}</p>{errorCode&&<small className="error-hint">{readingErrorHint(errorCode)}</small>}<div className="chat-banner-actions">{agentConfig?.available&&['provider_not_configured','provider_auth'].includes(errorCode)&&<button className="text-button" onClick={()=>setKeyCard(true)}>配置密钥 <ArrowRight/></button>}<button className="text-button" onClick={onRetry}>保留原牌重试 <ArrowRight/></button></div></div></div>}
+  <form className="chat-input-container" onSubmit={onSubmit}>
+   <textarea ref={taRef} rows={1} aria-label="和女巫对话" placeholder={voice.listening?'正在听你说…':session?.messages.length?'继续聊聊这次牌局…':'牌已翻开，想先从哪里说起？'} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={onKeyDown} disabled={busy}/>
+   <div className="chat-input-toolbar">
+    <div className="chat-input-tools">
+     <span className="chat-input-hint">{voice.listening?'正在聆听 · 再点一次结束':`Enter 发送 · Shift+Enter 换行`}</span>
+     <button type="button" className={session?.usePersonalMemory?'on':''} onClick={onToggleMemory} disabled={busy}>本局知识库 · {session?.usePersonalMemory?'开':'关'}</button>
+     <ModelMenu config={agentConfig} onChanged={onModelChanged} onToast={onToast}/>
+    </div>
+    <div className="chat-input-actions">
+     {voice.supported&&<button type="button" className={`chat-mic ${voice.listening?'listening':''}`} aria-label={voice.listening?'停止语音输入':'语音输入'} aria-pressed={voice.listening} title={voice.listening?'停止语音输入':'语音输入'} onClick={()=>voice.listening?voice.stop():voice.start()} disabled={busy}>{voice.listening?<MicrophoneSlash/>:<Microphone/>}</button>}
+     <button className="chat-send" type="submit" aria-label="发送问题" disabled={busy||!input.trim()}><PaperPlaneTilt/></button>
+    </div>
+   </div>
   </form>
-  <div className="chat-composer-meta">
-   <span>Enter 发送 · Shift+Enter 换行</span>
-   <button type="button" className={session?.usePersonalMemory?'on':''} onClick={onToggleMemory} disabled={busy}>本局使用知识库 · {session?.usePersonalMemory?'开':'关'}</button>
-  </div>
   <p className="chat-disclaimer">解读用于自我反思 · 重要决定请咨询专业意见</p>
  </div>;
 }
-/** 对话抽屉的主体：徽标与密钥卡在最上，时间线居中滚动，输入框固定在底部。 */
-export function ConversationThread({session,busy,error,errorCode,agentConfig,keyCard,setKeyCard,onKeySaved,input,setInput,onSubmit,onFeedback,onRetry,onToast,onPreset,onToggleMemory,motion}){
+/** 对话抽屉的主体：徽标与密钥卡在最上，时间线居中滚动，输入框固定在底部。
+ *  full=true 时改为三栏：历史对话 / 聊天 / 本局牌面。 */
+export function ConversationThread({session,busy,error,errorCode,agentConfig,keyCard,setKeyCard,onKeySaved,input,setInput,onSubmit,onFeedback,onRetry,onToast,onPreset,onToggleMemory,motion,full=false,history=[],onSelectHistory,onModelChanged}){
  const threadRef=useRef(null),endRef=useRef(null);
  const [atBottom,setAtBottom]=useState(true);
+ const [rails,setRails]=useState(loadRails);
+ useEffect(()=>{saveRails(rails);},[rails]);
+ const toggleRail=side=>setRails(current=>({...current,[side]:!current[side]}));
  const messages=session?.messages??[];
  useEffect(()=>{if(!messages.length||!atBottom)return;endRef.current?.scrollIntoView({block:'end',behavior:motion?'smooth':'instant'});},[messages.length,busy,atBottom,motion]);
  function onScroll(){const el=threadRef.current;if(!el)return;setAtBottom(el.scrollHeight-el.scrollTop-el.clientHeight<90);}
  function jump(){endRef.current?.scrollIntoView({block:'end',behavior:motion?'smooth':'instant'});}
- return <>
+ const main= <>
   <div className="chat-thread-wrap">
    <div className="chat-thread" ref={threadRef} onScroll={onScroll}>
     <div className="reading-badge"><Info/> {!import.meta.env.VITE_READING_ENDPOINT?'本地牌义示例 · AI 接口尚未连接':agentConfig.available&&!agentConfig.configured?'尚未配置 DeepSeek 密钥 · 在下方填入即可解读':'DeepSeek · AI 对话解读'}</div>
@@ -115,11 +252,16 @@ export function ConversationThread({session,busy,error,errorCode,agentConfig,key
      ?<div className="turn-user" key={i}><p>{m.text}</p></div>
      :<AssistantTurn key={i} m={m} index={i} onFeedback={onFeedback} onToast={onToast} onRetry={onRetry} onPreset={onPreset}/>)}
     {busy&&<div className="turn"><span className="turn-avatar" aria-hidden="true">N</span><div className="turn-body"><p className="chat-status"><span>正在检索牌义证据…</span></p></div></div>}
-    {error&&<div role="alert" className="error"><p>{error}</p>{errorCode&&<small className="error-hint">{readingErrorHint(errorCode)}</small>}{agentConfig.available&&['provider_not_configured','provider_auth'].includes(errorCode)&&<button className="text-button" onClick={()=>setKeyCard(true)}>配置密钥 <ArrowRight/></button>}<button className="text-button" onClick={onRetry}>保留原牌重试 <ArrowRight/></button></div>}
     <div ref={endRef}/>
    </div>
    {!atBottom&&<button className="chat-jump" type="button" aria-label="回到最新消息" onClick={jump}><ArrowDown/></button>}
   </div>
-  <Composer input={input} setInput={setInput} onSubmit={onSubmit} busy={busy} session={session} onToggleMemory={onToggleMemory}/>
+  <Composer input={input} setInput={setInput} onSubmit={onSubmit} busy={busy} session={session} onToggleMemory={onToggleMemory} error={error} errorCode={errorCode} agentConfig={agentConfig} setKeyCard={setKeyCard} onRetry={onRetry} onModelChanged={onModelChanged} onToast={onToast}/>
  </>;
+ if(!full)return main;
+ return <div className={`chat-full ${rails.left?'left-collapsed':''} ${rails.right?'right-collapsed':''}`}>
+  <HistorySidebar history={history} currentId={session?.id} onSelect={onSelectHistory} collapsed={rails.left} onToggle={()=>toggleRail('left')}/>
+  <div className="chat-main">{main}</div>
+  <CardsPanel session={session} collapsed={rails.right} onToggle={()=>toggleRail('right')}/>
+ </div>;
 }
