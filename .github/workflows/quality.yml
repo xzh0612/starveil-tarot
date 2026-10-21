@@ -47,3 +47,41 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+  agent-tests:
+    name: Python agent tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: frontend/backend/requirements.txt
+
+      - name: Create virtual environment
+        run: python3 -m venv backend/.venv
+
+      - name: Install locked dependencies
+        run: backend/.venv/bin/pip install -r backend/requirements.txt
+
+      # No DeepSeek key is read here: the suite injects a fake transport.
+      # --basetemp keeps pytest off the sandbox default temp directory.
+      - name: Run agent tests
+        run: backend/.venv/bin/python -m pytest backend/tests -q --basetemp=/tmp/starveil-pytest
+
+      - name: Run offline RAG and Prompt evaluation
+        run: backend/.venv/bin/python -m backend.evaluate_reading
+
+      # Retrieval recall against the 30-case hand-annotated set. Fails when a
+      # change silently drops evidence a human judged necessary, or starts
+      # pulling application evidence the question never asked for.
+      - name: Run annotated retrieval benchmark
+        run: backend/.venv/bin/python -m backend.reading_benchmark

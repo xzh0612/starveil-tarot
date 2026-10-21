@@ -994,3 +994,25 @@ def test_default_evidence_budget_expands_for_large_mixed_spreads():
     )
     assert len(evidence) == 60
     assert summary["missingApplicationCardIds"] == []
+
+
+def test_generic_position_does_not_invent_a_life_domain():
+    """“阻碍”“现状”只是牌阵结构，不是生活领域。
+
+    早先的实现允许这两个位置在没有领域的问题里补上关系或反思证据，结果是
+    问“身体不舒服”也会拿到一条关系解读。位置本身必须点名领域（关系挑战、
+    自我状态⋯）才可以通过这条路引入应用层证据。
+    """
+    domainless = "最近很乱，不知道从哪里说起。"
+    cards = [
+        {"id": "m00", "reversed": False, "position": "现状"},
+        {"id": "m07", "reversed": False, "position": "阻碍"},
+    ]
+    evidence = retrieve_reading_evidence(question=domainless, cards=cards)
+    assert not [item for item in evidence if item["kind"] in ("relationships", "work", "reflection")]
+
+    domain_position = [
+        {"id": "m00", "reversed": False, "position": "我的感受"},
+        {"id": "c06", "reversed": False, "position": "关系挑战"},
+    ]
+    assert [item for item in retrieve_reading_evidence(question=domainless, cards=domain_position) if item["kind"] == "relationships"]

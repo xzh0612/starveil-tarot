@@ -1,0 +1,1181 @@
+{
+  "version": "reading-benchmark-v1",
+  "annotatedAt": "2026-10-20",
+  "k": 8,
+  "note": "人工标注的检索相关性种子集。core 是回答该问题必须命中的 (cardId, kind) 证据对；themeKinds 是该问题真正需要的应用层证据种类，落在其余应用种类上视为跑题。新增案例请先人工判断相关性再写入，不要按现有检索结果反推标注。",
+  "cases": [
+    {
+      "id": "relationship-boundary",
+      "question": "我们之间的沟通和边界要怎么调整？",
+      "cards": [
+        {
+          "id": "m08",
+          "reversed": false,
+          "position": "建议"
+        },
+        {
+          "id": "c06",
+          "reversed": true,
+          "position": "关系挑战"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "m08",
+          "symbolism"
+        ],
+        [
+          "m08",
+          "orientation"
+        ],
+        [
+          "c06",
+          "symbolism"
+        ],
+        [
+          "c06",
+          "orientation"
+        ],
+        [
+          "m08",
+          "relationships"
+        ],
+        [
+          "c06",
+          "relationships"
+        ]
+      ]
+    },
+    {
+      "id": "relationship-reunion",
+      "question": "我们还能不能复合，值得再试一次吗？",
+      "cards": [
+        {
+          "id": "c06",
+          "reversed": true,
+          "position": "现状"
+        },
+        {
+          "id": "c09",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "c06",
+          "symbolism"
+        ],
+        [
+          "c06",
+          "orientation"
+        ],
+        [
+          "c09",
+          "symbolism"
+        ],
+        [
+          "c09",
+          "orientation"
+        ],
+        [
+          "c09",
+          "relationships"
+        ]
+      ]
+    },
+    {
+      "id": "relationship-distance",
+      "question": "异地之后我们的关系该怎么维持？",
+      "cards": [
+        {
+          "id": "s08",
+          "reversed": false,
+          "position": "阻碍"
+        },
+        {
+          "id": "c05",
+          "reversed": true,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "s08",
+          "symbolism"
+        ],
+        [
+          "s08",
+          "orientation"
+        ],
+        [
+          "c05",
+          "symbolism"
+        ],
+        [
+          "c05",
+          "orientation"
+        ],
+        [
+          "c05",
+          "relationships"
+        ]
+      ]
+    },
+    {
+      "id": "relationship-family",
+      "question": "和父母的沟通总是变成争吵，我可以怎么调整？",
+      "cards": [
+        {
+          "id": "p10",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "c10",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "p10",
+          "symbolism"
+        ],
+        [
+          "p10",
+          "orientation"
+        ],
+        [
+          "c10",
+          "symbolism"
+        ],
+        [
+          "c10",
+          "orientation"
+        ],
+        [
+          "c10",
+          "relationships"
+        ]
+      ]
+    },
+    {
+      "id": "relationship-friendship",
+      "question": "朋友最近明显在疏远我，我该怎么面对？",
+      "cards": [
+        {
+          "id": "c03",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "s05",
+          "reversed": true,
+          "position": "阻碍"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "c03",
+          "symbolism"
+        ],
+        [
+          "c03",
+          "orientation"
+        ],
+        [
+          "s05",
+          "symbolism"
+        ],
+        [
+          "s05",
+          "orientation"
+        ],
+        [
+          "s05",
+          "relationships"
+        ]
+      ]
+    },
+    {
+      "id": "career-change",
+      "question": "我该如何规划这次转行和下一步行动？",
+      "cards": [
+        {
+          "id": "p04",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "w08",
+          "reversed": false,
+          "position": "下一步"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "p04",
+          "symbolism"
+        ],
+        [
+          "p04",
+          "orientation"
+        ],
+        [
+          "w08",
+          "symbolism"
+        ],
+        [
+          "w08",
+          "orientation"
+        ],
+        [
+          "w08",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "career-promotion",
+      "question": "这次升职评估我有多大机会，需要补什么？",
+      "cards": [
+        {
+          "id": "w06",
+          "reversed": false,
+          "position": "优势"
+        },
+        {
+          "id": "p07",
+          "reversed": true,
+          "position": "阻碍"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "w06",
+          "symbolism"
+        ],
+        [
+          "w06",
+          "orientation"
+        ],
+        [
+          "p07",
+          "symbolism"
+        ],
+        [
+          "p07",
+          "orientation"
+        ],
+        [
+          "w06",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "career-interview",
+      "question": "下周的面试我该重点准备什么？",
+      "cards": [
+        {
+          "id": "m01",
+          "reversed": false,
+          "position": "建议"
+        },
+        {
+          "id": "p02",
+          "reversed": false,
+          "position": "可用资源"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "m01",
+          "symbolism"
+        ],
+        [
+          "m01",
+          "orientation"
+        ],
+        [
+          "p02",
+          "symbolism"
+        ],
+        [
+          "p02",
+          "orientation"
+        ],
+        [
+          "m01",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "career-startup",
+      "question": "现在出来自己创业，时机和条件够吗？",
+      "cards": [
+        {
+          "id": "w10",
+          "reversed": true,
+          "position": "处境"
+        },
+        {
+          "id": "p03",
+          "reversed": false,
+          "position": "可用资源"
+        }
+      ],
+      "themeKinds": [
+        "work",
+        "reflection"
+      ],
+      "core": [
+        [
+          "w10",
+          "symbolism"
+        ],
+        [
+          "w10",
+          "orientation"
+        ],
+        [
+          "p03",
+          "symbolism"
+        ],
+        [
+          "p03",
+          "orientation"
+        ],
+        [
+          "p03",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "career-conflict",
+      "question": "和同事的合作越来越僵，工作上我该怎么处理？",
+      "cards": [
+        {
+          "id": "s05",
+          "reversed": false,
+          "position": "处境"
+        },
+        {
+          "id": "m11",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "s05",
+          "symbolism"
+        ],
+        [
+          "s05",
+          "orientation"
+        ],
+        [
+          "m11",
+          "symbolism"
+        ],
+        [
+          "m11",
+          "orientation"
+        ],
+        [
+          "m11",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "choice-offers",
+      "question": "两个 offer 应该如何比较，哪个更适合我？",
+      "cards": [
+        {
+          "id": "m06",
+          "reversed": false,
+          "position": "选择 A 的机会"
+        },
+        {
+          "id": "p02",
+          "reversed": true,
+          "position": "选择 B 的挑战"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "m06",
+          "symbolism"
+        ],
+        [
+          "m06",
+          "orientation"
+        ],
+        [
+          "p02",
+          "symbolism"
+        ],
+        [
+          "p02",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "choice-stay-leave",
+      "question": "留在这里还是离开？",
+      "cards": [
+        {
+          "id": "m13",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "s08",
+          "reversed": true,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "m13",
+          "symbolism"
+        ],
+        [
+          "m13",
+          "orientation"
+        ],
+        [
+          "s08",
+          "symbolism"
+        ],
+        [
+          "s08",
+          "orientation"
+        ],
+        [
+          "s08",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "choice-study",
+      "question": "要不要辞职去读研，这个决定怎么权衡？",
+      "cards": [
+        {
+          "id": "m09",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "p06",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "work"
+      ],
+      "core": [
+        [
+          "m09",
+          "symbolism"
+        ],
+        [
+          "m09",
+          "orientation"
+        ],
+        [
+          "p06",
+          "symbolism"
+        ],
+        [
+          "p06",
+          "orientation"
+        ],
+        [
+          "p06",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "choice-relocate",
+      "question": "换一座城市生活，这个机会值得抓吗？",
+      "cards": [
+        {
+          "id": "w03",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "p08",
+          "reversed": false,
+          "position": "下一步"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "w03",
+          "symbolism"
+        ],
+        [
+          "w03",
+          "orientation"
+        ],
+        [
+          "p08",
+          "symbolism"
+        ],
+        [
+          "p08",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "self-anxiety",
+      "question": "最近总是焦虑，晚上睡不好，我该怎么面对？",
+      "cards": [
+        {
+          "id": "s09",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "m18",
+          "reversed": true,
+          "position": "隐含因素"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "s09",
+          "symbolism"
+        ],
+        [
+          "s09",
+          "orientation"
+        ],
+        [
+          "m18",
+          "symbolism"
+        ],
+        [
+          "m18",
+          "orientation"
+        ],
+        [
+          "s09",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "self-burnout",
+      "question": "我为什么总是感到迷茫和内耗？",
+      "cards": [
+        {
+          "id": "s04",
+          "reversed": false,
+          "position": "核心"
+        },
+        {
+          "id": "m12",
+          "reversed": false,
+          "position": "交叉影响"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "s04",
+          "symbolism"
+        ],
+        [
+          "s04",
+          "orientation"
+        ],
+        [
+          "m12",
+          "symbolism"
+        ],
+        [
+          "m12",
+          "orientation"
+        ],
+        [
+          "s04",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "self-procrastination",
+      "question": "我总是拖延，明明很在意却迟迟不开始。",
+      "cards": [
+        {
+          "id": "p07",
+          "reversed": true,
+          "position": "阻碍"
+        },
+        {
+          "id": "w07",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "p07",
+          "symbolism"
+        ],
+        [
+          "p07",
+          "orientation"
+        ],
+        [
+          "w07",
+          "symbolism"
+        ],
+        [
+          "w07",
+          "orientation"
+        ],
+        [
+          "w07",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "self-worth",
+      "question": "我总觉得自己不够好，这种自我怀疑从哪来？",
+      "cards": [
+        {
+          "id": "m11",
+          "reversed": true,
+          "position": "核心"
+        },
+        {
+          "id": "c09",
+          "reversed": false,
+          "position": "希望与担忧"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "m11",
+          "symbolism"
+        ],
+        [
+          "m11",
+          "orientation"
+        ],
+        [
+          "c09",
+          "symbolism"
+        ],
+        [
+          "c09",
+          "orientation"
+        ],
+        [
+          "m11",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "self-people-pleasing",
+      "question": "我总是讨好别人，怎么练回自己的边界？",
+      "cards": [
+        {
+          "id": "m08",
+          "reversed": false,
+          "position": "核心"
+        },
+        {
+          "id": "s02",
+          "reversed": true,
+          "position": "阻碍"
+        }
+      ],
+      "themeKinds": [
+        "relationships",
+        "reflection"
+      ],
+      "core": [
+        [
+          "m08",
+          "symbolism"
+        ],
+        [
+          "m08",
+          "orientation"
+        ],
+        [
+          "s02",
+          "symbolism"
+        ],
+        [
+          "s02",
+          "orientation"
+        ],
+        [
+          "m08",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "timing-quarter",
+      "question": "接下来三个月的发展趋势是什么？",
+      "cards": [
+        {
+          "id": "m10",
+          "reversed": false,
+          "position": "未来趋势"
+        },
+        {
+          "id": "w08",
+          "reversed": true,
+          "position": "现在"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m10",
+          "symbolism"
+        ],
+        [
+          "m10",
+          "orientation"
+        ],
+        [
+          "w08",
+          "symbolism"
+        ],
+        [
+          "w08",
+          "orientation"
+        ],
+        [
+          "m10",
+          "waite"
+        ]
+      ]
+    },
+    {
+      "id": "timing-year",
+      "question": "这一年的整体走向，我该把握什么？",
+      "cards": [
+        {
+          "id": "m21",
+          "reversed": false,
+          "position": "第 1 个月"
+        },
+        {
+          "id": "p10",
+          "reversed": false,
+          "position": "第 2 个月"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m21",
+          "symbolism"
+        ],
+        [
+          "m21",
+          "orientation"
+        ],
+        [
+          "p10",
+          "symbolism"
+        ],
+        [
+          "p10",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "timing-act",
+      "question": "什么时候适合真正开始行动？",
+      "cards": [
+        {
+          "id": "m07",
+          "reversed": false,
+          "position": "近期趋势"
+        },
+        {
+          "id": "w06",
+          "reversed": true,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "m07",
+          "symbolism"
+        ],
+        [
+          "m07",
+          "orientation"
+        ],
+        [
+          "w06",
+          "symbolism"
+        ],
+        [
+          "w06",
+          "orientation"
+        ],
+        [
+          "w06",
+          "reflection"
+        ]
+      ]
+    },
+    {
+      "id": "card-explanation",
+      "question": "我只是想了解这张牌在讲什么。",
+      "cards": [
+        {
+          "id": "m02",
+          "reversed": false,
+          "position": "当下指引"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m02",
+          "symbolism"
+        ],
+        [
+          "m02",
+          "orientation"
+        ],
+        [
+          "m02",
+          "waite"
+        ]
+      ]
+    },
+    {
+      "id": "card-comparison",
+      "question": "愚者和世界这两张牌到底差在哪里？",
+      "cards": [
+        {
+          "id": "m00",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "m21",
+          "reversed": false,
+          "position": "未来趋势"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m00",
+          "symbolism"
+        ],
+        [
+          "m00",
+          "orientation"
+        ],
+        [
+          "m21",
+          "symbolism"
+        ],
+        [
+          "m21",
+          "orientation"
+        ],
+        [
+          "m00",
+          "waite"
+        ],
+        [
+          "m21",
+          "waite"
+        ]
+      ]
+    },
+    {
+      "id": "position-obstacle",
+      "question": "我正在整理工作方向。",
+      "cards": [
+        {
+          "id": "w05",
+          "reversed": true,
+          "position": "阻碍"
+        }
+      ],
+      "themeKinds": [
+        "work",
+        "reflection"
+      ],
+      "core": [
+        [
+          "w05",
+          "symbolism"
+        ],
+        [
+          "w05",
+          "orientation"
+        ],
+        [
+          "w05",
+          "work"
+        ]
+      ]
+    },
+    {
+      "id": "spread-overview",
+      "question": "这三张牌合起来在说什么？",
+      "cards": [
+        {
+          "id": "m17",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "m18",
+          "reversed": true,
+          "position": "阻碍"
+        },
+        {
+          "id": "m19",
+          "reversed": false,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m17",
+          "symbolism"
+        ],
+        [
+          "m17",
+          "orientation"
+        ],
+        [
+          "m18",
+          "symbolism"
+        ],
+        [
+          "m18",
+          "orientation"
+        ],
+        [
+          "m19",
+          "symbolism"
+        ],
+        [
+          "m19",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "open-vague",
+      "question": "最近很乱，不知道从哪里说起。",
+      "cards": [
+        {
+          "id": "c04",
+          "reversed": false,
+          "position": "当下指引"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "c04",
+          "symbolism"
+        ],
+        [
+          "c04",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "health-boundary",
+      "question": "身体一直不太舒服，牌面怎么看这件事？",
+      "cards": [
+        {
+          "id": "m14",
+          "reversed": false,
+          "position": "现状"
+        },
+        {
+          "id": "s04",
+          "reversed": true,
+          "position": "建议"
+        }
+      ],
+      "themeKinds": [],
+      "core": [
+        [
+          "m14",
+          "symbolism"
+        ],
+        [
+          "m14",
+          "orientation"
+        ],
+        [
+          "s04",
+          "symbolism"
+        ],
+        [
+          "s04",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "money-boundary",
+      "question": "要不要把积蓄投进这笔生意？",
+      "cards": [
+        {
+          "id": "p05",
+          "reversed": true,
+          "position": "现状"
+        },
+        {
+          "id": "m15",
+          "reversed": false,
+          "position": "隐含因素"
+        }
+      ],
+      "themeKinds": [
+        "reflection"
+      ],
+      "core": [
+        [
+          "p05",
+          "symbolism"
+        ],
+        [
+          "p05",
+          "orientation"
+        ],
+        [
+          "m15",
+          "symbolism"
+        ],
+        [
+          "m15",
+          "orientation"
+        ]
+      ]
+    },
+    {
+      "id": "relationship-reach-out",
+      "question": "要不要主动联系他，还是继续等？",
+      "cards": [
+        {
+          "id": "c02",
+          "reversed": false,
+          "position": "我的感受"
+        },
+        {
+          "id": "c06",
+          "reversed": false,
+          "position": "可观察的互动"
+        }
+      ],
+      "themeKinds": [
+        "relationships"
+      ],
+      "core": [
+        [
+          "c02",
+          "symbolism"
+        ],
+        [
+          "c02",
+          "orientation"
+        ],
+        [
+          "c06",
+          "symbolism"
+        ],
+        [
+          "c06",
+          "orientation"
+        ],
+        [
+          "c06",
+          "relationships"
+        ]
+      ]
+    }
+  ]
+}

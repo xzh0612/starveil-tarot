@@ -50,3 +50,137 @@ export function updateReadingFeedback(messages,index,feedback){
 export function createSession(question,spread,reversals){return {id:crypto.randomUUID(),date:new Date().toISOString(),question,spread,deck:newDeck(reversals),selected:[],revealed:[],messages:[],usePersonalMemory:false,deckVersion:DECK_VERSION};}
 export function load(key,fallback){try{return JSON.parse(localStorage.getItem(`starveil:${key}`))??fallback;}catch{return fallback;}}
 export function save(key,value){localStorage.setItem(`starveil:${key}`,JSON.stringify(value));}
+
+/* ── AI 生成合成内容标识 ──────────────────────────────────────────────
+   依据《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》：
+   AI 生成内容需要显式标识（用户可见标签），导出到文件的还需要隐式标识（元数据）。
+   文案与元数据集中在此，对话面板与导出共用同一份口径，避免两处漂移。 */
+export const AI_CONTENT_LABEL = 'AI 生成';
+export const AI_CONTENT_DISCLAIMER = '本内容由 AI 模型生成，仅供自我反思，不构成医疗、法律、投资等专业建议；重要决定请咨询专业人士。';
+export const AI_CONTENT_GENERATOR = '星幕塔罗 STARVEIL · NYX';
+export const AI_CONTENT_POLICY = 'aigc-label-cn-v1';
+
+/** 隐式标识：写进导出文件的元数据块，字段名同时兼容中文语义与常规读取习惯。 */
+export function aiContentNotice(kind = 'reading', now = new Date()) {
+  return {
+    aiGenerated: true,
+    label: AI_CONTENT_LABEL,
+    contentKind: kind,
+    generator: AI_CONTENT_GENERATOR,
+    disclaimer: AI_CONTENT_DISCLAIMER,
+    policy: AI_CONTENT_POLICY,
+    labeledAt: now.toISOString(),
+  };
+}
+
+/** 档案导出：数组改为带格式信封，隐式标识随文件走，同时给后续导入留出版本位。 */
+export function createArchiveExport(records = [], now = new Date()) {
+  return {
+    format: 'starveil-archive',
+    schemaVersion: 1,
+    exportedAt: now.toISOString(),
+    contentNotice: aiContentNotice('tarot-archive', now),
+    records: Array.isArray(records) ? records : [],
+  };
+}
+
+/** 全量备份导出：保留原有三块数据结构，只在外层补隐式标识。 */
+export function createBackupExport({ history = [], memories = [], settings = {} } = {}, now = new Date()) {
+  return {
+    format: 'starveil-backup',
+    schemaVersion: 1,
+    exportedAt: now.toISOString(),
+    contentNotice: aiContentNotice('tarot-backup', now),
+    history,
+    memories,
+    settings,
+  };
+}
+
+/* ── 档案导入 ────────────────────────────────────────────────────────
+   导入是攻击面：把文件里的每个字段都当作不可信输入，逐项校验并限长。
+   只要一条记录里有关键字段不合法就整条丢弃，不做部分修补——半坏的数据
+   比没有数据更难排查。兼容本应用导出的两种信封与早期的裸数组档案。 */
+export const IMPORT_MAX_CHARS = 8 * 1024 * 1024;
+const QUESTION_LIMIT = 500;
+const MESSAGE_TEXT_LIMIT = 20_000;
+const NOTE_LIMIT = 2_000;
+
+function isPlainObject(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+function clip(value, max) { return typeof value === 'string' ? value.slice(0, max) : ''; }
+
+function sanitizeMessage(message) {
+  if (!isPlainObject(message)) return null;
+  if (message.role !== 'user' && message.role !== 'assistant') return null;
+  if (typeof message.text !== 'string' || !message.text.trim()) return null;
+  return { ...message, text: message.text.slice(0, MESSAGE_TEXT_LIMIT) };
+}
+
+function sanitizeRecord(record) {
+  if (!isPlainObject(record)) return null;
+  const question = clip(record.question, QUESTION_LIMIT).trim();
+  if (!question) return null;
+  const spread = record.spread;
+  if (!isPlainObject(spread) || !Array.isArray(spread.positions) || !spread.positions.length) return null;
+  const deck = Array.isArray(record.deck) ? record.deck.filter(card => isPlainObject(card) && cardById[card.id]) : [];
+  if (deck.length !== 78 || new Set(deck.map(card => card.id)).size !== 78) return null;
+  const positions = spread.positions.map(position => clip(position, 60)).filter(Boolean);
+  if (positions.length !== spread.positions.length) return null;
+  const rawSelected = Array.isArray(record.selected) ? record.selected : [];
+  if (!rawSelected.length || rawSelected.length > positions.length) return null;
+  const selected = rawSelected.filter(index => Number.isInteger(index) && index >= 0 && index < 78);
+  // 有任何一个下标不合法就整条拒绝，不做“悄悄少一张牌”的修补。
+  if (selected.length !== rawSelected.length || new Set(selected).size !== selected.length) return null;
+  const revealed = (Array.isArray(record.revealed) ? record.revealed : []).filter(index => selected.includes(index));
+  const messages = (Array.isArray(record.messages) ? record.messages : []).map(sanitizeMessage).filter(Boolean);
+  const notes = (Array.isArray(record.notes) ? record.notes : [])
+    .filter(item => isPlainObject(item) && typeof item.text === 'string' && item.text.trim())
+    .map(item => ({ text: item.text.slice(0, NOTE_LIMIT), date: typeof item.date === 'string' ? item.date : new Date().toISOString() }));
+  const date = typeof record.date === 'string' && !Number.isNaN(Date.parse(record.date)) ? record.date : new Date().toISOString();
+  const { messages: _messages, notes: _notes, ...rest } = record;
+  return {
+    ...rest,
+    id: typeof record.id === 'string' && record.id ? record.id : crypto.randomUUID(),
+    date,
+    question,
+    spread: { ...spread, name: clip(spread.name, 80), positions },
+    deck,
+    selected,
+    revealed,
+    messages,
+    notes,
+    // 导入的数据一律不继承“允许引用个人知识库”，避免把别人的记忆开关带进来。
+    usePersonalMemory: false,
+  };
+}
+
+export function parseArchiveImport(text) {
+  if (typeof text !== 'string' || !text.trim()) return { ok: false, records: [], skipped: 0, error: '文件是空的。' };
+  if (text.length > IMPORT_MAX_CHARS) return { ok: false, records: [], skipped: 0, error: '文件超过 8 MB，看起来不是档案备份。' };
+  let data = null;
+  try { data = JSON.parse(text); } catch { return { ok: false, records: [], skipped: 0, error: '不是有效的 JSON 文件。' }; }
+  let raw = null;
+  if (Array.isArray(data)) raw = data;
+  else if (isPlainObject(data) && Array.isArray(data.records)) raw = data.records;
+  else if (isPlainObject(data) && Array.isArray(data.history)) raw = data.history;
+  if (!raw) return { ok: false, records: [], skipped: 0, error: '没有找到可导入的档案记录。' };
+  const records = [];
+  const seen = new Set();
+  for (const item of raw) {
+    const record = sanitizeRecord(item);
+    if (!record || seen.has(record.id)) continue;
+    seen.add(record.id);
+    records.push(record);
+  }
+  if (!records.length) return { ok: false, records: [], skipped: raw.length, error: '文件里没有通过校验的档案记录。' };
+  return { ok: true, records, skipped: raw.length - records.length, error: '' };
+}
+
+/** 合并时以本地已有记录为准，同 id 不覆盖，最终按时间倒序排列。 */
+export function mergeArchive(current, incoming) {
+  const base = Array.isArray(current) ? current.filter(item => isPlainObject(item) && typeof item.id === 'string') : [];
+  const existing = new Set(base.map(item => item.id));
+  const added = (Array.isArray(incoming) ? incoming : []).filter(item => item && typeof item.id === 'string' && !existing.has(item.id));
+  const records = [...added, ...base].sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
+  return { records, added: added.length };
+}

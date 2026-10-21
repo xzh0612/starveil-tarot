@@ -23,6 +23,19 @@ export default defineConfig(({ mode }) => {
   return {
     build: {
       outDir: "dist/client",
+      // Split the heavy renderer out of the entry chunk so the app shell can be
+      // cached independently of three.js / react updates. The three.js core
+      // chunk alone sits just above the 500 kB default warning, so raise the
+      // limit instead of chasing a warning we have already isolated.
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            three: ["three"],
+            react: ["react", "react-dom/client"],
+          },
+        },
+      },
     },
     optimizeDeps: {
       include: ["react", "react-dom/client"],

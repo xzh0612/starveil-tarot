@@ -14,7 +14,8 @@
 - 语音输入：Chrome / Edge 下用浏览器语音识别把话转成文字，追加到输入框；不支持或无权限时给出提示。
 - 解读反馈标记：可在本机标记“有帮助”或“需要复核”，随档案导出但不会发送给模型。
 - 动态插画书房：紫色绒面牌桌、烛光、星尘、衣料流光和抬眼／低头视线状态。
-- 本地档案、后记、个人知识库、JSON 导出和原创循环 BGM。
+- 本地档案、后记、个人知识库、JSON 导入／导出和原创循环 BGM。
+- AI 生成内容标注：每条解读旁有「AI 生成」标识，输入框下常驻免责说明，导出的档案／备份文件带机器可读的 `contentNotice` 元数据。
 
 ## 架构
 
@@ -41,6 +42,8 @@ npm run dev:all
 
 只想看界面、不需要 AI 解读时，可以单独跑 `npm run dev`；此时 `/api/readings/interpret` 拿不到服务（代理返回 500），前端会显示「解读服务暂时未连接。牌面已保留」。遇到这条提示，基本就是 agent 没在跑——服务起来之后，也可以直接在对话面板的引导卡里配置密钥，不用改任何文件。
 
+改 agent 代码时用 `npm run agent:dev` 代替 `npm run agent`：它用 uvicorn `--reload` 只监听 `backend/`，保存即生效，不用手动重启 8787。生产式启动仍是 `npm run agent`。
+
 生产构建：
 
 ```bash
@@ -49,19 +52,22 @@ npm run build
 
 本地预览构建产物用 `npm run preview`（同样需要 agent 在跑才会解读）。
 
-GitHub Actions 会在每次分支推送、Pull Request 和手动触发时，在 `frontend/` 下用 Node 22 执行锁定依赖安装、Sites 生产构建、前端 Node 测试、离线 RAG/Prompt 评估和高危依赖审计。工作流见 `.github/workflows/quality.yml`，不需要也不会读取 DeepSeek 密钥。注意：CI 目前只覆盖前端 Node 测试与 `server-js-reference/` 的离线评估，Python agent 的 312 个 pytest 用例需要在本地运行 `npm run test:agent`。
+GitHub Actions 会在每次分支推送、Pull Request 和手动触发时跑两个作业：`quality` 在 `frontend/` 下用 Node 22 执行锁定依赖安装、Sites 生产构建、前端 Node 测试、离线 RAG/Prompt 评估和高危依赖审计；`agent-tests` 用 Python 3.13 建虚拟环境、跑 `backend/tests` 全部 pytest 用例，再跑一次 Python 侧的离线评估与 30 例人工标注检索基准。工作流见 `.github/workflows/quality.yml`，不需要也不会读取 DeepSeek 密钥。
 
 RAG 与 Prompt 离线质量门：
 
 ```bash
 npm --prefix frontend run eval:reading      # 对照 Node 参考实现
 npm --prefix frontend run eval:reading:py   # 直接跑 Python agent
+npm --prefix frontend run eval:benchmark    # 30 例人工标注检索基准（Recall@8 / 跑题率）
 ```
+
+`eval:benchmark` 读取 `frontend/backend/data/reading_benchmark.json`，逐例核对人工判定为必需的 `(牌, 证据种类)` 是否进入召回窗口，并统计落在问题领域之外的应用层证据比例。标注是种子集，新增案例应先人工判断相关性再写入，不要按当前检索结果反推。
 
 <details>
 <summary>离线评估覆盖的质量门（Prompt v47 / RAG v55）</summary>
 
-它不调用 DeepSeek，只用固定问题、牌面和模拟 JSON 检查证据主题覆盖、逐牌覆盖、核心锚点、正文、行动正文和行动理由的证据支持、引用合法性、可执行建议、首轮与追问轮次的覆盖不足边界、选择型问题的决策应用召回、明确“哪条/哪种”及“要不要/该不该”比较目标路由、常见“能不能/有没有机会”预测目标路由、否定意图短语不会误触发目标路由、目标路由评估覆盖 advice/forecast/explanation/comparison 且检查额外误路由、混合主题不会混入无关应用域、单目标不会混入未路由的 goalSections、目标化 responsePlan、按目标生成的 directAnswer 开场框架和 actionGuidance 行动约束、首轮先直接回应当前问题再按目标展开、混合问题的 goalPlan 逐目标顺序、goalSections 分段顺序与证据绑定、所有已路由目标的层级引用（建议必须有 application 证据，且每条首轮行动建议在 application 可用时也必须引用对应目标证据）、目标证据覆盖诊断与按 advice/forecast/explanation/comparison 写明缺失层级的覆盖不足边界、大牌阵动态证据预算、按牌位目标层级预留、紧预算下先保留牌位语义证据再预留目标证据、混合目标按牌位轮转预留、未来-only 问题保留牌位应用语义、显式预算先保留目标层、按分数预留目标证据、弱代词与上下文追问的原始主题继承、当前目标覆盖旧目标、追问目标路由传入证据检索、离线评估复用目标证据层级、具体引用词校验、引用 claim 逐句证据校验、绝对断言校准（覆盖全部用户可见字段）、确定时间预测校准（拒绝把日期写成必然结果，允许把时间范围用于观察或核验动作）、澄清分支边界（不伪造 fallback 引用）、明确 mixed 目标不被无谓澄清和 Prompt 上下文边界、模型证据与检索诊断隔离、牌阵推荐理由必须引用目录牌位概念并与用户问题主题相连、结构化追问正文证据支持、纯文本追问也必须命中具体证据、结构化追问必须引用当前目标层级、目标分段也能作为追问正文的证据来源、牌阵位置语义命中与诊断字段、首轮逐牌解读对可用牌位证据的引用约束、行动正文与理由证据支持（正文和理由必须命中非通用牌面概念）、顶层正文证据支持、首轮正文引用范围约束、单目标目标分段证据支持、首轮目标分段层级约束、目标分段层级修复指引、目标化覆盖边界修复指引、结构化 grounding 修复指引、共享目标证据层级契约、逐句、逐分句结构化正文证据约束、混合主题的逐域覆盖诊断、按牌位的目标证据缺口诊断，以及混合目标顶层摘要覆盖和紧预算下按牌位预留证据槽位。当前 Python agent 侧共有 312 个 pytest 用例（前端另有 29 个 Node 用例），离线 Prompt、RAG 检索和结构化解读评估均需通过；离线契约与线上解析同样校验首轮 action 的目标 application 证据、结构化追问 action 的证据支持、跨用户历史轮次保留高风险现实边界，以及逗号、顿号和常见转折/并列/因果连接词分句不能追加无来源事实。
+它不调用 DeepSeek，只用固定问题、牌面和模拟 JSON 检查证据主题覆盖、逐牌覆盖、核心锚点、正文、行动正文和行动理由的证据支持、引用合法性、可执行建议、首轮与追问轮次的覆盖不足边界、选择型问题的决策应用召回、明确“哪条/哪种”及“要不要/该不该”比较目标路由、常见“能不能/有没有机会”预测目标路由、否定意图短语不会误触发目标路由、目标路由评估覆盖 advice/forecast/explanation/comparison 且检查额外误路由、混合主题不会混入无关应用域、单目标不会混入未路由的 goalSections、目标化 responsePlan、按目标生成的 directAnswer 开场框架和 actionGuidance 行动约束、首轮先直接回应当前问题再按目标展开、混合问题的 goalPlan 逐目标顺序、goalSections 分段顺序与证据绑定、所有已路由目标的层级引用（建议必须有 application 证据，且每条首轮行动建议在 application 可用时也必须引用对应目标证据）、目标证据覆盖诊断与按 advice/forecast/explanation/comparison 写明缺失层级的覆盖不足边界、大牌阵动态证据预算、按牌位目标层级预留、紧预算下先保留牌位语义证据再预留目标证据、混合目标按牌位轮转预留、未来-only 问题保留牌位应用语义、显式预算先保留目标层、按分数预留目标证据、弱代词与上下文追问的原始主题继承、当前目标覆盖旧目标、追问目标路由传入证据检索、离线评估复用目标证据层级、具体引用词校验、引用 claim 逐句证据校验、绝对断言校准（覆盖全部用户可见字段）、确定时间预测校准（拒绝把日期写成必然结果，允许把时间范围用于观察或核验动作）、澄清分支边界（不伪造 fallback 引用）、明确 mixed 目标不被无谓澄清和 Prompt 上下文边界、模型证据与检索诊断隔离、牌阵推荐理由必须引用目录牌位概念并与用户问题主题相连、结构化追问正文证据支持、纯文本追问也必须命中具体证据、结构化追问必须引用当前目标层级、目标分段也能作为追问正文的证据来源、牌阵位置语义命中与诊断字段、首轮逐牌解读对可用牌位证据的引用约束、行动正文与理由证据支持（正文和理由必须命中非通用牌面概念）、顶层正文证据支持、首轮正文引用范围约束、单目标目标分段证据支持、首轮目标分段层级约束、目标分段层级修复指引、目标化覆盖边界修复指引、结构化 grounding 修复指引、共享目标证据层级契约、逐句、逐分句结构化正文证据约束、混合主题的逐域覆盖诊断、按牌位的目标证据缺口诊断，以及混合目标顶层摘要覆盖和紧预算下按牌位预留证据槽位。当前 Python agent 侧共有 341 个 pytest 用例（前端另有 42 个 Node 用例），离线 Prompt、RAG 检索和结构化解读评估均需通过；离线契约与线上解析同样校验首轮 action 的目标 application 证据、结构化追问 action 的证据支持、跨用户历史轮次保留高风险现实边界，以及逗号、顿号和常见转折/并列/因果连接词分句不能追加无来源事实。
 
 本轮还增加了 activeQuestion 相关性门禁：当问题明确落在关系、事业或自我主题时，顶层回答必须覆盖每个明确主题，并为每个主题复述至少一个同域词；证据充分但答非所问的泛化文本会被标记为 `question_relevance` 并进入一次有边界的修复流程。
 
@@ -110,9 +116,11 @@ agent 提供五个只允许本机调用的接口：
 ## 测试
 
 ```bash
-npm --prefix frontend run test:agent          # Python agent，312 个用例
-cd frontend && node --test tests/*.test.mjs   # 前端，34 个用例
+npm --prefix frontend run test:agent          # Python agent，341 个用例
+cd frontend && node --test tests/*.test.mjs   # 前端，42 个用例
 ```
+
+在受限沙箱或 CI 里跑 pytest 时加 `--basetemp=/tmp/starveil-pytest`：默认临时目录可能被沙箱拒绝，表现为大量 `PermissionError`，而不是测试真的失败。
 
 Python 侧覆盖 Prompt 组装与黄金快照、RAG 检索与输出校验、解读服务（含用假 transport 注入 provider 失败、超时和鉴权错误）、牌阵推荐与离线评估；Node 侧覆盖牌义完整性、固定牌序、随机洗牌、前端服务层、对话工具函数、网站静态资源和 Sites 构建检查。
 
@@ -121,7 +129,7 @@ Python 侧覆盖 Prompt 组装与黄金快照、RAG 检索与输出校验、解�
 ```text
 frontend/src/                   React 页面、牌局状态、动态海报和弧形牌带
 frontend/backend/               Python 解读 agent（FastAPI + uvicorn，端口 8787）
-frontend/server-js-reference/   迁移前的 Node 实现与离线评估，作为行为对照
+frontend/server-js-reference/   迁移前的 Node 实现与离线评估，作为行为对照（冻结：只读参考，不再加新功能）
 frontend/public/                78 张牌、背景、BGM 和可选 GLB 资源
 frontend/tests/                 前端 Node 测试
 frontend/qa/                    浏览器验收记录与截图
@@ -133,6 +141,8 @@ docs/                           设计与建模文档
 当前女巫使用统一场景插画的动态海报方案，不宣称骨骼 3D、连续口型或真实手指抓牌。旧版 Blender/GLB 模型保留在 `frontend/public/models/`，并通过 `LegacyScene.jsx` 作为后续替换接口。
 
 塔罗解读用于自我反思，不读取他人内心，也不保证未来事件。涉及健康、法律或投资决定时，应以现实信息和专业意见为依据。
+
+界面上由 AI 模型生成的内容都有显式标注：助手回合旁有「AI 生成」标签，输入框下方常驻「AI 生成内容 · 仅供自我反思」说明，本地示例模式则标为「本地示例」而不是 AI 内容。导出档案和备份时，文件外层会写入 `contentNotice`（`aiGenerated`、`generator`、`disclaimer`、`policy`、`labeledAt`），供下游工具识别来源。
 
 ## 来源与许可
 

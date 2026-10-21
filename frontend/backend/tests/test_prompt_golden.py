@@ -10,6 +10,14 @@ is pinned here character for character rather than spot-checked.
 Regenerate the snapshot (only while `server-js-reference/` still exists):
 
     node server-js-reference/tools/dump-prompt-golden.mjs
+
+One recorded divergence from the JS reference: the "history compaction under
+pressure" case. The JS implementation let a generic spread position (现状／阻碍)
+invent an application layer for a question with no life domain, so the prompt
+carried a relationship chunk and a work chunk that nothing in the question asked
+for. The Python agent now requires the position itself to name a domain, so that
+case holds only anchors and reference citations. The rest of the snapshot is
+still byte-identical to the JS output.
 """
 
 from __future__ import annotations

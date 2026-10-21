@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowDown,ArrowRight,CaretDown,CaretLeft,CaretRight,Cards,Check,ClockCounterClockwise,Info,Microphone,MicrophoneSlash,PaperPlaneTilt,Warning} from '@phosphor-icons/react';
-import {cardById,chosenCards,load,save} from './domain';
+import {AI_CONTENT_DISCLAIMER,AI_CONTENT_LABEL,cardById,chosenCards,load,save} from './domain';
 import {readingErrorHint,evidenceCoverageLabel,readingGoalLabel,referenceSourceLabel,saveReadingConfig} from './services';
 import {formatRelativeTime,mergeTranscript} from './chat-utils';
 import {AgentKeyCard} from './AgentConfigCard';
@@ -54,7 +54,7 @@ function AssistantTurn({m,index,onFeedback,onToast,onRetry,onPreset}){
  return <div className="turn">
   <span className="turn-avatar" aria-hidden="true">N</span>
   <div className="turn-body">
-   <span className="turn-name"><b>NYX · 守夜人</b>{m.model?` · ${m.model}`:''}{m.source==='demo'?' · 本地示例':''}</span>
+   <span className="turn-name"><b>NYX · 守夜人</b>{m.model?` · ${m.model}`:''}{m.source==='demo'?' · 本地示例':''}{m.role==='assistant'&&m.source!=='demo'&&<span className="ai-content-label" title={AI_CONTENT_DISCLAIMER}>{AI_CONTENT_LABEL}</span>}</span>
    {(steps.length>0||limited)&&<div className="step-rows">
     {steps.map((step,i)=><span className="step-row" key={i}><Check size={11} weight="bold"/>{step}</span>)}
     {limited&&<span className="step-row warning"><Warning size={11} weight="bold"/>目标依据有限 · {m.evidenceMeta.missingGoalCoverage.map(readingGoalLabel).join('、')}</span>}
@@ -227,7 +227,7 @@ function Composer({input,setInput,onSubmit,busy,session,onToggleMemory,error,err
     </div>
    </div>
   </form>
-  <p className="chat-disclaimer">解读用于自我反思 · 重要决定请咨询专业意见</p>
+  <p className="chat-disclaimer">AI 生成内容 · 仅供自我反思 · 重要决定请咨询专业意见</p>
  </div>;
 }
 /** 对话抽屉的主体：徽标与密钥卡在最上，时间线居中滚动，输入框固定在底部。

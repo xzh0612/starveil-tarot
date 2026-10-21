@@ -7,10 +7,12 @@
     "dev": "vite",
     "dev:all": "node scripts/dev-all.mjs",
     "agent": "backend/.venv/bin/python -m backend.app",
+    "agent:dev": "backend/.venv/bin/python -m uvicorn backend.app:create_app --factory --host 127.0.0.1 --port 8787 --reload --reload-dir backend",
     "build": "vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
     "eval:reading": "node scripts/evaluate-reading.mjs",
     "eval:reading:py": "backend/.venv/bin/python -m backend.evaluate_reading",
+    "eval:benchmark": "backend/.venv/bin/python -m backend.reading_benchmark",
     "test:sites": "node --test tests/sites-worker.test.mjs",
     "test:agent": "backend/.venv/bin/python -m pytest backend/tests",
     "test:reference": "node --test server-js-reference/tests/*.test.mjs"

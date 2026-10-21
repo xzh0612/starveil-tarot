@@ -475,6 +475,10 @@ _POSITION_HINTS = [
     {"words": ["选择", "现状", "隐含因素", "意识目标", "自我状态", "希望", "担忧", "核心", "交叉影响"],
      "kind": "reflection", "boost": 5},
 ]
+# 位置措辞里只有明确指向某个生活领域的词，才能在问题本身没有领域时补一层
+# 应用证据。“阻碍”“现状”“核心”这类通用位置不算领域信号——否则任何开放问题
+# 都会被自动塞进关系或反思解读，答案看起来丰富，实际是凭空造句。
+_POSITION_APPLICATION_WORDS = ("关系", "感受", "需求", "互动", "对方", "情绪", "自我状态", "希望", "担忧")
 
 
 def analyze_reading_question(question: Any) -> dict[str, Any]:
@@ -1205,20 +1209,15 @@ def collect_reading_evidence(
         # spread position such as “建议” can safely contribute its application
         # context. Once advice/comparison already requested an application layer,
         # keep that explicit layer isolated instead of adding a second inferred
-        # domain from the position label.
-        position_kinds = {
-            hint["kind"]
-            for hint in _POSITION_HINTS
-            if any(word in _string(card["position"]) for word in hint["words"])
-        }
+        # domain from the position label. Outside those cases the position must
+        # name a life domain itself (see _POSITION_APPLICATION_WORDS).
         allow_position_application = (
             not suppress_fallback_application
             and not has_supported_domain
             and not application_kinds
             and (
                 "forecast" in goals
-                or "relationships" in position_kinds
-                or "reflection" in position_kinds
+                or any(word in _string(card["position"]) for word in _POSITION_APPLICATION_WORDS)
             )
         )
         candidates = [

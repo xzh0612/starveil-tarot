@@ -26,6 +26,10 @@
 .turn-body>*{width:100%}
 .turn-name{font-size:12px;font-weight:600;letter-spacing:.04em;line-height:1.75;color:#b7a3c6}
 .turn-name b{color:#c9aceb;font-weight:600}
+/* AI 生成内容的显式标识：与正文同处可见，不靠弹层或长文免责替代 */
+.ai-content-label{margin-left:6px;padding:1px 5px;border:0.5px solid #6f5a8a;border-radius:4px;font-size:9px;font-weight:500;letter-spacing:.04em;color:#a795bd;vertical-align:1px;white-space:nowrap}
+/* 档案详情里标签单独占一行，避免与正文首行挤在一起 */
+.archive-reading .ai-content-label{display:inline-block;margin:0 0 6px}
 .step-rows{display:flex;flex-direction:column;gap:5px}
 .step-row{display:flex;align-items:center;gap:7px;font:10px/1.6 ui-monospace,Menlo,monospace;color:#8d7fa3}
 .step-row>svg{flex-shrink:0;color:#7fbd9c}
